@@ -7,13 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CSS CHUNG --- */
+        /* --- CSS GIỮ NGUYÊN NHƯ CŨ --- */
         :root { --primary-color: #2e7d32; --secondary-color: #a5d6a7; --accent-color: #ffca28; --text-color: #333; --white: #ffffff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: #f0f7f0; color: var(--text-color); padding-bottom: 80px; }
         
-        body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: #f0f7f0; color: var(--text-color); padding-bottom: 80px; /* Chừa chỗ cho nhạc nền */ }
-        
-        /* Menu */
         nav { background-color: var(--primary-color); padding: 10px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         nav ul { list-style: none; text-align: center; margin: 0; padding: 0; white-space: nowrap; overflow-x: auto; display: flex; justify-content: center; -webkit-overflow-scrolling: touch; }
         nav ul::-webkit-scrollbar { display: none; }
@@ -22,7 +20,6 @@
         nav ul li a:hover, nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent-color); }
 
         .container { max-width: 1000px; margin: 20px auto; background: var(--white); padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 80vh; }
-
         .page-section { display: none; animation: fadeIn 0.4s; }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -39,7 +36,6 @@
         
         input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: 1rem; }
 
-        /* --- CSS TRA CỨU RÁC --- */
         .search-box { position: relative; max-width: 500px; margin: 0 auto 20px auto; }
         .search-box input { padding-left: 40px; border-radius: 25px; border: 2px solid var(--primary-color); }
         .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color); }
@@ -50,14 +46,12 @@
         .bin-type { display: inline-block; padding: 5px 10px; border-radius: 15px; color: white; font-size: 0.8rem; font-weight: bold; margin-top: 5px; }
         .bin-organic { background-color: #4CAF50; } .bin-recycle { background-color: #2196F3; } .bin-other { background-color: #FF9800; } .bin-hazardous { background-color: #f44336; }
 
-        /* --- CSS LỚP HỌC XANH --- */
         .green-class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .green-class-item { position: relative; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .green-class-img { width: 100%; height: 200px; object-fit: cover; transition: 0.3s; }
         .green-class-item:hover .green-class-img { transform: scale(1.1); }
         .green-class-info { position: absolute; bottom: 0; background: rgba(0,0,0,0.7); color: white; width: 100%; padding: 10px; }
 
-        /* --- CSS THI ĐUA --- */
         .contest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
         .contest-item { border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column; position: relative; }
         .contest-link-wrapper { display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 200px; background: #f8f9fa; text-decoration: none; overflow: hidden; }
@@ -71,7 +65,6 @@
         .contest-tools { position: absolute; top: 10px; left: 10px; display: flex; gap: 5px; z-index: 5; }
         .tool-btn { background: rgba(255,255,255,0.9); border: 1px solid #ddd; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
         
-        /* --- CSS BẢNG XẾP HẠNG --- */
         .ranking-container { display: flex; gap: 20px; margin-top: 30px; }
         .ranking-box { flex: 1; min-width: 0; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px; border-top: 5px solid var(--accent-color); }
         .rank-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
@@ -79,7 +72,6 @@
         .rank-table td { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; }
         .top-1 { color: #d4af37; font-weight: bold; } 
 
-        /* --- CSS BÌNH LUẬN --- */
         .comment-item { padding: 15px 0; border-bottom: 1px solid #eee; }
         .comment-main { display: flex; gap: 10px; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -92,7 +84,6 @@
         .reply-item { display: flex; gap: 10px; margin-top: 10px; }
         .reply-form-container { margin-left: 50px; margin-top: 10px; display: none; }
 
-        /* --- QR CODE & FOOTER --- */
         .qr-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; display: flex; flex-direction: column; align-items: center; }
         .qr-box { background: white; padding: 10px; border: 1px solid #ddd; border-radius: 8px; display: inline-block; }
         footer { text-align: center; padding: 20px; color: #777; margin-top: 20px; border-top: 1px solid #eee; font-size: 0.9rem; }
@@ -176,7 +167,6 @@
 
         <div id="contest" class="page-section">
             <h1>Khoảnh Khắc Xanh</h1>
-            
             <div class="card" style="background: linear-gradient(135deg, #2e7d32, #81c784); color: white; text-align: center; margin-bottom: 20px;">
                 <h3>⏳ Thời gian bình chọn còn</h3>
                 <div id="countdown" style="font-size: 1.8rem; font-weight: bold; font-family: monospace; margin: 10px 0;">Loading...</div>
@@ -199,10 +189,12 @@
                     <button type="submit" class="btn" style="width: 100%;">Đăng Ngay</button>
                 </form>
             </div>
+            
             <div id="contest-grid" class="contest-grid"></div>
+            
             <div style="text-align: center; margin-top: 20px;">
                 <button id="btn-load-more" class="btn btn-outline" style="width: 100%; max-width: 200px; display: none;" onclick="loadMoreEntries()">Xem thêm ⬇️</button>
-                <p id="loading-text" style="color: #888;">Đang tải dữ liệu...</p>
+                <p id="loading-text" style="color: #888; display: none;">Đang tải dữ liệu...</p>
             </div>
             <hr style="border: 0; border-top: 2px dashed #ccc; margin: 40px 0;">
             <h1>Bảng Vàng Thi Đua</h1>
@@ -211,14 +203,14 @@
                     <div class="ranking-title">🏆 Top Lớp</div>
                     <table class="rank-table">
                         <thead><tr><th>#</th><th>Lớp</th><th>Tim</th></tr></thead>
-                        <tbody id="class-ranking-body"><tr><td colspan="3">Đang tính...</td></tr></tbody>
+                        <tbody id="class-ranking-body"><tr><td colspan="3">Chưa tải...</td></tr></tbody>
                     </table>
                 </div>
                 <div class="ranking-box">
                     <div class="ranking-title">🌟 Top Cá Nhân</div>
                     <table class="rank-table">
                         <thead><tr><th>#</th><th>Tên</th><th>Lớp</th><th>Tim</th></tr></thead>
-                        <tbody id="student-ranking-body"><tr><td colspan="4">Đang tính...</td></tr></tbody>
+                        <tbody id="student-ranking-body"><tr><td colspan="4">Chưa tải...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -242,7 +234,7 @@
                     </form>
                 </div>
             </div>
-            <div id="comments-list" style="margin-top: 20px;">Loading...</div>
+            <div id="comments-list" style="margin-top: 20px;"></div>
         </div>
 
     </div>
@@ -258,11 +250,8 @@
     <div id="music-player" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: white; padding: 10px; border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; border: 2px solid var(--primary-color);">
         <div id="music-disc" style="animation: spin 3s linear infinite; display: none; font-size: 1.5rem;">💿</div>
         <button id="btnMusic" onclick="toggleYoutubeMusic()" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">🔇 Bật Nhạc</button>
-        <div style="position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; left: -9999px;">
-            <div id="youtube-bg-player"></div>
-        </div>
+        <div style="position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; left: -9999px;"><div id="youtube-bg-player"></div></div>
     </div>
-
     <script>
         var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
@@ -302,63 +291,88 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // --- 1. CÁC TÍNH NĂNG PHỤ TRỢ ---
-        var countDownDate = new Date("May 20, 2025 00:00:00").getTime();
-        var x = setInterval(function() {
-            var now = new Date().getTime(); var distance = countDownDate - now;
-            var days = Math.floor(distance / (1000 * 60 * 60 * 24)); var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            document.getElementById("countdown").innerHTML = days + " ngày " + hours + " giờ";
-            if (distance < 0) { clearInterval(x); document.getElementById("countdown").innerHTML = "ĐÃ KẾT THÚC"; }
-        }, 1000);
-        var tips = [ "Tắt vòi nước khi đánh răng tiết kiệm 6 lít nước/phút.", "1 tấn giấy tái chế cứu sống 17 cây xanh.", "Nhựa mất 1000 năm để phân hủy, hạn chế dùng!", "Rút phích cắm khi không dùng giúp tiết kiệm điện.", "Trồng 1 cây xanh hấp thụ 22kg CO2 mỗi năm." ];
-        document.getElementById("green-tip").innerText = '"' + tips[Math.floor(Math.random() * tips.length)] + '"';
+        // --- CỜ KIỂM TRA ĐÃ TẢI DỮ LIỆU CHƯA (LAZY LOAD FLAGS) ---
+        let hasLoadedContest = false;
+        let hasLoadedDiscussion = false;
 
-        // --- 2. LOGIC TAB & SCROLL & QR ---
+        // --- 1. CHỨC NĂNG CHUNG ---
         window.addEventListener('load', () => {
             const currentUrl = window.location.href;
             document.getElementById('page-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
+            
+            // Dữ liệu rác là text cứng nên load luôn cũng được (không tốn tiền Firebase)
             renderTrashList(trashDatabase);
+            
+            // Tải trang cuối cùng hoặc về Home
             const lastPage = localStorage.getItem('activePage') || 'home';
             showPage(lastPage);
+
+            // Mẹo vặt
+            var tips = [ "Tắt vòi nước khi đánh răng.", "Tái chế giấy vụn.", "Hạn chế túi nilon.", "Rút phích cắm khi không dùng.", "Trồng thêm cây xanh." ];
+            document.getElementById("green-tip").innerText = '"' + tips[Math.floor(Math.random() * tips.length)] + '"';
         });
+
+        // HÀM CHUYỂN TRANG THÔNG MINH (LAZY LOAD LOGIC)
         window.showPage = function(pageId) {
             localStorage.setItem('activePage', pageId);
-            var sections = document.getElementsByClassName('page-section'); for (var i = 0; i < sections.length; i++) { sections[i].classList.remove('active'); }
+            var sections = document.getElementsByClassName('page-section');
+            for (var i = 0; i < sections.length; i++) { sections[i].classList.remove('active'); }
             document.getElementById(pageId).classList.add('active');
-            var menuLinks = document.querySelectorAll('nav ul li a'); menuLinks.forEach(link => link.classList.remove('active-menu'));
+            var menuLinks = document.querySelectorAll('nav ul li a');
+            menuLinks.forEach(link => link.classList.remove('active-menu'));
             document.getElementById('menu-' + pageId).classList.add('active-menu');
-            window.scrollTo(0, 0); 
+            window.scrollTo(0, 0);
+
+            // --- KIỂM TRA ĐỂ TẢI DỮ LIỆU ---
+            if (pageId === 'contest' && !hasLoadedContest) {
+                console.log("Lần đầu vào Thi Đua -> Bắt đầu tải dữ liệu...");
+                loadInitialContestData(); // Hàm tải bài thi
+                setupRankingListener();   // Hàm tải BXH
+                hasLoadedContest = true;  // Đánh dấu đã tải
+            }
+
+            if (pageId === 'discussion' && !hasLoadedDiscussion) {
+                console.log("Lần đầu vào Thảo Luận -> Bắt đầu tải dữ liệu...");
+                setupDiscussionListener(); // Hàm tải comment
+                hasLoadedDiscussion = true; // Đánh dấu đã tải
+            }
         }
 
+        // --- 2. AUTHENTICATION (Giữ nguyên) ---
+        const loginButtons = document.querySelectorAll(".btn-login-trigger");
+        const logoutButtons = document.querySelectorAll(".btn-logout");
+        loginButtons.forEach(btn => btn.addEventListener("click", () => signInWithPopup(auth, provider).catch(err => alert("Lỗi: " + err.message))));
+        logoutButtons.forEach(btn => btn.addEventListener("click", () => signOut(auth)));
+
+        onAuthStateChanged(auth, (user) => {
+            const contestLogin = document.getElementById("contest-login-require"); const contestForm = document.getElementById("contest-form-container");
+            const discussLogin = document.getElementById("discussion-login-require"); const discussChat = document.getElementById("discussion-chat-container");
+            const userNames = document.querySelectorAll(".user-display-name");
+            if (user) {
+                contestLogin.style.display = "none"; contestForm.style.display = "block";
+                discussLogin.style.display = "none"; discussChat.style.display = "block";
+                userNames.forEach(el => el.innerText = "👋 " + user.displayName);
+            } else {
+                contestLogin.style.display = "block"; contestForm.style.display = "none";
+                discussLogin.style.display = "block"; discussChat.style.display = "none";
+            }
+        });
+
         // --- 3. TRA CỨU RÁC ---
-        const trashDatabase = [ { name: "Vỏ hộp sữa (đã rửa)", type: "Tái chế", class: "bin-recycle", icon: "🧃" }, { name: "Chai nhựa", type: "Tái chế", class: "bin-recycle", icon: "🍾" }, { name: "Giấy vụn, sách báo", type: "Tái chế", class: "bin-recycle", icon: "📰" }, { name: "Lon nước ngọt", type: "Tái chế", class: "bin-recycle", icon: "🥤" }, { name: "Vỏ chuối, trái cây", type: "Hữu cơ", class: "bin-organic", icon: "🍌" }, { name: "Lá cây, cỏ", type: "Hữu cơ", class: "bin-organic", icon: "🍂" }, { name: "Túi nilon, hộp xốp", type: "Rác khác", class: "bin-other", icon: "🛍️" }, { name: "Pin, ắc quy", type: "Nguy hại", class: "bin-hazardous", icon: "🔋" } ];
+        const trashDatabase = [ { name: "Vỏ hộp sữa", type: "Tái chế", class: "bin-recycle", icon: "🧃" }, { name: "Chai nhựa", type: "Tái chế", class: "bin-recycle", icon: "🍾" }, { name: "Giấy vụn", type: "Tái chế", class: "bin-recycle", icon: "📰" }, { name: "Vỏ chuối", type: "Hữu cơ", class: "bin-organic", icon: "🍌" }, { name: "Túi nilon", type: "Rác khác", class: "bin-other", icon: "🛍️" }, { name: "Pin", type: "Nguy hại", class: "bin-hazardous", icon: "🔋" } ];
         window.renderTrashList = (data) => {
             const container = document.getElementById('trashContainer'); container.innerHTML = "";
             data.forEach(item => { const div = document.createElement('div'); div.className = 'trash-item'; div.innerHTML = `<span class="trash-icon">${item.icon}</span><strong>${item.name}</strong><br><span class="bin-type ${item.class}">${item.type}</span>`; container.appendChild(div); });
         }
         window.filterTrash = () => { const keyword = document.getElementById('trashSearchInput').value.toLowerCase(); const filtered = trashDatabase.filter(item => item.name.toLowerCase().includes(keyword)); renderTrashList(filtered); }
 
-        // --- 4. AUTH ---
-        const loginButtons = document.querySelectorAll(".btn-login-trigger"); const logoutButtons = document.querySelectorAll(".btn-logout");
-        loginButtons.forEach(btn => btn.addEventListener("click", () => signInWithPopup(auth, provider).catch(err => alert("Lỗi: " + err.message))));
-        logoutButtons.forEach(btn => btn.addEventListener("click", () => signOut(auth)));
-        onAuthStateChanged(auth, (user) => {
-            const contestLogin = document.getElementById("contest-login-require"); const contestForm = document.getElementById("contest-form-container");
-            const discussLogin = document.getElementById("discussion-login-require"); const discussChat = document.getElementById("discussion-chat-container");
-            const userNames = document.querySelectorAll(".user-display-name");
-            if (user) { contestLogin.style.display = "none"; contestForm.style.display = "block"; discussLogin.style.display = "none"; discussChat.style.display = "block"; userNames.forEach(el => el.innerText = "👋 " + user.displayName); } 
-            else { contestLogin.style.display = "block"; contestForm.style.display = "none"; discussLogin.style.display = "block"; discussChat.style.display = "none"; }
-        });
+        // --- 4. THI ĐUA (Đã tách hàm để Lazy Load) ---
+        let lastVisibleEntry = null;
+        const contestGrid = document.getElementById("contest-grid");
+        const btnLoadMore = document.getElementById("btn-load-more");
+        const loadingText = document.getElementById("loading-text");
 
-        // --- 5. THI ĐUA ---
-        document.getElementById("contestForm").addEventListener("submit", async (e) => {
-            e.preventDefault(); const user = auth.currentUser; if (!user) return alert("Vui lòng đăng nhập!");
-            const name = document.getElementById("inpContestName").value.trim(); const className = document.getElementById("inpContestClass").value.trim().toUpperCase(); const link = document.getElementById("inpContestLink").value; const desc = document.getElementById("inpContestDesc").value;
-            try { await addDoc(collection(db, "contest_entries"), { authorName: name, className: className, uid: user.uid, imageUrl: link, description: desc, likes: [], createdAt: serverTimestamp() }); alert("Đăng bài thành công!"); e.target.reset(); } catch (err) { console.error(err); alert("Lỗi khi đăng bài."); }
-        });
-        window.deleteContestEntry = async (postId) => { if(confirm("Xóa bài này?")) { try { await deleteDoc(doc(db, "contest_entries", postId)); document.getElementById(`contest-item-${postId}`).remove(); } catch(e) { alert("Lỗi: " + e.message); } } }
-        window.editContestEntry = async (postId, desc, link) => { const nd = prompt("Mô tả mới:", desc); if(nd!==null) { let nl = link; if(confirm("Đổi link?")) nl = prompt("Link mới:", link); if(nd||nl) { try{await updateDoc(doc(db,"contest_entries",postId),{description:nd, imageUrl:nl}); alert("Đã sửa!");}catch(e){alert("Lỗi:"+e.message);} } } }
-        let lastVisibleEntry = null; const contestGrid = document.getElementById("contest-grid"); const btnLoadMore = document.getElementById("btn-load-more"); const loadingText = document.getElementById("loading-text");
+        // Hàm render 1 item (giữ nguyên)
         function renderContestItem(data, postId, currentUser) {
             const likes = data.likes || []; const likeCount = likes.length; let isLiked = (currentUser && likes.includes(currentUser.uid));
             let adminTools = (currentUser && data.uid === currentUser.uid) ? `<div class="contest-tools"><button class="tool-btn" onclick="editContestEntry('${postId}', '${data.description}', '${data.imageUrl}')">✏️</button><button class="tool-btn" style="color:red" onclick="deleteContestEntry('${postId}')">🗑️</button></div>` : "";
@@ -368,60 +382,86 @@
             div.innerHTML = `${adminTools}<a href="${data.imageUrl}" target="_blank" class="contest-link-wrapper"><span class="link-badge">${badgeText}</span><img src="${displayImage}" class="contest-img" style="object-fit: ${objectFit}; padding: ${padding};"><div class="click-hint">Xem chi tiết</div></a><div class="contest-body"><div><div style="font-weight:bold; color:var(--primary-color)">${data.authorName}</div><div style="font-size:0.8rem; color:#666;">Lớp: ${data.className||'?'}</div><div style="font-size:0.9rem;">${data.description}</div></div><button class="btn-heart ${isLiked?'liked':''}" onclick="toggleLike('${postId}', ${isLiked})">${isLiked?'❤️':'🤍'} ${likeCount}</button></div>`;
             return div;
         }
-        async function loadInitialEntries() {
-            loadingText.style.display = 'block'; const first = query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), limit(10));
-            const snaps = await getDocs(first); loadingText.style.display = 'none'; contestGrid.innerHTML = "";
+
+        // Tải 10 bài đầu tiên (Chỉ gọi khi bấm tab)
+        async function loadInitialContestData() {
+            loadingText.style.display = 'block';
+            const first = query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), limit(10));
+            const snaps = await getDocs(first);
+            loadingText.style.display = 'none';
+            
             if (snaps.empty) { contestGrid.innerHTML = "<p style='text-align:center;width:100%'>Chưa có bài dự thi.</p>"; return; }
-            lastVisibleEntry = snaps.docs[snaps.docs.length - 1]; const currentUser = auth.currentUser;
+            
+            lastVisibleEntry = snaps.docs[snaps.docs.length - 1];
+            const currentUser = auth.currentUser;
             snaps.forEach((doc) => { contestGrid.appendChild(renderContestItem(doc.data(), doc.id, currentUser)); });
+            
             if(snaps.docs.length >= 10) btnLoadMore.style.display = 'inline-block';
         }
-        loadInitialEntries();
+
+        // Tải thêm (Load more)
         window.loadMoreEntries = async () => {
             if(!lastVisibleEntry) return; btnLoadMore.disabled = true; btnLoadMore.innerText = "Đang tải...";
             const next = query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), startAfter(lastVisibleEntry), limit(10));
             const snaps = await getDocs(next); btnLoadMore.disabled = false; btnLoadMore.innerText = "Xem thêm ⬇️";
             if (!snaps.empty) { lastVisibleEntry = snaps.docs[snaps.docs.length - 1]; const currentUser = auth.currentUser; snaps.forEach((doc) => { contestGrid.appendChild(renderContestItem(doc.data(), doc.id, currentUser)); }); if(snaps.docs.length < 10) btnLoadMore.style.display = 'none'; } else { btnLoadMore.style.display = 'none'; }
         }
-        const classRankingBody = document.getElementById("class-ranking-body"); const studentRankingBody = document.getElementById("student-ranking-body");
-        onSnapshot(query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
-            let classScores = {}; let studentScores = [];
-            snapshot.forEach((docSnap) => { const data = docSnap.data(); const count = data.likes?data.likes.length:0; const cl = data.className||"Khác"; if(!classScores[cl]) classScores[cl]=0; classScores[cl]+=count; studentScores.push({name:data.authorName, class:cl, likes:count}); });
-            const sClasses = Object.entries(classScores).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            classRankingBody.innerHTML = sClasses.length?"":"<tr><td colspan='3'>Chưa có</td></tr>";
-            sClasses.forEach((i,x)=>{ let ic=x==0?"🥇":x==1?"🥈":x==2?"🥉":x+1; classRankingBody.innerHTML+=`<tr><td>${ic}</td><td><strong>${i[0]}</strong></td><td style="color:red;font-weight:bold">${i[1]}</td></tr>`; });
-            const sStudents = studentScores.sort((a,b)=>b.likes-a.likes).slice(0,5);
-            studentRankingBody.innerHTML = sStudents.length?"":"<tr><td colspan='4'>Chưa có</td></tr>";
-            sStudents.forEach((s,x)=>{ let ic=x==0?"🥇":x==1?"🥈":x==2?"🥉":x+1; studentRankingBody.innerHTML+=`<tr><td>${ic}</td><td>${s.name}</td><td>${s.class}</td><td style="color:red;font-weight:bold">${s.likes}</td></tr>`; });
-        });
+
+        // Tải BXH (Chỉ gọi khi bấm tab)
+        function setupRankingListener() {
+            const classRankingBody = document.getElementById("class-ranking-body"); const studentRankingBody = document.getElementById("student-ranking-body");
+            onSnapshot(query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
+                let classScores = {}; let studentScores = [];
+                snapshot.forEach((docSnap) => { const data = docSnap.data(); const count = data.likes?data.likes.length:0; const cl = data.className||"Khác"; if(!classScores[cl]) classScores[cl]=0; classScores[cl]+=count; studentScores.push({name:data.authorName, class:cl, likes:count}); });
+                const sClasses = Object.entries(classScores).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                classRankingBody.innerHTML = sClasses.length?"":"<tr><td colspan='3'>Chưa có</td></tr>";
+                sClasses.forEach((i,x)=>{ let ic=x==0?"🥇":x==1?"🥈":x==2?"🥉":x+1; classRankingBody.innerHTML+=`<tr><td>${ic}</td><td><strong>${i[0]}</strong></td><td style="color:red;font-weight:bold">${i[1]}</td></tr>`; });
+                const sStudents = studentScores.sort((a,b)=>b.likes-a.likes).slice(0,5);
+                studentRankingBody.innerHTML = sStudents.length?"":"<tr><td colspan='4'>Chưa có</td></tr>";
+                sStudents.forEach((s,x)=>{ let ic=x==0?"🥇":x==1?"🥈":x==2?"🥉":x+1; studentRankingBody.innerHTML+=`<tr><td>${ic}</td><td>${s.name}</td><td>${s.class}</td><td style="color:red;font-weight:bold">${s.likes}</td></tr>`; });
+            });
+        }
+
+        // Các hàm Action (Đăng, Sửa, Xóa, Like) giữ nguyên
+        document.getElementById("contestForm").addEventListener("submit", async (e) => { e.preventDefault(); const user = auth.currentUser; if (!user) return alert("Vui lòng đăng nhập!"); const name = document.getElementById("inpContestName").value.trim(); const className = document.getElementById("inpContestClass").value.trim().toUpperCase(); const link = document.getElementById("inpContestLink").value; const desc = document.getElementById("inpContestDesc").value; try { await addDoc(collection(db, "contest_entries"), { authorName: name, className: className, uid: user.uid, imageUrl: link, description: desc, likes: [], createdAt: serverTimestamp() }); alert("Đăng bài thành công!"); e.target.reset(); } catch (err) { console.error(err); alert("Lỗi khi đăng bài."); } });
+        window.deleteContestEntry = async (pid) => { if(confirm("Xóa bài này?")) { try { await deleteDoc(doc(db, "contest_entries", pid)); document.getElementById(`contest-item-${pid}`).remove(); } catch(e) { alert("Lỗi: " + e.message); } } }
+        window.editContestEntry = async (pid, desc, link) => { const nd = prompt("Mô tả mới:", desc); if(nd!==null) { let nl = link; if(confirm("Đổi link?")) nl = prompt("Link mới:", link); if(nd||nl) { try{await updateDoc(doc(db,"contest_entries",pid),{description:nd, imageUrl:nl}); alert("Đã sửa!");}catch(e){alert("Lỗi:"+e.message);} } } }
         window.toggleLike = async (pid, liked) => { const user = auth.currentUser; if (!user) return alert("Đăng nhập để thả tim!"); try { const ref = doc(db, "contest_entries", pid); if(liked) await updateDoc(ref, { likes: arrayRemove(user.uid) }); else await updateDoc(ref, { likes: arrayUnion(user.uid) }); alert("Đã ghi nhận!"); } catch (e) { console.error(e); } };
 
-        // --- 6. THẢO LUẬN ---
+        // --- 5. THẢO LUẬN (Đã tách hàm để Lazy Load) ---
+        function setupDiscussionListener() {
+            const cList = document.getElementById("comments-list");
+            cList.innerHTML = "Đang tải bình luận...";
+            
+            onSnapshot(query(collection(db, "comments"), orderBy("createdAt", "desc")), (snap) => {
+                const allC = []; const curU = auth.currentUser; snap.forEach(d => { allC.push({ id: d.id, ...d.data() }) });
+                const roots = allC.filter(c => !c.parentId); const reps = allC.filter(c => c.parentId);
+                cList.innerHTML = "";
+                if(roots.length === 0) { cList.innerHTML = "Chưa có bình luận nào."; return; }
+                
+                roots.forEach(d => {
+                    let ts = d.createdAt ? d.createdAt.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : "...";
+                    let acts = (curU && d.uid === curU.uid) ? `<span class="action-link" onclick="editComment('${d.id}', '${d.text.replace(/'/g, "\\'")}')">Sửa</span> | <span class="action-link action-delete" onclick="deleteComment('${d.id}')">Xóa</span> | ` : "";
+                    const myReps = reps.filter(r => r.parentId === d.id).sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+                    let rHTML = "";
+                    myReps.forEach(r => {
+                        let rts = r.createdAt ? r.createdAt.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : "...";
+                        let rActs = (curU && r.uid === curU.uid) ? `- <span class="action-link" style="font-size:0.8rem" onclick="editComment('${r.id}', '${r.text.replace(/'/g, "\\'")}')">Sửa</span> - <span class="action-link action-delete" style="font-size:0.8rem" onclick="deleteComment('${r.id}')">Xóa</span>` : "";
+                        rHTML += `<div class="reply-item"><img src="${r.photo||'https://via.placeholder.com/30'}" class="avatar"><div class="comment-content"><div style="font-weight:bold;font-size:0.9rem;color:var(--primary-color)">${r.name}</div><div class="comment-text" style="font-size:0.95rem;">${r.text}</div><div class="comment-actions" style="color:#999;">${rts} ${rActs}</div></div></div>`;
+                    });
+                    const div = document.createElement("div"); div.className = "comment-item";
+                    div.innerHTML = `<div class="comment-main"><img src="${d.photo||'https://via.placeholder.com/40'}" class="avatar"><div class="comment-content"><div style="font-weight:bold; color:var(--primary-color)">${d.name}</div><div class="comment-text">${d.text}</div><div class="comment-actions"><span style="color:#999;">${ts}</span> ${acts} <span class="btn-reply-trigger" onclick="toggleReplyForm('${d.id}')">Trả lời</span></div></div></div><div class="replies-container">${rHTML}</div><div id="reply-form-${d.id}" class="reply-form-container"><form onsubmit="sendReply(event, '${d.id}')"><textarea placeholder="Trả lời..." required style="width:100%; margin-bottom:5px;"></textarea><button type="submit" class="btn btn-sm">Gửi</button></form></div>`;
+                    cList.appendChild(div);
+                });
+            });
+        }
+
+        // Các hàm Action Thảo luận
         document.getElementById("commentForm").addEventListener("submit", async (e) => { e.preventDefault(); const t = document.getElementById("inpComment").value; const u = auth.currentUser; if (u && t.trim()) { await addDoc(collection(db, "comments"), { name: u.displayName, photo: u.photoURL, uid: u.uid, text: t, parentId: null, createdAt: serverTimestamp() }); document.getElementById("inpComment").value = ""; } });
         window.sendReply = async (ev, pid) => { ev.preventDefault(); const f = ev.target; const t = f.querySelector('textarea').value; const u = auth.currentUser; if (u && t.trim()) { await addDoc(collection(db, "comments"), { name: u.displayName, photo: u.photoURL, uid: u.uid, text: t, parentId: pid, createdAt: serverTimestamp() }); f.querySelector('textarea').value = ""; f.parentElement.style.display = 'none'; } }
         window.toggleReplyForm = (cid) => { if (!auth.currentUser) return alert("Đăng nhập để trả lời!"); const f = document.getElementById(`reply-form-${cid}`); f.style.display = (f.style.display === 'none' || f.style.display === '') ? 'block' : 'none'; }
         window.deleteComment = async (cid) => { if(confirm("Xóa?")) try{ await deleteDoc(doc(db,"comments",cid)); }catch(e){alert(e.message);} }
         window.editComment = async (cid, ot) => { const nt = prompt("Sửa:", ot); if(nt!==null&&nt.trim()) try{ await updateDoc(doc(db,"comments",cid),{text:nt}); }catch(e){alert(e.message);} }
-        const cList = document.getElementById("comments-list");
-        onSnapshot(query(collection(db, "comments"), orderBy("createdAt", "desc")), (snap) => {
-            const allC = []; const curU = auth.currentUser; snap.forEach(d => { allC.push({ id: d.id, ...d.data() }) });
-            const roots = allC.filter(c => !c.parentId); const reps = allC.filter(c => c.parentId);
-            cList.innerHTML = "";
-            roots.forEach(d => {
-                let ts = d.createdAt ? d.createdAt.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : "...";
-                let acts = (curU && d.uid === curU.uid) ? `<span class="action-link" onclick="editComment('${d.id}', '${d.text.replace(/'/g, "\\'")}')">Sửa</span> | <span class="action-link action-delete" onclick="deleteComment('${d.id}')">Xóa</span> | ` : "";
-                const myReps = reps.filter(r => r.parentId === d.id).sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
-                let rHTML = "";
-                myReps.forEach(r => {
-                    let rts = r.createdAt ? r.createdAt.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : "...";
-                    let rActs = (curU && r.uid === curU.uid) ? `- <span class="action-link" style="font-size:0.8rem" onclick="editComment('${r.id}', '${r.text.replace(/'/g, "\\'")}')">Sửa</span> - <span class="action-link action-delete" style="font-size:0.8rem" onclick="deleteComment('${r.id}')">Xóa</span>` : "";
-                    rHTML += `<div class="reply-item"><img src="${r.photo||'https://via.placeholder.com/30'}" class="avatar"><div class="comment-content"><div style="font-weight:bold;font-size:0.9rem;color:var(--primary-color)">${r.name}</div><div class="comment-text" style="font-size:0.95rem;">${r.text}</div><div class="comment-actions" style="color:#999;">${rts} ${rActs}</div></div></div>`;
-                });
-                const div = document.createElement("div"); div.className = "comment-item";
-                div.innerHTML = `<div class="comment-main"><img src="${d.photo||'https://via.placeholder.com/40'}" class="avatar"><div class="comment-content"><div style="font-weight:bold; color:var(--primary-color)">${d.name}</div><div class="comment-text">${d.text}</div><div class="comment-actions"><span style="color:#999;">${ts}</span> ${acts} <span class="btn-reply-trigger" onclick="toggleReplyForm('${d.id}')">Trả lời</span></div></div></div><div class="replies-container">${rHTML}</div><div id="reply-form-${d.id}" class="reply-form-container"><form onsubmit="sendReply(event, '${d.id}')"><textarea placeholder="Trả lời..." required style="width:100%; margin-bottom:5px;"></textarea><button type="submit" class="btn btn-sm">Gửi</button></form></div>`;
-                cList.appendChild(div);
-            });
-        });
     </script>
 </body>
 </html>
