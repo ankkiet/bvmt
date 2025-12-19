@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CSS GIỮ NGUYÊN NHƯ CŨ --- */
+        /* --- CSS CHUNG --- */
         :root { --primary-color: #2e7d32; --secondary-color: #a5d6a7; --accent-color: #ffca28; --text-color: #333; --white: #ffffff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: #f0f7f0; color: var(--text-color); padding-bottom: 80px; }
@@ -46,11 +46,13 @@
         .bin-type { display: inline-block; padding: 5px 10px; border-radius: 15px; color: white; font-size: 0.8rem; font-weight: bold; margin-top: 5px; }
         .bin-organic { background-color: #4CAF50; } .bin-recycle { background-color: #2196F3; } .bin-other { background-color: #FF9800; } .bin-hazardous { background-color: #f44336; }
 
-        .green-class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .green-class-item { position: relative; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .green-class-img { width: 100%; height: 200px; object-fit: cover; transition: 0.3s; }
+        /* --- CSS LỚP HỌC XANH (ĐÃ CHỈNH SỬA CHO ĐẸP) --- */
+        .green-class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .green-class-item { position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+        .green-class-item:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .green-class-img { width: 100%; height: 250px; object-fit: cover; transition: transform 0.5s ease; display: block;}
         .green-class-item:hover .green-class-img { transform: scale(1.1); }
-        .green-class-info { position: absolute; bottom: 0; background: rgba(0,0,0,0.7); color: white; width: 100%; padding: 10px; }
+        .green-class-info { position: absolute; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0)); color: white; width: 100%; padding: 20px 15px 15px 15px; }
 
         .contest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
         .contest-item { border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column; position: relative; }
@@ -158,10 +160,37 @@
 
         <div id="greenclass" class="page-section">
             <h1>Góc "Lớp Học Xanh"</h1>
+            <p style="text-align: center; margin-bottom: 25px;">Thành quả xây dựng không gian xanh của tập thể A2K41 🌿</p>
+            
             <div class="green-class-grid">
-                <div class="green-class-item"><img src="https://images.unsplash.com/photo-1596464716127-f9a08107e05a?w=400" class="green-class-img"><div class="green-class-info"><strong>Vườn treo</strong><br>Chai nhựa tái chế.</div></div>
-                <div class="green-class-item"><img src="https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=400" class="green-class-img"><div class="green-class-info"><strong>Góc thiên nhiên</strong><br>Cây lọc không khí.</div></div>
-                <div class="green-class-item"><img src="https://images.unsplash.com/photo-1517059224940-d4af9e241ea3?w=400" class="green-class-img"><div class="green-class-info"><strong>Thùng rác đẹp</strong><br>Trang trí sinh động.</div></div>
+                <div class="green-class-item">
+                    <img src="https://i.ibb.co/jkQ3vTy2/IMG-9914.jpg" class="green-class-img">
+                    <div class="green-class-info"><strong>Góc Học Tập</strong><br>Trang trí cây xanh tươi mát.</div>
+                </div>
+                <div class="green-class-item">
+                    <img src="https://i.ibb.co/XZnjFfH3/IMG-4892.jpg" class="green-class-img">
+                    <div class="green-class-info"><strong>Sức Sống Mới</strong><br>Những mầm non đang lớn.</div>
+                </div>
+                <div class="green-class-item">
+                    <img src="https://i.ibb.co/fdCBPMxJ/IMG-4893.jpg" class="green-class-img">
+                    <div class="green-class-info"><strong>Chăm Sóc</strong><br>Tưới cây mỗi ngày.</div>
+                </div>
+                <div class="green-class-item">
+                    <img src="https://i.ibb.co/Kp2MvZk9/IMG-9913.jpg" class="green-class-img">
+                    <div class="green-class-info"><strong>Sáng Tạo</strong><br>Tận dụng vật liệu tái chế.</div>
+                </div>
+                <div class="green-class-item">
+                    <img src="https://i.ibb.co/XfvRrv64/IMG-9911.jpg" class="green-class-img">
+                    <div class="green-class-info"><strong>Thư Giãn</strong><br>Góc nhỏ bình yên.</div>
+                </div>
+                <div class="green-class-item">
+                    <img src="https://i.ibb.co/xSZJ4r1g/IMG-9912.jpg" class="green-class-img">
+                    <div class="green-class-info"><strong>Thân Thiện</strong><br>Môi trường học tập xanh.</div>
+                </div>
+                <div class="green-class-item">
+                    <img src="https://i.ibb.co/xSL5VWcT/IMG-9906.jpg" class="green-class-img">
+                    <div class="green-class-info"><strong>Lan Tỏa</strong><br>Màu xanh A2K41.</div>
+                </div>
             </div>
         </div>
 
@@ -291,28 +320,19 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // --- CỜ KIỂM TRA ĐÃ TẢI DỮ LIỆU CHƯA (LAZY LOAD FLAGS) ---
         let hasLoadedContest = false;
         let hasLoadedDiscussion = false;
 
-        // --- 1. CHỨC NĂNG CHUNG ---
         window.addEventListener('load', () => {
             const currentUrl = window.location.href;
             document.getElementById('page-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentUrl)}`;
-            
-            // Dữ liệu rác là text cứng nên load luôn cũng được (không tốn tiền Firebase)
             renderTrashList(trashDatabase);
-            
-            // Tải trang cuối cùng hoặc về Home
             const lastPage = localStorage.getItem('activePage') || 'home';
             showPage(lastPage);
-
-            // Mẹo vặt
             var tips = [ "Tắt vòi nước khi đánh răng.", "Tái chế giấy vụn.", "Hạn chế túi nilon.", "Rút phích cắm khi không dùng.", "Trồng thêm cây xanh." ];
             document.getElementById("green-tip").innerText = '"' + tips[Math.floor(Math.random() * tips.length)] + '"';
         });
 
-        // HÀM CHUYỂN TRANG THÔNG MINH (LAZY LOAD LOGIC)
         window.showPage = function(pageId) {
             localStorage.setItem('activePage', pageId);
             var sections = document.getElementsByClassName('page-section');
@@ -323,22 +343,20 @@
             document.getElementById('menu-' + pageId).classList.add('active-menu');
             window.scrollTo(0, 0);
 
-            // --- KIỂM TRA ĐỂ TẢI DỮ LIỆU ---
             if (pageId === 'contest' && !hasLoadedContest) {
-                console.log("Lần đầu vào Thi Đua -> Bắt đầu tải dữ liệu...");
-                loadInitialContestData(); // Hàm tải bài thi
-                setupRankingListener();   // Hàm tải BXH
-                hasLoadedContest = true;  // Đánh dấu đã tải
+                console.log("Lazy Load Thi Đua...");
+                loadInitialContestData();
+                setupRankingListener();
+                hasLoadedContest = true;
             }
 
             if (pageId === 'discussion' && !hasLoadedDiscussion) {
-                console.log("Lần đầu vào Thảo Luận -> Bắt đầu tải dữ liệu...");
-                setupDiscussionListener(); // Hàm tải comment
-                hasLoadedDiscussion = true; // Đánh dấu đã tải
+                console.log("Lazy Load Thảo Luận...");
+                setupDiscussionListener();
+                hasLoadedDiscussion = true;
             }
         }
 
-        // --- 2. AUTHENTICATION (Giữ nguyên) ---
         const loginButtons = document.querySelectorAll(".btn-login-trigger");
         const logoutButtons = document.querySelectorAll(".btn-logout");
         loginButtons.forEach(btn => btn.addEventListener("click", () => signInWithPopup(auth, provider).catch(err => alert("Lỗi: " + err.message))));
@@ -358,7 +376,6 @@
             }
         });
 
-        // --- 3. TRA CỨU RÁC ---
         const trashDatabase = [ { name: "Vỏ hộp sữa", type: "Tái chế", class: "bin-recycle", icon: "🧃" }, { name: "Chai nhựa", type: "Tái chế", class: "bin-recycle", icon: "🍾" }, { name: "Giấy vụn", type: "Tái chế", class: "bin-recycle", icon: "📰" }, { name: "Vỏ chuối", type: "Hữu cơ", class: "bin-organic", icon: "🍌" }, { name: "Túi nilon", type: "Rác khác", class: "bin-other", icon: "🛍️" }, { name: "Pin", type: "Nguy hại", class: "bin-hazardous", icon: "🔋" } ];
         window.renderTrashList = (data) => {
             const container = document.getElementById('trashContainer'); container.innerHTML = "";
@@ -366,13 +383,11 @@
         }
         window.filterTrash = () => { const keyword = document.getElementById('trashSearchInput').value.toLowerCase(); const filtered = trashDatabase.filter(item => item.name.toLowerCase().includes(keyword)); renderTrashList(filtered); }
 
-        // --- 4. THI ĐUA (Đã tách hàm để Lazy Load) ---
         let lastVisibleEntry = null;
         const contestGrid = document.getElementById("contest-grid");
         const btnLoadMore = document.getElementById("btn-load-more");
         const loadingText = document.getElementById("loading-text");
 
-        // Hàm render 1 item (giữ nguyên)
         function renderContestItem(data, postId, currentUser) {
             const likes = data.likes || []; const likeCount = likes.length; let isLiked = (currentUser && likes.includes(currentUser.uid));
             let adminTools = (currentUser && data.uid === currentUser.uid) ? `<div class="contest-tools"><button class="tool-btn" onclick="editContestEntry('${postId}', '${data.description}', '${data.imageUrl}')">✏️</button><button class="tool-btn" style="color:red" onclick="deleteContestEntry('${postId}')">🗑️</button></div>` : "";
@@ -383,23 +398,17 @@
             return div;
         }
 
-        // Tải 10 bài đầu tiên (Chỉ gọi khi bấm tab)
         async function loadInitialContestData() {
             loadingText.style.display = 'block';
             const first = query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), limit(10));
             const snaps = await getDocs(first);
             loadingText.style.display = 'none';
-            
             if (snaps.empty) { contestGrid.innerHTML = "<p style='text-align:center;width:100%'>Chưa có bài dự thi.</p>"; return; }
-            
-            lastVisibleEntry = snaps.docs[snaps.docs.length - 1];
-            const currentUser = auth.currentUser;
+            lastVisibleEntry = snaps.docs[snaps.docs.length - 1]; const currentUser = auth.currentUser;
             snaps.forEach((doc) => { contestGrid.appendChild(renderContestItem(doc.data(), doc.id, currentUser)); });
-            
             if(snaps.docs.length >= 10) btnLoadMore.style.display = 'inline-block';
         }
 
-        // Tải thêm (Load more)
         window.loadMoreEntries = async () => {
             if(!lastVisibleEntry) return; btnLoadMore.disabled = true; btnLoadMore.innerText = "Đang tải...";
             const next = query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), startAfter(lastVisibleEntry), limit(10));
@@ -407,7 +416,6 @@
             if (!snaps.empty) { lastVisibleEntry = snaps.docs[snaps.docs.length - 1]; const currentUser = auth.currentUser; snaps.forEach((doc) => { contestGrid.appendChild(renderContestItem(doc.data(), doc.id, currentUser)); }); if(snaps.docs.length < 10) btnLoadMore.style.display = 'none'; } else { btnLoadMore.style.display = 'none'; }
         }
 
-        // Tải BXH (Chỉ gọi khi bấm tab)
         function setupRankingListener() {
             const classRankingBody = document.getElementById("class-ranking-body"); const studentRankingBody = document.getElementById("student-ranking-body");
             onSnapshot(query(collection(db, "contest_entries"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
@@ -422,23 +430,17 @@
             });
         }
 
-        // Các hàm Action (Đăng, Sửa, Xóa, Like) giữ nguyên
         document.getElementById("contestForm").addEventListener("submit", async (e) => { e.preventDefault(); const user = auth.currentUser; if (!user) return alert("Vui lòng đăng nhập!"); const name = document.getElementById("inpContestName").value.trim(); const className = document.getElementById("inpContestClass").value.trim().toUpperCase(); const link = document.getElementById("inpContestLink").value; const desc = document.getElementById("inpContestDesc").value; try { await addDoc(collection(db, "contest_entries"), { authorName: name, className: className, uid: user.uid, imageUrl: link, description: desc, likes: [], createdAt: serverTimestamp() }); alert("Đăng bài thành công!"); e.target.reset(); } catch (err) { console.error(err); alert("Lỗi khi đăng bài."); } });
         window.deleteContestEntry = async (pid) => { if(confirm("Xóa bài này?")) { try { await deleteDoc(doc(db, "contest_entries", pid)); document.getElementById(`contest-item-${pid}`).remove(); } catch(e) { alert("Lỗi: " + e.message); } } }
         window.editContestEntry = async (pid, desc, link) => { const nd = prompt("Mô tả mới:", desc); if(nd!==null) { let nl = link; if(confirm("Đổi link?")) nl = prompt("Link mới:", link); if(nd||nl) { try{await updateDoc(doc(db,"contest_entries",pid),{description:nd, imageUrl:nl}); alert("Đã sửa!");}catch(e){alert("Lỗi:"+e.message);} } } }
         window.toggleLike = async (pid, liked) => { const user = auth.currentUser; if (!user) return alert("Đăng nhập để thả tim!"); try { const ref = doc(db, "contest_entries", pid); if(liked) await updateDoc(ref, { likes: arrayRemove(user.uid) }); else await updateDoc(ref, { likes: arrayUnion(user.uid) }); alert("Đã ghi nhận!"); } catch (e) { console.error(e); } };
 
-        // --- 5. THẢO LUẬN (Đã tách hàm để Lazy Load) ---
         function setupDiscussionListener() {
-            const cList = document.getElementById("comments-list");
-            cList.innerHTML = "Đang tải bình luận...";
-            
+            const cList = document.getElementById("comments-list"); cList.innerHTML = "Đang tải bình luận...";
             onSnapshot(query(collection(db, "comments"), orderBy("createdAt", "desc")), (snap) => {
                 const allC = []; const curU = auth.currentUser; snap.forEach(d => { allC.push({ id: d.id, ...d.data() }) });
                 const roots = allC.filter(c => !c.parentId); const reps = allC.filter(c => c.parentId);
-                cList.innerHTML = "";
-                if(roots.length === 0) { cList.innerHTML = "Chưa có bình luận nào."; return; }
-                
+                cList.innerHTML = ""; if(roots.length === 0) { cList.innerHTML = "Chưa có bình luận nào."; return; }
                 roots.forEach(d => {
                     let ts = d.createdAt ? d.createdAt.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : "...";
                     let acts = (curU && d.uid === curU.uid) ? `<span class="action-link" onclick="editComment('${d.id}', '${d.text.replace(/'/g, "\\'")}')">Sửa</span> | <span class="action-link action-delete" onclick="deleteComment('${d.id}')">Xóa</span> | ` : "";
@@ -456,7 +458,6 @@
             });
         }
 
-        // Các hàm Action Thảo luận
         document.getElementById("commentForm").addEventListener("submit", async (e) => { e.preventDefault(); const t = document.getElementById("inpComment").value; const u = auth.currentUser; if (u && t.trim()) { await addDoc(collection(db, "comments"), { name: u.displayName, photo: u.photoURL, uid: u.uid, text: t, parentId: null, createdAt: serverTimestamp() }); document.getElementById("inpComment").value = ""; } });
         window.sendReply = async (ev, pid) => { ev.preventDefault(); const f = ev.target; const t = f.querySelector('textarea').value; const u = auth.currentUser; if (u && t.trim()) { await addDoc(collection(db, "comments"), { name: u.displayName, photo: u.photoURL, uid: u.uid, text: t, parentId: pid, createdAt: serverTimestamp() }); f.querySelector('textarea').value = ""; f.parentElement.style.display = 'none'; } }
         window.toggleReplyForm = (cid) => { if (!auth.currentUser) return alert("Đăng nhập để trả lời!"); const f = document.getElementById(`reply-form-${cid}`); f.style.display = (f.style.display === 'none' || f.style.display === '') ? 'block' : 'none'; }
