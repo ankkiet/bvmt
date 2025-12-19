@@ -36,23 +36,37 @@
         
         input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: 1rem; }
 
+        /* CSS Grid Ảnh Lớp Học Xanh */
+        .green-class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .green-class-item { position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease; cursor: pointer; }
+        .green-class-item:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .green-class-img { width: 100%; height: 250px; object-fit: cover; transition: transform 0.5s ease; display: block;}
+        .green-class-item:hover .green-class-img { transform: scale(1.1); }
+        .green-class-info { position: absolute; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0)); color: white; width: 100%; padding: 20px 15px 15px 15px; pointer-events: none; }
+
+        /* --- [NEW] CSS LIGHTBOX (MODAL XEM ẢNH) --- */
+        .modal { display: none; position: fixed; z-index: 9999; padding-top: 50px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); }
+        .modal-content { margin: auto; display: block; max-width: 90%; max-height: 80vh; border-radius: 5px; animation: zoomIn 0.3s; transition: transform 0.3s; }
+        @keyframes zoomIn { from {transform:scale(0)} to {transform:scale(1)} }
+        
+        .modal-close { position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; transition: 0.3s; cursor: pointer; }
+        .modal-close:hover, .modal-close:focus { color: #bbb; text-decoration: none; cursor: pointer; }
+        
+        .modal-buttons { text-align: center; margin-top: 20px; }
+        .modal-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 8px 15px; margin: 0 10px; cursor: pointer; border-radius: 20px; font-size: 0.9rem; transition: 0.3s; }
+        .modal-btn:hover { background: white; color: black; }
+        .zoomed { transform: scale(1.8); cursor: zoom-out; } /* Class để zoom */
+        .modal-content:not(.zoomed) { cursor: zoom-in; }
+
+        /* Các CSS cũ giữ nguyên */
         .search-box { position: relative; max-width: 500px; margin: 0 auto 20px auto; }
         .search-box input { padding-left: 40px; border-radius: 25px; border: 2px solid var(--primary-color); }
         .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color); }
         .trash-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; transition: 0.3s; }
-        .trash-item:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
         .trash-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
         .bin-type { display: inline-block; padding: 5px 10px; border-radius: 15px; color: white; font-size: 0.8rem; font-weight: bold; margin-top: 5px; }
         .bin-organic { background-color: #4CAF50; } .bin-recycle { background-color: #2196F3; } .bin-other { background-color: #FF9800; } .bin-hazardous { background-color: #f44336; }
-
-        /* --- CSS LỚP HỌC XANH (ĐÃ CHỈNH SỬA CHO ĐẸP) --- */
-        .green-class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .green-class-item { position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
-        .green-class-item:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        .green-class-img { width: 100%; height: 250px; object-fit: cover; transition: transform 0.5s ease; display: block;}
-        .green-class-item:hover .green-class-img { transform: scale(1.1); }
-        .green-class-info { position: absolute; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0)); color: white; width: 100%; padding: 20px 15px 15px 15px; }
 
         .contest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
         .contest-item { border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column; position: relative; }
@@ -160,37 +174,47 @@
 
         <div id="greenclass" class="page-section">
             <h1>Góc "Lớp Học Xanh"</h1>
-            <p style="text-align: center; margin-bottom: 25px;">Thành quả xây dựng không gian xanh của tập thể A2K41 🌿</p>
+            <p style="text-align: center; margin-bottom: 25px;">Thành quả xây dựng không gian xanh của tập thể A2K41 🌿<br><small>(Bấm vào ảnh để xem rõ hơn)</small></p>
             
             <div class="green-class-grid">
-                <div class="green-class-item">
+                <div class="green-class-item" onclick="openModal(this)">
                     <img src="https://i.ibb.co/jkQ3vTy2/IMG-9914.jpg" class="green-class-img">
                     <div class="green-class-info"><strong>Góc Học Tập</strong><br>Trang trí cây xanh tươi mát.</div>
                 </div>
-                <div class="green-class-item">
+                <div class="green-class-item" onclick="openModal(this)">
                     <img src="https://i.ibb.co/XZnjFfH3/IMG-4892.jpg" class="green-class-img">
                     <div class="green-class-info"><strong>Sức Sống Mới</strong><br>Những mầm non đang lớn.</div>
                 </div>
-                <div class="green-class-item">
+                <div class="green-class-item" onclick="openModal(this)">
                     <img src="https://i.ibb.co/fdCBPMxJ/IMG-4893.jpg" class="green-class-img">
                     <div class="green-class-info"><strong>Chăm Sóc</strong><br>Tưới cây mỗi ngày.</div>
                 </div>
-                <div class="green-class-item">
+                <div class="green-class-item" onclick="openModal(this)">
                     <img src="https://i.ibb.co/Kp2MvZk9/IMG-9913.jpg" class="green-class-img">
                     <div class="green-class-info"><strong>Sáng Tạo</strong><br>Tận dụng vật liệu tái chế.</div>
                 </div>
-                <div class="green-class-item">
+                <div class="green-class-item" onclick="openModal(this)">
                     <img src="https://i.ibb.co/XfvRrv64/IMG-9911.jpg" class="green-class-img">
                     <div class="green-class-info"><strong>Thư Giãn</strong><br>Góc nhỏ bình yên.</div>
                 </div>
-                <div class="green-class-item">
+                <div class="green-class-item" onclick="openModal(this)">
                     <img src="https://i.ibb.co/xSZJ4r1g/IMG-9912.jpg" class="green-class-img">
                     <div class="green-class-info"><strong>Thân Thiện</strong><br>Môi trường học tập xanh.</div>
                 </div>
-                <div class="green-class-item">
+                <div class="green-class-item" onclick="openModal(this)">
                     <img src="https://i.ibb.co/xSL5VWcT/IMG-9906.jpg" class="green-class-img">
                     <div class="green-class-info"><strong>Lan Tỏa</strong><br>Màu xanh A2K41.</div>
                 </div>
+            </div>
+        </div>
+
+        <div id="imageModal" class="modal">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <img class="modal-content" id="img01" ondblclick="zoomImage()">
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="zoomImage()">🔍 Phóng to/Thu nhỏ</button>
+                <button class="modal-btn" onclick="downloadImage()">⬇️ Tải ảnh</button>
+                <button class="modal-btn" onclick="shareWebsite()">🔗 Chia sẻ Web</button>
             </div>
         </div>
 
@@ -332,6 +356,41 @@
             var tips = [ "Tắt vòi nước khi đánh răng.", "Tái chế giấy vụn.", "Hạn chế túi nilon.", "Rút phích cắm khi không dùng.", "Trồng thêm cây xanh." ];
             document.getElementById("green-tip").innerText = '"' + tips[Math.floor(Math.random() * tips.length)] + '"';
         });
+
+        // --- XỬ LÝ MODAL ẢNH (New) ---
+        window.openModal = function(element) {
+            var modal = document.getElementById("imageModal");
+            var modalImg = document.getElementById("img01");
+            var img = element.querySelector('img');
+            modal.style.display = "flex";
+            modal.style.alignItems = "center";
+            modal.style.justifyContent = "center";
+            modalImg.src = img.src;
+            modalImg.classList.remove("zoomed"); // Reset zoom khi mở mới
+        }
+        window.closeModal = function() {
+            document.getElementById("imageModal").style.display = "none";
+        }
+        window.zoomImage = function() {
+            var img = document.getElementById("img01");
+            img.classList.toggle("zoomed");
+        }
+        window.downloadImage = function() {
+            var img = document.getElementById("img01");
+            window.open(img.src, '_blank'); // Mở tab mới để tải cho an toàn (CORS)
+        }
+        window.shareWebsite = function() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert("Đã copy link trang web! Bạn có thể gửi cho mọi người.");
+            }).catch(err => {
+                alert("Không copy được link. Hãy copy thủ công trên thanh địa chỉ.");
+            });
+        }
+        // Đóng modal khi bấm ra ngoài ảnh
+        window.onclick = function(event) {
+            var modal = document.getElementById("imageModal");
+            if (event.target == modal) { closeModal(); }
+        }
 
         window.showPage = function(pageId) {
             localStorage.setItem('activePage', pageId);
