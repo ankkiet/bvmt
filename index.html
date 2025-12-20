@@ -31,8 +31,8 @@
         .page-section { display: none; animation: fadeIn 0.4s ease-out; }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Trang bị khóa */
-        .locked-section-overlay { text-align: center; padding: 50px; background: #fff3e0; border: 2px dashed #ffb74d; border-radius: 10px; color: #e65100; }
+        /* Trang bị khóa riêng lẻ */
+        .locked-section-overlay { text-align: center; padding: 50px; background: #fff3e0; border: 2px dashed #ffb74d; border-radius: 10px; color: #e65100; margin-bottom: 20px; }
 
         h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 30px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; }
         h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.3rem; border-left: 4px solid var(--accent); padding-left: 10px; }
@@ -110,6 +110,11 @@
         .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; background: #fafafa; }
         .bin-recycle { color: #1976d2; font-weight: bold; } .bin-organic { color: #388e3c; font-weight: bold; } .bin-other { color: #f57c00; font-weight: bold; }
 
+        /* --- 10. MAINTENANCE MODE (Đã khôi phục) --- */
+        #maintenance-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        #maintenance-overlay h1 { border: none; font-size: 2rem; }
+        #maintenance-overlay img { max-width: 200px; margin-bottom: 20px; }
+
         @media (max-width: 768px) {
             .container { width: 100%; margin: 0; border-radius: 0; padding: 15px; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -119,6 +124,13 @@
     </style>
 </head>
 <body>
+
+    <div id="maintenance-overlay">
+        <img src="https://cdn-icons-png.flaticon.com/512/3233/3233483.png" alt="Maintenance">
+        <h1>🚧 Hệ thống đang bảo trì</h1>
+        <p style="font-size: 1.2rem; color: #666;">Admin đang cải tiến hệ thống. Xin vui lòng quay lại sau!</p>
+        <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
+    </div>
 
     <nav>
         <ul>
@@ -242,7 +254,7 @@
                 </div>
                 
                 <div style="margin-bottom: 20px;">
-                    <label>Chọn đợt thi đua (Thời gian):</label>
+                    <label>Chọn đợt thi đua:</label>
                     <select id="archive-season-select" onchange="loadArchiveGrid()">
                         <option value="">-- Chọn đợt --</option>
                     </select>
@@ -292,10 +304,15 @@
             <h1>🛠 Quản Trị Hệ Thống</h1>
             
             <div class="card" style="border-left: 5px solid var(--admin-color);">
-                <h3>⚙️ Cấu hình Khóa & Thời gian</h3>
+                <h3>⚙️ Cấu hình Hệ thống</h3>
                 
                 <div style="margin-bottom: 20px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                    <h4>🔒 Khóa từng mục (Chỉ Admin thấy)</h4>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:#ffebee; padding:10px; border-radius:5px;">
+                        <span style="font-weight:bold; color:red">🚧 BẢO TRÌ TOÀN TRANG (KHÓA TẤT CẢ):</span>
+                        <label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label>
+                    </div>
+
+                    <h4>🔒 Khóa từng mục (Thành viên sẽ thấy thông báo tạm khóa)</h4>
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
                         <label class="switch"><input type="checkbox" id="lock-home" onchange="updateLocks()"><span class="slider"></span></label> Trang Chủ
                         <label class="switch"><input type="checkbox" id="lock-greenclass" onchange="updateLocks()"><span class="slider"></span></label> Góc Xanh
@@ -306,12 +323,12 @@
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                     <div>
-                        <h4>⏳ Góc Xanh (Deadline)</h4>
+                        <h4>⏳ Deadline Góc Xanh</h4>
                         <input type="datetime-local" id="time-gallery" onchange="updateDeadlines()">
                         <button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('gallery')">📦 Kết thúc & Lưu trữ</button>
                     </div>
                     <div>
-                        <h4>⏳ Thi Đua (Deadline)</h4>
+                        <h4>⏳ Deadline Thi Đua</h4>
                         <input type="datetime-local" id="time-contest" onchange="updateDeadlines()">
                         <button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('contest')">📦 Kết thúc & Lưu trữ</button>
                     </div>
@@ -319,7 +336,7 @@
             </div>
 
             <div class="card">
-                <h3>Danh sách thành viên (Admin Sửa Được)</h3>
+                <h3>Danh sách thành viên</h3>
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead><tr><th>Tên</th><th>Email</th><th>Lớp</th><th>Trạng thái</th><th>Sửa</th><th>Khóa</th></tr></thead>
@@ -369,23 +386,32 @@
         
         const isAdmin = (email) => ADMIN_EMAILS.includes(email);
 
-        // --- 1. GLOBAL SETTINGS (Locks & Deadlines) ---
+        // --- 1. GLOBAL SETTINGS (Locks & Deadlines & Maintenance) ---
         onSnapshot(doc(db, "settings", "config"), (doc) => {
             if(doc.exists()) {
                 const cfg = doc.data();
                 
-                // Locks check
+                // 1. Maintenance Mode
+                const maintenanceDiv = document.getElementById('maintenance-overlay');
+                if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) {
+                    maintenanceDiv.style.display = 'flex';
+                } else {
+                    maintenanceDiv.style.display = 'none';
+                }
+
+                // 2. Section Locks
                 applyLock('home', cfg.locks?.home);
                 applyLock('greenclass', cfg.locks?.greenclass);
                 applyLock('contest', cfg.locks?.contest);
                 applyLock('activities', cfg.locks?.activities);
 
-                // Deadlines check
+                // 3. Deadlines
                 handleTimer('timer-gallery', 'cd-gallery', cfg.deadlines?.gallery);
                 handleTimer('timer-contest', 'cd-contest', cfg.deadlines?.contest);
 
-                // Admin UI Sync
+                // 4. Admin UI Sync
                 if(currentUser && isAdmin(currentUser.email)) {
+                    document.getElementById('cfg-maintenance').checked = cfg.maintenance;
                     document.getElementById('lock-home').checked = cfg.locks?.home;
                     document.getElementById('lock-greenclass').checked = cfg.locks?.greenclass;
                     document.getElementById('lock-contest').checked = cfg.locks?.contest;
@@ -399,7 +425,6 @@
         function applyLock(secId, isLocked) {
             const overlay = document.getElementById(`locked-${secId}`);
             const content = document.getElementById(`content-${secId}`);
-            // Lock nếu: isLocked = true VÀ user không phải admin
             if(isLocked && (!currentUser || !isAdmin(currentUser.email))) {
                 if(overlay) overlay.style.display = 'block';
                 if(content) content.style.display = 'none';
@@ -414,25 +439,23 @@
             if(!deadline) { document.getElementById(boxId).style.display = 'none'; return; }
             document.getElementById(boxId).style.display = 'block';
             if(intervals[elId]) clearInterval(intervals[elId]);
-            
             const end = new Date(deadline).getTime();
             intervals[elId] = setInterval(() => {
-                const now = new Date().getTime();
-                const dist = end - now;
-                if (dist < 0) {
-                    clearInterval(intervals[elId]);
-                    document.getElementById(elId).innerHTML = "HẾT GIỜ";
-                } else {
+                const now = new Date().getTime(); const dist = end - now;
+                if (dist < 0) { clearInterval(intervals[elId]); document.getElementById(elId).innerHTML = "HẾT GIỜ"; } 
+                else { 
                     const d = Math.floor(dist / (1000 * 60 * 60 * 24));
                     const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
-                    document.getElementById(elId).innerHTML = `${d}d ${h}h ${m}p`;
+                    document.getElementById(elId).innerHTML = `${d}d ${h}h ${m}p`; 
                 }
             }, 1000);
         }
 
         // --- 2. AUTH ---
         window.handleLogout = async () => { await signOut(auth); alert("Đã đăng xuất!"); location.reload(); }
+        window.checkAdminLogin = () => signInWithPopup(auth, provider);
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const ref = doc(db, "users", user.uid);
@@ -453,7 +476,10 @@
                 document.getElementById('edit-name').value = currentUser.displayName;
                 document.getElementById('edit-class').value = currentUser.class || "";
                 document.getElementById('edit-bio').value = currentUser.bio || "";
-                if(isAdmin(currentUser.email)) document.getElementById('menu-admin').style.display = 'block';
+                if(isAdmin(currentUser.email)) {
+                    document.getElementById('menu-admin').style.display = 'block';
+                    document.getElementById('maintenance-overlay').style.display = 'none';
+                }
             } else {
                 currentUser = null;
                 document.getElementById('profile-in').style.display = 'none';
@@ -502,11 +528,9 @@
 
         // --- 4. RENDER POSTS (Active Only) ---
         function renderGrid(colName, elementId, rankUserParams, rankClassParams) {
-            // Chỉ lấy bài chưa lưu trữ (archived != true)
             onSnapshot(query(collection(db, colName), where("archived", "!=", true)), (snap) => {
                 const grid = document.getElementById(elementId); grid.innerHTML = "";
                 let userStats = {}; let classStats = {};
-                // Client-side sort because compound query might need index
                 let docs = []; snap.forEach(d => docs.push({id:d.id, ...d.data()}));
                 docs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
 
@@ -540,56 +564,39 @@
 
         // --- 5. ARCHIVE SYSTEM ---
         window.archiveSeason = async (col) => {
-            if(!confirm("⚠️ BẠN CÓ CHẮC CHẮN?\n\nThao tác này sẽ:\n1. Chuyển TẤT CẢ bài đăng hiện tại vào kho lưu trữ.\n2. Làm trống trang chủ để bắt đầu đợt mới.")) return;
-            const seasonName = prompt("Nhập tên cho đợt lưu trữ này (VD: Tháng 11 - 2025):");
+            if(!confirm("⚠️ BẠN CÓ CHẮC CHẮN?\n\nChuyển TẤT CẢ bài hiện tại vào lưu trữ và làm trống trang chủ?")) return;
+            const seasonName = prompt("Nhập tên đợt (VD: Tháng 11 - 2025):");
             if(!seasonName) return;
-
             const q = query(collection(db, col), where("archived", "!=", true));
             const snap = await getDocs(q);
-            
-            // Xử lý Batch (lô)
             const updates = [];
-            snap.forEach(d => {
-                updates.push(updateDoc(doc(db, col, d.id), { archived: true, archiveLabel: seasonName }));
-            });
-            
+            snap.forEach(d => { updates.push(updateDoc(doc(db, col, d.id), { archived: true, archiveLabel: seasonName })); });
             await Promise.all(updates);
-            
-            // Thêm vào danh sách các đợt đã lưu (để hiện ở Dropdown)
             await addDoc(collection(db, "archives_meta"), { collection: col, label: seasonName, archivedAt: serverTimestamp() });
-            
-            alert(`Đã lưu trữ ${updates.length} bài đăng vào đợt: ${seasonName}`);
+            alert(`Đã lưu trữ ${updates.length} bài vào đợt: ${seasonName}`);
         }
-
         window.switchArchiveTab = (tab) => {
             activeArchiveTab = tab;
             document.querySelectorAll('.archive-tab').forEach(t => t.classList.remove('active'));
             document.getElementById(`tab-ar-${tab}`).classList.add('active');
             loadArchiveSeasons();
         }
-
         window.loadArchiveSeasons = async () => {
             const sel = document.getElementById('archive-season-select');
             sel.innerHTML = '<option value="">-- Đang tải... --</option>';
             const q = query(collection(db, "archives_meta"), where("collection", "==", activeArchiveTab), orderBy("archivedAt", "desc"));
             const snap = await getDocs(q);
             sel.innerHTML = '<option value="">-- Chọn đợt --</option>';
-            snap.forEach(d => {
-                const data = d.data();
-                sel.innerHTML += `<option value="${data.label}">${data.label}</option>`;
-            });
+            snap.forEach(d => { const data = d.data(); sel.innerHTML += `<option value="${data.label}">${data.label}</option>`; });
         }
-        
         window.loadArchiveGrid = async () => {
             const label = document.getElementById('archive-season-select').value;
             const grid = document.getElementById('archive-grid');
             if(!label) { grid.innerHTML = ""; return; }
-            grid.innerHTML = "Đang tải dữ liệu lưu trữ...";
-
+            grid.innerHTML = "Đang tải...";
             const q = query(collection(db, activeArchiveTab), where("archived", "==", true), where("archiveLabel", "==", label));
             const snap = await getDocs(q);
             grid.innerHTML = "";
-            
             snap.forEach(d => {
                 const data = d.data();
                 const div = document.createElement('div'); div.className = 'gallery-item';
@@ -597,10 +604,14 @@
                 div.onclick = () => openLightbox(activeArchiveTab, d.id, data);
                 grid.appendChild(div);
             });
-            if(snap.empty) grid.innerHTML = "Không tìm thấy ảnh nào.";
+            if(snap.empty) grid.innerHTML = "Không tìm thấy ảnh.";
         }
 
         // --- 6. ADMIN CONFIG & USER EDIT ---
+        window.updateMainConfig = async () => {
+            await setDoc(doc(db, "settings", "config"), { maintenance: document.getElementById('cfg-maintenance').checked }, {merge: true});
+            alert("Đã cập nhật chế độ bảo trì!");
+        }
         window.updateLocks = async () => {
             await setDoc(doc(db, "settings", "config"), {
                 locks: {
@@ -610,7 +621,7 @@
                     activities: document.getElementById('lock-activities').checked
                 }
             }, {merge: true});
-            alert("Đã cập nhật khóa!");
+            alert("Đã cập nhật khóa mục!");
         }
         window.updateDeadlines = async () => {
             await setDoc(doc(db, "settings", "config"), {
@@ -621,16 +632,10 @@
             }, {merge: true});
             alert("Đã cập nhật deadline!");
         }
-        
         window.adminEditUser = async (uid, oldName, oldClass) => {
-            const n = prompt("Tên mới:", oldName);
-            const c = prompt("Lớp mới:", oldClass);
-            if(n && c) {
-                await updateDoc(doc(db, "users", uid), { displayName: n, class: c });
-                loadAdminData();
-            }
+            const n = prompt("Tên mới:", oldName); const c = prompt("Lớp mới:", oldClass);
+            if(n && c) { await updateDoc(doc(db, "users", uid), { displayName: n, class: c }); loadAdminData(); }
         }
-
         window.loadAdminData = async () => {
             if(!currentUser || !isAdmin(currentUser.email)) return;
             const t = document.getElementById('user-table-body'); t.innerHTML="Loading...";
@@ -643,7 +648,7 @@
             });
         }
 
-        // --- 7. UTILS & OTHERS ---
+        // --- 7. UTILS ---
         window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
         window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
         const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
