@@ -43,19 +43,21 @@
         h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 4px solid var(--accent); display: inline-block; padding-bottom: 8px; margin-bottom: 35px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 2rem; }
         h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.4rem; border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; }
         .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; }
+        .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.08); transform: translateY(-2px); }
 
-        /* --- 4. COMPONENTS --- */
+        /* --- 4. BUTTONS & INPUTS --- */
         .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
-        .btn-danger { background: var(--danger); } 
+        .btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3); }
+        .btn-danger { background: var(--danger); } .btn-danger:hover { background: #b71c1c; }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-sm { padding: 6px 14px; font-size: 0.85rem; border-radius: 6px; }
         input, textarea, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; font-size: 1rem; transition: 0.3s; background: #fafafa; }
-        
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
+
+        /* --- 5. EXTRAS (Countdown, Music, Search) --- */
         .countdown-container { background: linear-gradient(135deg, #d32f2f, #c62828); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(211, 47, 47, 0.3); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
         .timer-display { font-size: 2rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; margin-top: 5px; }
 
-        /* --- 5. MUSIC PLAYER --- */
         .music-fab { position: fixed; bottom: 90px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: #fff; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 3px solid var(--primary); transition: 0.3s; }
         .music-fab:active { transform: scale(0.95); }
         .music-icon { font-size: 35px; color: #333; transition: 0.5s; }
@@ -63,7 +65,12 @@
         .music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- 6. GALLERY & FEATURED --- */
+        /* Home Login Button */
+        #home-login-area { margin-top: 20px; text-align: center; }
+        .home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 30px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .home-login-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+
+        /* --- 6. GALLERY --- */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #fff; border: 1px solid #eee; transition: 0.3s; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
@@ -74,17 +81,24 @@
         .gallery-title { font-weight: bold; font-size: 0.95rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
         .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; align-items: center; }
         .post-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; margin-right: 6px; vertical-align: middle; }
+        
+        /* Grid Actions (Share/Like) */
+        .grid-actions { display:flex; gap:10px; margin-top:5px; padding-top:5px; border-top:1px solid #f0f0f0; font-size:0.8rem; color:#555; }
+        .grid-act-btn { cursor:pointer; background:none; border:none; color:#555; transition:0.2s; }
+        .grid-act-btn:hover { color:var(--primary); }
+
         .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; }
         .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: 0.2s; }
+        .ctrl-btn:hover { background: white; transform: scale(1.1); }
 
-        /* Featured Section (Dep hon) */
+        /* Featured Section */
         .featured-section { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 2px solid var(--primary); border-radius: 20px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: center; position: relative; overflow: hidden; }
         .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 20px; font-weight: 800; border-bottom-right-radius: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         .featured-img { width: 160px; height: 160px; object-fit: cover; border-radius: 15px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .featured-content h3 { font-size: 1.5rem; margin: 0 0 10px 0; color: var(--primary-dark); }
         .featured-content p { font-size: 1.1rem; color: #555; font-style: italic; }
 
-        /* --- 7. RANKING --- */
+        /* --- 7. RANKING & ARCHIVE --- */
         .ranking-wrapper { display: flex; gap: 25px; flex-wrap: wrap; margin-top: 30px; }
         .ranking-card { flex: 1; min-width: 320px; background: #fff; border-radius: 12px; border: 1px solid #eee; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
         .ranking-header { background: var(--primary); color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; }
@@ -95,7 +109,7 @@
         .rank-num { display: inline-flex; width: 26px; height: 26px; background: #eee; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: #555; margin-right: 8px; }
         .rank-top-1 .rank-num { background: #fbc02d; color: white; }
 
-        /* --- 8. LIGHTBOX (FIXED LAYOUT - CLEARER) --- */
+        /* --- 8. LIGHTBOX (FIXED) --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); overflow-y: auto; padding: 20px 0; }
         .lb-container { margin: 20px auto; width: 95%; max-width: 800px; background: white; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
         .lb-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; z-index: 10; font-weight: bold; }
@@ -110,8 +124,9 @@
         .lb-like-btn.liked { color: #e53935; transform: scale(1.1); }
         
         .lb-comments-section { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto; }
-        .lb-comment-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; gap: 10px; }
-        .lb-comment-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+        .lb-comment-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; gap: 10px; align-items: flex-start; }
+        .lb-comment-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .reply-btn { font-size: 0.8rem; color: var(--info); cursor: pointer; margin-left: 10px; background:none; border:none; }
         .lb-input-area { display: flex; gap: 10px; margin-top: 15px; }
 
         /* --- 9. ADMIN TABLE & SWITCH --- */
@@ -173,6 +188,9 @@
                 <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
                     <h1 style="border:none; margin-top: 20px;">A2K41 - Green School</h1>
+                    <div id="home-login-area" style="display:none;">
+                        <button class="home-login-btn" onclick="signInWithPopup(auth, provider)"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
+                    </div>
                 </div>
                 
                 <div id="featured-post" class="featured-section" style="display: none;">
@@ -236,6 +254,12 @@
                         <button class="btn btn-sm btn-outline" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery" style="background:var(--archive-color); color:white">Góc Xanh</button>
                         <button class="btn btn-sm btn-outline" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</button>
                     </div>
+                    
+                    <div style="margin-bottom:15px; display:flex; gap:10px;">
+                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên hoặc Nội dung..." style="flex:1;">
+                        <button class="btn btn-sm" onclick="loadArchiveGrid()">Tìm</button>
+                    </div>
+
                     <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px;"><option value="">-- Chọn đợt thi đua --</option></select>
                     <div id="archive-grid" class="gallery-grid"></div>
                 </div>
@@ -247,7 +271,7 @@
             <div id="content-activities">
                 <h1>📅 Hoạt Động & Tin Tức</h1>
                 <div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div>
-                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
+                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#" style="text-decoration:none; color:var(--primary)">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
             </div>
         </div>
         <div id="guide" class="page-section">
@@ -261,25 +285,39 @@
 
         <div id="profile" class="page-section">
             <h1>👤 Hồ Sơ Của Tôi</h1>
-            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
+            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập để sử dụng tính năng.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
             <div id="profile-in" style="display: none;">
                 <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>
                 <div class="card">
                     <div style="text-align:center; margin-bottom:20px">
                         <div style="position:relative; display:inline-block">
                             <img id="p-avatar" src="" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border:4px solid var(--primary);">
-                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fas fa-camera" style="color:white"></i></button>
+                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.2)"><i class="fas fa-camera" style="color:white"></i></button>
                         </div>
-                        <h2 id="p-name" style="margin:10px 0">Name</h2>
-                        <p id="p-email" style="color:#666">Email</p>
+                        <h2 id="p-name" style="margin:10px 0 5px 0">User Name</h2>
+                        <div id="p-custom-id" style="color:var(--primary); font-weight:bold; font-size:0.9rem;">@id_ca_nhan</div>
+                        <p id="p-email" style="color:#666">user@email.com</p>
                     </div>
                     <form onsubmit="updateProfile(event)">
                         <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
-                        <label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select>
+                        <label>ID Cá nhân (Không được trùng):</label><input type="text" id="edit-custom-id" placeholder="@..." pattern="@[a-zA-Z0-9_]+" title="Bắt đầu bằng @, không dấu, không cách" required>
+                        <label>Lớp:</label>
+                        <select id="edit-class" required>
+                            <option value="">-- Chọn lớp --</option>
+                            <optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option><option>12A4</option><option>12A5</option><option>12A6</option><option>12A7</option><option>12A8</option><option>12A9</option></optgroup>
+                            <optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option><option>11A4</option><option>11A5</option><option>11A6</option><option>11A7</option><option>11A8</option><option>11A9</option></optgroup>
+                            <optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option><option>10A4</option><option>10A5</option><option>10A6</option><option>10A7</option><option>10A8</option><option>10A9</option></optgroup>
+                            <option value="GV">Giáo Viên</option><option value="Khac">Khác</option>
+                        </select>
                         <label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea>
-                        <div style="margin-top:20px; display:flex; justify-content:space-between"><button type="submit" class="btn">💾 Lưu Hồ Sơ</button><button type="button" class="btn btn-outline" onclick="handleLogout()">🚪 Đăng Xuất</button></div>
+                        <div style="margin-top:20px; display:flex; justify-content:space-between">
+                            <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
+                            <button type="button" class="btn btn-outline" onclick="handleLogout()">🚪 Đăng Xuất</button>
+                        </div>
                     </form>
-                    <div style="margin-top:30px; padding-top:20px; border-top:1px solid #eee;"><button class="btn btn-danger" onclick="requestDeleteAccount()" style="width:100%"><i class="fas fa-trash"></i> Xóa Tài Khoản</button></div>
+                    <div style="margin-top:30px; padding-top:20px; border-top:1px solid #eee;">
+                        <button class="btn btn-danger" onclick="requestDeleteAccount()" style="width:100%"><i class="fas fa-trash"></i> Xóa Tài Khoản</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -357,9 +395,10 @@
                     <img id="lb-author-avatar" class="lb-avatar">
                     <div style="flex:1">
                         <div id="lb-author-name" style="font-weight:bold; font-size:1.1rem">Name</div>
+                        <div id="lb-custom-id" style="font-size:0.8rem; color:var(--primary);">@id</div>
                         <div id="lb-desc" style="font-size:0.9rem; color:#555">Description</div>
                     </div>
-                    <button id="lb-admin-pin" style="display:none; background:none; border:none; color:gold; font-size:1.5rem; cursor:pointer" title="Ghim"><i class="fas fa-star"></i></button>
+                    <button id="lb-admin-pin" style="background:none; border:none; color:gold; font-size:1.5rem; cursor:pointer" title="Ghim"><i class="fas fa-star"></i></button>
                 </div>
                 <div class="lb-actions">
                     <button id="lb-like" class="lb-like-btn" onclick="handleLike()"><i class="fas fa-heart"></i></button>
@@ -395,13 +434,8 @@
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- YOUTUBE ID EXTRACTOR & MUSIC ---
-        function getYoutubeID(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : url; // If not url, return as ID
-        }
-
+        // --- YOUTUBE ID & MUSIC ---
+        function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
         const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; 
         var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         let player; 
@@ -412,15 +446,7 @@
             else { icon.classList.remove('playing'); icon.style.color = '#333'; }
         }
         window.toggleMusic = () => { try { if(player && player.getPlayerState() == YT.PlayerState.PLAYING) player.pauseVideo(); else if(player) player.playVideo(); } catch(e){} }
-
-        window.addNewSong = async () => {
-            const name = document.getElementById('new-song-name').value;
-            let url = document.getElementById('new-song-url').value;
-            if(!name || !url) return alert("Nhập đủ tên và link!");
-            const id = getYoutubeID(url);
-            await updateDoc(doc(db, "settings", "config"), { playlist: arrayUnion({name, id}) });
-            alert("Đã thêm bài hát!");
-        }
+        window.addNewSong = async () => { const name = document.getElementById('new-song-name').value; let url = document.getElementById('new-song-url').value; if(!name || !url) return alert("Nhập đủ tên và link!"); const id = getYoutubeID(url); await updateDoc(doc(db, "settings", "config"), { playlist: arrayUnion({name, id}) }); alert("Đã thêm bài hát!"); }
         window.playSong = async (id) => { await updateDoc(doc(db, "settings", "config"), { musicId: id }); alert("Đã phát bài này!"); }
         window.deleteSong = async (name, id) => { if(confirm("Xóa bài này?")) await updateDoc(doc(db, "settings", "config"), { playlist: arrayRemove({name, id}) }); }
 
@@ -428,26 +454,12 @@
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if(docSnap.exists()) {
                 const cfg = docSnap.data();
-                // Music
                 if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
-                
-                // Playlist
                 const plDiv = document.getElementById('music-playlist-container');
-                if(plDiv && cfg.playlist) {
-                    plDiv.innerHTML = "";
-                    cfg.playlist.forEach(s => {
-                        const style = s.id === cfg.musicId ? 'background:#e8f5e9; border-left:4px solid green;' : '';
-                        plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`;
-                    });
-                }
-
-                // Locks & Maintenance
-                const mDiv = document.getElementById('maintenance-overlay');
-                if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
+                if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:#e8f5e9; border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
+                const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
                 applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities); applyLock('guide',cfg.locks?.guide); applyLock('archive',cfg.locks?.archive);
                 handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
-
-                // Admin Sync
                 if(currentUser && isAdmin(currentUser.email)) {
                     document.getElementById('cfg-maintenance').checked=cfg.maintenance;
                     document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
@@ -455,7 +467,6 @@
                 }
             }
         });
-
         function applyLock(s,l){const o=document.getElementById(`locked-${s}`), c=document.getElementById(`content-${s}`); if(l&&(!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';}}
         let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const d=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${d}d ${h}h ${m}p`;}},1000);}
 
@@ -466,43 +477,40 @@
             if(u){
                 const r=doc(db,"users",u.uid), s=await getDoc(r);
                 if(s.exists()){const d=s.data();if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;}currentUser=d;}
-                else{currentUser={uid:u.uid,email:u.email,displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,photoURL:u.photoURL,role:isAdmin(u.email)?'admin':'member',status:'active',class:""};await setDoc(r,currentUser);}
+                else{currentUser={uid:u.uid,email:u.email,displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,photoURL:u.photoURL,role:isAdmin(u.email)?'admin':'member',status:'active',class:"",customID:"@"+u.uid.slice(0,5)};await setDoc(r,currentUser);}
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
+                document.getElementById('home-login-area').style.display='none';
                 document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
-                document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
+                document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id";
+                document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
                 if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
-            }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
+            }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
         });
 
-        // --- UPLOAD FIXED ---
+        // --- UPLOAD ---
         window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
         window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } currentCollection = c; document.getElementById('file-input').click(); }
-        window.executeUpload = async (i) => { const f = i.files[0]; if(!f) return; const d = prompt("Nhập mô tả cho ảnh:"); if(d === null) return; const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); document.getElementById('upload-overlay').style.display='flex'; try { const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); if(j.secure_url) { await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); alert("Đăng ảnh thành công!"); } } catch(e) { alert("Lỗi tải ảnh!"); } document.getElementById('upload-overlay').style.display='none'; i.value=""; }
+        window.executeUpload = async (i) => { const f = i.files[0]; if(!f) return; const d = prompt("Nhập mô tả cho ảnh:"); if(d === null) return; const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); document.getElementById('upload-overlay').style.display='flex'; try { const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); if(j.secure_url) { await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); alert("Đăng ảnh thành công!"); } } catch(e) { alert("Lỗi tải ảnh!"); } document.getElementById('upload-overlay').style.display='none'; i.value=""; }
 
-        // --- RENDER & AUTO TOP 1 ---
+        // --- RENDER ---
         function renderGrid(col, elId, uR, cR) {
             onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
                 const g = document.getElementById(elId); g.innerHTML = ""; let uS={}, cS={}, docs=[];
-                snap.forEach(d=>docs.push({id:d.id,...d.data()})); 
-                docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)); // Sort newest first
+                snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
                 
-                // Find Top 1 Like for Homepage (Only scan gallery)
+                // Auto Top 1
                 if(col === 'gallery' && docs.length > 0) {
                     const topPost = [...docs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
                     if(topPost) {
-                        const feat = document.getElementById('featured-post');
-                        feat.style.display = 'flex';
-                        document.getElementById('feat-img').src = topPost.url;
-                        document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH";
-                        document.getElementById('feat-desc').innerText = topPost.desc;
-                        document.getElementById('feat-author').innerText = "— " + topPost.authorName + " (" + topPost.className + ")";
+                        const feat = document.getElementById('featured-post'); feat.style.display = 'flex';
+                        document.getElementById('feat-img').src = topPost.url; document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH"; document.getElementById('feat-desc').innerText = topPost.desc; document.getElementById('feat-author').innerText = "— " + topPost.authorName;
                     }
                 }
 
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
                     let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; }
-                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div></div></div>`;
+                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
                 });
                 renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
@@ -514,8 +522,8 @@
         window.exportExcel = async (type) => {
             if(!currentUser || !isAdmin(currentUser.email)) return;
             const table = document.getElementById('export-table'); table.innerHTML = ""; let html = "";
-            if(type === 'users') { html += `<thead><tr><th>Tên</th><th>Email</th><th>Lớp</th><th>Trạng thái</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u=d.data(); html += `<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||''}</td><td>${u.banned?'Bị khóa':u.status}</td></tr>`; }); } 
-            else { html += `<thead><tr><th>Người đăng</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p=d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleString('vi-VN') : ''; html += `<tr><td>${p.authorName}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; }); }
+            if(type === 'users') { html += `<thead><tr><th>Tên</th><th>ID</th><th>Email</th><th>Lớp</th><th>Trạng thái</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u=d.data(); html += `<tr><td>${u.displayName}</td><td>${u.customID||''}</td><td>${u.email}</td><td>${u.class||''}</td><td>${u.banned?'Bị khóa':u.status}</td></tr>`; }); } 
+            else { html += `<thead><tr><th>Người đăng</th><th>ID</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p=d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleString('vi-VN') : ''; html += `<tr><td>${p.authorName}</td><td>${p.authorID||''}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; }); }
             html += "</tbody>"; table.innerHTML = html;
             const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`;
             const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}.xls`; a.click();
@@ -526,35 +534,37 @@
             const s=await getDoc(doc(db,c,i)); const d=s.data(); 
             document.getElementById('lb-img').src=d.url; 
             document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; 
-            document.getElementById('lb-author-name').innerHTML=d.authorName; 
+            document.getElementById('lb-author-name').innerHTML=d.authorName;
+            document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
             document.getElementById('lb-desc').innerText=d.desc; 
             document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
-            
-            const btn = document.getElementById('lb-like');
-            if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } 
-            else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
-            
+            const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
             document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; 
             renderComments(d.comments||[]); 
         }
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
-        window.handleLike = async () => { 
-            if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; 
-            if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; }
-            else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } 
-        }
+        window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
+        
+        window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
-        function renderComments(arr) { 
-            const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
-            arr.forEach(c=>{ l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div><div style="font-weight:bold; font-size:0.9rem">${c.name}</div><div style="font-size:0.9rem">${c.text}</div></div></div>`; }); 
-        }
+        function renderComments(arr) { const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; arr.forEach(c=>{ l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div><div style="font-weight:bold; font-size:0.9rem">${c.name}</div><div style="font-size:0.9rem">${c.text}</div></div><button class="reply-btn" onclick="replyTo('${c.name}')">Trả lời</button></div>`; }); }
 
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
         window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
         window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option>Loading...</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); s.innerHTML='<option value="">-- Chọn đợt --</option>'; sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
-        window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const g=document.getElementById('archive-grid'); if(!l){g.innerHTML="";return;} g.innerHTML="Loading..."; const q=query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; s.forEach(d=>{const da=d.data();g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div></div></div>`;}); }
+        window.loadArchiveGrid = async () => { 
+            const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
+            const g=document.getElementById('archive-grid'); if(!l){g.innerHTML="";return;} g.innerHTML="Loading..."; 
+            const q=query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; 
+            s.forEach(d=>{
+                const da=d.data();
+                // Filter search
+                if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return;
+                g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`;
+            }); 
+        }
         window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); }
         window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
         
@@ -564,7 +574,32 @@
         window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
         window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
         window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
-        window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, class: c, bio: b }); alert("Đã lưu!"); }
+        
+        // Check Unique ID Logic
+        async function checkUniqueID(id) {
+            const q = query(collection(db, "users"), where("customID", "==", id));
+            const snap = await getDocs(q);
+            return snap.empty; // True if unique
+        }
+
+        window.updateProfile = async (e) => { 
+            e.preventDefault(); 
+            const n = document.getElementById('edit-name').value; 
+            const cid = document.getElementById('edit-custom-id').value;
+            const c = document.getElementById('edit-class').value; 
+            const b = document.getElementById('edit-bio').value; 
+            
+            // Check ID change
+            if(cid !== currentUser.customID) {
+                const isUnique = await checkUniqueID(cid);
+                if(!isUnique) return alert("ID này đã có người dùng! Vui lòng chọn ID khác.");
+            }
+
+            const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; 
+            await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); 
+            alert("Đã lưu!"); 
+        }
+
         window.showPage = (id) => { 
             document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); 
             document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
