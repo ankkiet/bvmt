@@ -45,7 +45,7 @@
         .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
         input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 1rem; transition: 0.3s; }
 
-        /* --- 5. GRID & IMAGES (Styled) --- */
+        /* --- 5. GRID & IMAGES --- */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.1); background: #fff; border: 1px solid #eee; transition: 0.3s; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
@@ -56,7 +56,7 @@
         .gallery-title { font-weight: bold; font-size: 0.95rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; margin-top: 5px; }
         
-        /* Owner Controls (Edit/Delete) */
+        /* Owner Controls */
         .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; }
         .ctrl-btn { background: rgba(255,255,255,0.9); border: 1px solid #ddd; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .ctrl-btn:hover { transform: scale(1.1); background: white; }
@@ -72,18 +72,17 @@
         .rank-num { display: inline-block; width: 24px; height: 24px; background: #eee; border-radius: 50%; text-align: center; line-height: 24px; font-size: 0.8rem; font-weight: bold; color: #555; }
         .rank-top-1 .rank-num { background: #fbc02d; color: white; }
 
-        /* --- 7. TRA CỨU & HOẠT ĐỘNG --- */
+        /* --- 7. TRA CỨU & ADMIN --- */
         .trash-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
         .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; background: #fafafa; }
         .bin-recycle { color: #1976d2; font-weight: bold; } .bin-organic { color: #388e3c; font-weight: bold; } .bin-other { color: #f57c00; font-weight: bold; }
 
-        /* --- 8. ADMIN TABLE --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .admin-table th { text-align: left; padding: 10px; background: #eee; }
         .admin-table td { padding: 10px; border-bottom: 1px solid #eee; }
         .st-active { color: green; font-weight: bold; } .st-banned { color: red; font-weight: bold; }
 
-        /* --- 9. LIGHTBOX --- */
+        /* --- 8. LIGHTBOX --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); flex-direction: column; justify-content: center; align-items: center; }
         .modal-content { max-width: 90%; max-height: 80vh; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
         .dock { position: absolute; bottom: 20px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 10px 20px; border-radius: 50px; display: flex; gap: 15px; }
@@ -91,7 +90,7 @@
         .dock-btn:hover { color: var(--accent); transform: translateY(-3px); }
         .dock-btn span { font-size: 0.6rem; margin-top: 2px; }
 
-        /* --- 10. FEATURED POST --- */
+        /* --- 9. FEATURED POST --- */
         .featured-section { background: linear-gradient(135deg, #fff9c4, #fff); border: 2px solid var(--accent); border-radius: 15px; padding: 20px; margin-bottom: 30px; position: relative; display: flex; gap: 20px; align-items: center; }
         .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); padding: 5px 15px; font-weight: bold; border-bottom-right-radius: 10px; color: #333; }
 
@@ -201,7 +200,10 @@
                 <h1>🏆 Phong Trào Thi Đua</h1>
                 <button class="btn" onclick="checkLoginAndUpload('contest')">📤 Báo Cáo Hoạt Động</button>
             </div>
-            <p style="text-align: center; color:#666">Ghi lại khoảnh khắc lao động, nhặt rác, chăm sóc môi trường.</p>
+
+            <p style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px dashed #2196f3; font-size: 0.9rem;">
+                ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh hoạt động thực tế (lao động, nhặt rác). Ảnh phải rõ mặt hoặc hoạt động của tập thể. Nghiêm cấm ảnh không liên quan.
+            </p>
             
             <div id="contest-grid" class="gallery-grid"></div>
 
@@ -238,9 +240,34 @@
                         </div>
                     </div>
                     <form onsubmit="updateProfile(event)">
-                        <label>📝 Tên hiển thị:</label><input type="text" id="edit-name" required>
-                        <label>🏫 Lớp (Quan trọng để tính điểm):</label><input type="text" id="edit-class" placeholder="VD: 11A2" required>
-                        <label>💬 Tiểu sử:</label><textarea id="edit-bio"></textarea>
+                        <label>📝 Tên hiển thị:</label>
+                        <input type="text" id="edit-name" required>
+                        
+                        <label>🏫 Lớp (Quan trọng để tính điểm):</label>
+                        <select id="edit-class" required style="width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 1rem;">
+                            <option value="">-- Chọn lớp của bạn --</option>
+                            <optgroup label="Khối 12">
+                                <option value="12A1">12A1</option><option value="12A2">12A2</option><option value="12A3">12A3</option>
+                                <option value="12A4">12A4</option><option value="12A5">12A5</option><option value="12A6">12A6</option>
+                                <option value="12A7">12A7</option><option value="12A8">12A8</option><option value="12A9">12A9</option>
+                            </optgroup>
+                            <optgroup label="Khối 11">
+                                <option value="11A1">11A1</option><option value="11A2">11A2</option><option value="11A3">11A3</option>
+                                <option value="11A4">11A4</option><option value="11A5">11A5</option><option value="11A6">11A6</option>
+                                <option value="11A7">11A7</option><option value="11A8">11A8</option><option value="11A9">11A9</option>
+                            </optgroup>
+                            <optgroup label="Khối 10">
+                                <option value="10A1">10A1</option><option value="10A2">10A2</option><option value="10A3">10A3</option>
+                                <option value="10A4">10A4</option><option value="10A5">10A5</option><option value="10A6">10A6</option>
+                                <option value="10A7">10A7</option><option value="10A8">10A8</option><option value="10A9">10A9</option>
+                            </optgroup>
+                            <option value="GV">Giáo Viên</option>
+                            <option value="Khac">Khác</option>
+                        </select>
+
+                        <label>💬 Tiểu sử:</label>
+                        <textarea id="edit-bio"></textarea>
+                        
                         <div style="margin-top:15px; display:flex; gap:10px;">
                             <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
                             <button type="button" class="btn btn-outline" onclick="handleLogout()">🚪 Đăng Xuất</button>
@@ -260,7 +287,7 @@
                 <h3>Danh sách thành viên</h3>
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
-                        <thead><tr><th>Tên</th><th>Email</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+                        <thead><tr><th>Tên</th><th>Email</th><th>Lớp</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
                         <tbody id="user-table-body"></tbody>
                     </table>
                 </div>
@@ -489,7 +516,7 @@
             snap.forEach(d => {
                 const u = d.data();
                 const btn = u.banned ? `<button onclick="togBan('${d.id}',0)">Mở</button>` : `<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`;
-                tb.innerHTML += `<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`;
+                tb.innerHTML += `<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`;
             });
         }
         window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
