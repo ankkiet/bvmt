@@ -12,7 +12,7 @@
             --primary: #2e7d32; --primary-dark: #1b5e20;
             --accent: #ffca28; --danger: #e53935; --info: #0288d1;
             --bg: #f0f4f0; --text: #333; --white: #ffffff;
-            --admin-color: #d32f2f; --archive-color: #795548;
+            --admin-color: #d32f2f; --archive-color: #5d4037;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
@@ -31,7 +31,6 @@
         .page-section { display: none; animation: fadeIn 0.4s ease-out; }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Trang bị khóa riêng lẻ */
         .locked-section-overlay { text-align: center; padding: 50px; background: #fff3e0; border: 2px dashed #ffb74d; border-radius: 10px; color: #e65100; margin-bottom: 20px; }
 
         h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 30px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; }
@@ -59,7 +58,6 @@
         .gallery-title { font-weight: bold; font-size: 0.95rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; margin-top: 5px; align-items: center; }
         .post-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 5px; border: 1px solid #ccc; }
-        
         .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; }
         .ctrl-btn { background: rgba(255,255,255,0.9); border: 1px solid #ddd; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .ctrl-btn:hover { transform: scale(1.1); background: white; }
@@ -74,7 +72,6 @@
         .rank-top-1 { background: #fffde7; font-weight: bold; color: #fbc02d; }
         .rank-num { display: inline-block; width: 24px; height: 24px; background: #eee; border-radius: 50%; text-align: center; line-height: 24px; font-size: 0.8rem; font-weight: bold; color: #555; }
         .rank-top-1 .rank-num { background: #fbc02d; color: white; }
-
         .archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; }
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 5px; font-weight: bold; }
         .archive-tab.active { background: var(--archive-color); color: white; }
@@ -84,7 +81,6 @@
         .admin-table th { text-align: left; padding: 10px; background: #eee; }
         .admin-table td { padding: 10px; border-bottom: 1px solid #eee; }
         .st-active { color: green; font-weight: bold; } .st-banned { color: red; font-weight: bold; }
-
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; border-radius: 20px; }
@@ -92,25 +88,43 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { -webkit-transform: translateX(20px); transform: translateX(20px); }
 
-        /* --- 8. LIGHTBOX & FEATURED --- */
-        .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); flex-direction: column; justify-content: center; align-items: center; }
-        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        .dock { position: absolute; bottom: 20px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 10px 20px; border-radius: 50px; display: flex; gap: 15px; }
-        .dock-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .dock-btn:hover { color: var(--accent); transform: translateY(-3px); }
-        .dock-btn span { font-size: 0.6rem; margin-top: 2px; }
+        /* --- 8. NEW LIGHTBOX (INSTAGRAM STYLE) --- */
+        .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
+        .lb-container { display: flex; background: white; max-width: 1100px; width: 100%; height: 85vh; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .lb-image-area { flex: 2; background: black; display: flex; align-items: center; justify-content: center; position: relative; }
+        .lb-image-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .lb-sidebar { flex: 1; display: flex; flex-direction: column; border-left: 1px solid #ddd; background: #fff; min-width: 320px; }
+        
+        .lb-header { padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .lb-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+        .lb-comments-list { flex: 1; overflow-y: auto; padding: 15px; }
+        .lb-comment-item { margin-bottom: 15px; font-size: 0.9rem; }
+        .lb-comment-user { font-weight: bold; margin-right: 5px; color: var(--primary-dark); }
+        .lb-desc { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .lb-footer { padding: 15px; border-top: 1px solid #eee; }
+        .lb-actions { display: flex; gap: 15px; margin-bottom: 10px; font-size: 1.5rem; }
+        .lb-action-btn { cursor: pointer; transition: 0.2s; color: #333; background: none; border: none; font-size: inherit; }
+        .lb-action-btn:hover { color: var(--primary); }
+        .lb-action-btn.liked { color: #e53935; }
+        .lb-input-group { display: flex; gap: 10px; }
+        
+        /* Mobile Lightbox */
+        @media (max-width: 768px) {
+            .lb-container { flex-direction: column; height: 95vh; }
+            .lb-image-area { flex: 1; background: #000; min-height: 40%; }
+            .lb-sidebar { flex: 1; min-width: auto; }
+        }
 
+        /* --- 9. FEATURED & COUNTDOWN --- */
         .featured-section { background: linear-gradient(135deg, #fff9c4, #fff); border: 2px solid var(--accent); border-radius: 15px; padding: 20px; margin-bottom: 30px; position: relative; display: flex; gap: 20px; align-items: center; }
         .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); padding: 5px 15px; font-weight: bold; border-bottom-right-radius: 10px; color: #333; }
-        
         .countdown-box { background: var(--primary); color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(46,125,50,0.3); display: none; }
         .timer-display { font-size: 1.5rem; font-weight: bold; font-family: monospace; }
-        
         .trash-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
         .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; background: #fafafa; }
         .bin-recycle { color: #1976d2; font-weight: bold; } .bin-organic { color: #388e3c; font-weight: bold; } .bin-other { color: #f57c00; font-weight: bold; }
 
-        /* --- 10. MAINTENANCE MODE (Đã khôi phục) --- */
+        /* --- 10. MAINTENANCE --- */
         #maintenance-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         #maintenance-overlay h1 { border: none; font-size: 2rem; }
         #maintenance-overlay img { max-width: 200px; margin-bottom: 20px; }
@@ -155,7 +169,6 @@
                     <h1 style="border:none; margin-top: 15px;">A2K41 - Green School</h1>
                     <p>Chung tay vì một môi trường xanh - sạch - đẹp</p>
                 </div>
-
                 <div id="featured-post" class="featured-section" style="display: none;">
                     <div class="featured-badge">🌟 NGÔI SAO TUẦN NÀY</div>
                     <img id="feat-img" src="" style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; border: 2px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
@@ -165,7 +178,6 @@
                         <p id="feat-author" style="margin-top: 10px; font-weight: bold; font-size: 0.9rem;">— Tác giả: ...</p>
                     </div>
                 </div>
-
                 <div class="card" style="border-left: 5px solid var(--accent);">
                     <h3>💡 Thông điệp hôm nay</h3>
                     <p id="daily-tip" style="font-style: italic;">Loading...</p>
@@ -177,27 +189,14 @@
             <div id="locked-activities" class="locked-section-overlay" style="display:none"><h2>🔒 Mục này đang tạm khóa</h2></div>
             <div id="content-activities">
                 <h1>📅 Hoạt Động & Tin Tức</h1>
-                <div class="card">
-                    <h2>♻️ Phong trào "Đổi giấy lấy cây"</h2>
-                    <p><strong>Thời gian:</strong> 15:00 - 17:00 chiều Thứ 5 hàng tuần.</p>
-                    <p><strong>Địa điểm:</strong> Phòng Đội (Tầng 1).</p>
-                    <p><strong>Quy đổi:</strong> 3kg giấy vụn/vở cũ = 1 chậu sen đá nhỏ.</p>
-                </div>
-                <div class="card" style="border-left: 5px solid #039be5;">
-                    <h2>📰 Tin Tức & Kết Nối</h2>
-                    <ul style="line-height: 1.8;">
-                        <li><a href="#" style="text-decoration: none; color: var(--primary);">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh" tuần tới.</a></li>
-                        <li><a href="#" style="text-decoration: none; color: var(--info);">📘 Tổng kết thi đua tháng 11: Chúc mừng A2K41 đạt giải Nhất.</a></li>
-                    </ul>
-                </div>
+                <div class="card"><h2>♻️ Phong trào "Đổi giấy lấy cây"</h2><p><strong>Thời gian:</strong> 15:00 - 17:00 chiều Thứ 5 hàng tuần.</p><p><strong>Địa điểm:</strong> Phòng Đội (Tầng 1).</p></div>
+                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức & Kết Nối</h2><ul style="line-height: 1.8;"><li><a href="#" style="text-decoration: none; color: var(--primary);">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh" tuần tới.</a></li></ul></div>
             </div>
         </div>
 
         <div id="guide" class="page-section">
             <h1>🔍 Tra Cứu Phân Loại Rác</h1>
-            <div style="max-width: 500px; margin: 0 auto 20px auto;">
-                <input type="text" id="trashSearchInput" placeholder="Nhập tên rác (VD: Vỏ sữa, Pin...)" onkeyup="filterTrash()">
-            </div>
+            <div style="max-width: 500px; margin: 0 auto 20px auto;"><input type="text" id="trashSearchInput" placeholder="Nhập tên rác..." onkeyup="filterTrash()"></div>
             <div id="trashContainer" class="trash-result"></div>
         </div>
 
@@ -208,12 +207,7 @@
                     <h1>🌿 Góc "Lớp Học Xanh"</h1>
                     <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')">📸 Đăng Ảnh Ngay</button>
                 </div>
-                
-                <div class="countdown-box" id="cd-gallery">
-                    <div style="font-size: 0.9rem; text-transform: uppercase;">⏳ Thời gian còn lại:</div>
-                    <div id="timer-gallery" class="timer-display">Loading...</div>
-                </div>
-                
+                <div class="countdown-box" id="cd-gallery"><div style="font-size: 0.9rem; text-transform: uppercase;">⏳ Thời gian còn lại:</div><div id="timer-gallery" class="timer-display">Loading...</div></div>
                 <p style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px dashed #2196f3; font-size: 0.9rem;">ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh góc lớp, cây xanh.</p>
                 <div id="gallery-grid" class="gallery-grid"></div>
                 <div class="ranking-wrapper">
@@ -230,12 +224,7 @@
                     <h1>🏆 Phong Trào Thi Đua</h1>
                     <button class="btn btn-upload" onclick="checkLoginAndUpload('contest')">📤 Báo Cáo Hoạt Động</button>
                 </div>
-
-                <div class="countdown-box" id="cd-contest">
-                    <div style="font-size: 0.9rem; text-transform: uppercase;">⏳ Thời gian còn lại:</div>
-                    <div id="timer-contest" class="timer-display">Loading...</div>
-                </div>
-
+                <div class="countdown-box" id="cd-contest"><div style="font-size: 0.9rem; text-transform: uppercase;">⏳ Thời gian còn lại:</div><div id="timer-contest" class="timer-display">Loading...</div></div>
                 <p style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px dashed #2196f3; font-size: 0.9rem;">ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh hoạt động thực tế.</p>
                 <div id="contest-grid" class="gallery-grid"></div>
                 <div class="ranking-wrapper">
@@ -252,25 +241,17 @@
                     <div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div>
                     <div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div>
                 </div>
-                
                 <div style="margin-bottom: 20px;">
                     <label>Chọn đợt thi đua:</label>
-                    <select id="archive-season-select" onchange="loadArchiveGrid()">
-                        <option value="">-- Chọn đợt --</option>
-                    </select>
+                    <select id="archive-season-select" onchange="loadArchiveGrid()"><option value="">-- Chọn đợt --</option></select>
                 </div>
-
                 <div id="archive-grid" class="gallery-grid"></div>
             </div>
         </div>
 
         <div id="profile" class="page-section">
             <h1>👤 Hồ Sơ Của Tôi</h1>
-            <div id="profile-out" style="text-align: center; padding: 40px;">
-                <p>Vui lòng đăng nhập để sử dụng tính năng.</p>
-                <button class="btn btn-google btn-login">G Đăng nhập bằng Google</button>
-            </div>
-
+            <div id="profile-out" style="text-align: center; padding: 40px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login">G Đăng nhập bằng Google</button></div>
             <div id="profile-in" style="display: none;">
                 <div id="soft-delete-msg" style="background:#ffebee; color:#c62828; padding:10px; border-radius:8px; display:none; margin-bottom:15px;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục</button></div>
                 <div class="card">
@@ -296,42 +277,38 @@
                         <div style="margin-top:15px; display:flex; gap:10px;"><button type="submit" class="btn">💾 Lưu Hồ Sơ</button><button type="button" class="btn btn-outline" onclick="handleLogout()">🚪 Đăng Xuất</button></div>
                     </form>
                 </div>
-                <div class="card" style="border:1px solid #ffcdd2"><h3 style="color:red">Vùng nguy hiểm</h3><button class="btn btn-danger" onclick="requestDeleteAccount()">🗑 Xóa Tài Khoản</button></div>
             </div>
         </div>
 
         <div id="admin" class="page-section">
             <h1>🛠 Quản Trị Hệ Thống</h1>
-            
             <div class="card" style="border-left: 5px solid var(--admin-color);">
                 <h3>⚙️ Cấu hình Hệ thống</h3>
-                
                 <div style="margin-bottom: 20px; border-bottom:1px solid #eee; padding-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:#ffebee; padding:10px; border-radius:5px;">
-                        <span style="font-weight:bold; color:red">🚧 BẢO TRÌ TOÀN TRANG (KHÓA TẤT CẢ):</span>
+                        <span style="font-weight:bold; color:red">🚧 BẢO TRÌ TOÀN TRANG:</span>
                         <label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label>
                     </div>
-
-                    <h4>🔒 Khóa từng mục (Thành viên sẽ thấy thông báo tạm khóa)</h4>
+                    <h4>🔒 Khóa từng mục</h4>
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
                         <label class="switch"><input type="checkbox" id="lock-home" onchange="updateLocks()"><span class="slider"></span></label> Trang Chủ
                         <label class="switch"><input type="checkbox" id="lock-greenclass" onchange="updateLocks()"><span class="slider"></span></label> Góc Xanh
                         <label class="switch"><input type="checkbox" id="lock-contest" onchange="updateLocks()"><span class="slider"></span></label> Thi Đua
-                        <label class="switch"><input type="checkbox" id="lock-activities" onchange="updateLocks()"><span class="slider"></span></label> Hoạt Động
                     </div>
                 </div>
-
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div>
-                        <h4>⏳ Deadline Góc Xanh</h4>
-                        <input type="datetime-local" id="time-gallery" onchange="updateDeadlines()">
-                        <button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('gallery')">📦 Kết thúc & Lưu trữ</button>
-                    </div>
-                    <div>
-                        <h4>⏳ Deadline Thi Đua</h4>
-                        <input type="datetime-local" id="time-contest" onchange="updateDeadlines()">
-                        <button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('contest')">📦 Kết thúc & Lưu trữ</button>
-                    </div>
+                    <div><h4>⏳ Deadline Góc Xanh</h4><input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('gallery')">📦 Kết thúc & Lưu trữ</button></div>
+                    <div><h4>⏳ Deadline Thi Đua</h4><input type="datetime-local" id="time-contest" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('contest')">📦 Kết thúc & Lưu trữ</button></div>
+                </div>
+            </div>
+            
+            <div class="card" style="border-left: 5px solid #2e7d32;">
+                <h3>📊 Xuất Báo Cáo (Excel/CSV)</h3>
+                <p>Tải xuống dữ liệu để tổng kết:</p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn" onclick="exportData('users')">📄 Danh sách Thành viên</button>
+                    <button class="btn" onclick="exportData('gallery')">📄 Bài đăng Góc Xanh</button>
+                    <button class="btn" onclick="exportData('contest')">📄 Bài đăng Thi Đua</button>
                 </div>
             </div>
 
@@ -353,16 +330,30 @@
     <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; flex-direction:column; justify-content:center; align-items:center;"><h2 style="color:var(--primary)">⏳ Đang tải ảnh lên...</h2></div>
 
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
-        <img id="lb-img" class="modal-content">
-        <div class="dock">
-            <button class="dock-btn" onclick="handleLike()" id="lb-like">❤️<span id="lb-like-count">0</span></button>
-            <button class="dock-btn" onclick="toggleComments()">💬<span>Chat</span></button>
-            <button class="dock-btn" onclick="window.open(document.getElementById('lb-img').src)">⬇️<span>Tải</span></button>
-            <button class="dock-btn" id="lb-admin-pin" style="display:none; color: gold;" onclick="pinPost()">🌟<span>Ghim</span></button>
-        </div>
-        <div id="lb-comments" class="card" style="position:fixed; bottom:100px; width:300px; max-height:300px; overflow-y:auto; display:none;">
-            <div id="lb-cmt-list"></div>
-            <form onsubmit="postComment(event)" style="display:flex; margin-top:5px;"><input id="lb-cmt-input" required placeholder="Bình luận..."><button class="btn btn-sm">Gửi</button></form>
+        <div class="lb-container">
+            <div class="lb-image-area"><img id="lb-img"></div>
+            <div class="lb-sidebar">
+                <div class="lb-header">
+                    <img id="lb-author-avatar" class="lb-avatar">
+                    <div id="lb-author-name">Author Name</div>
+                    <div style="margin-left:auto;">
+                        <button id="lb-admin-pin" style="display:none; border:none; background:none; cursor:pointer;" onclick="pinPost()" title="Ghim">🌟</button>
+                        <button onclick="window.open(document.getElementById('lb-img').src)" style="border:none; background:none; cursor:pointer;" title="Tải">⬇️</button>
+                    </div>
+                </div>
+                <div class="lb-desc" style="padding: 15px; font-size: 0.95rem;" id="lb-desc">Description here</div>
+                <div class="lb-comments-list" id="lb-cmt-list"></div>
+                <div class="lb-footer">
+                    <div class="lb-actions">
+                        <button class="lb-action-btn" onclick="handleLike()" id="lb-like">❤️</button>
+                        <span style="font-size:1rem; margin-top:5px" id="lb-like-count">0 lượt thích</span>
+                    </div>
+                    <form onsubmit="postComment(event)" class="lb-input-group">
+                        <input id="lb-cmt-input" required placeholder="Thêm bình luận..." style="border:none;">
+                        <button class="btn btn-sm" style="background:transparent; color:var(--info);">Gửi</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -383,290 +374,159 @@
         let currentImgId = null;
         let currentImgCollection = null;
         let activeArchiveTab = 'gallery';
-        
         const isAdmin = (email) => ADMIN_EMAILS.includes(email);
 
-        // --- 1. GLOBAL SETTINGS (Locks & Deadlines & Maintenance) ---
+        // --- 1. GLOBAL SETTINGS ---
         onSnapshot(doc(db, "settings", "config"), (doc) => {
             if(doc.exists()) {
                 const cfg = doc.data();
+                const mDiv = document.getElementById('maintenance-overlay');
+                if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display = 'flex'; else mDiv.style.display = 'none';
                 
-                // 1. Maintenance Mode
-                const maintenanceDiv = document.getElementById('maintenance-overlay');
-                if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) {
-                    maintenanceDiv.style.display = 'flex';
-                } else {
-                    maintenanceDiv.style.display = 'none';
-                }
+                applyLock('home', cfg.locks?.home); applyLock('greenclass', cfg.locks?.greenclass); applyLock('contest', cfg.locks?.contest); applyLock('activities', cfg.locks?.activities);
+                handleTimer('timer-gallery', 'cd-gallery', cfg.deadlines?.gallery); handleTimer('timer-contest', 'cd-contest', cfg.deadlines?.contest);
 
-                // 2. Section Locks
-                applyLock('home', cfg.locks?.home);
-                applyLock('greenclass', cfg.locks?.greenclass);
-                applyLock('contest', cfg.locks?.contest);
-                applyLock('activities', cfg.locks?.activities);
-
-                // 3. Deadlines
-                handleTimer('timer-gallery', 'cd-gallery', cfg.deadlines?.gallery);
-                handleTimer('timer-contest', 'cd-contest', cfg.deadlines?.contest);
-
-                // 4. Admin UI Sync
                 if(currentUser && isAdmin(currentUser.email)) {
                     document.getElementById('cfg-maintenance').checked = cfg.maintenance;
                     document.getElementById('lock-home').checked = cfg.locks?.home;
                     document.getElementById('lock-greenclass').checked = cfg.locks?.greenclass;
                     document.getElementById('lock-contest').checked = cfg.locks?.contest;
-                    document.getElementById('lock-activities').checked = cfg.locks?.activities;
                     document.getElementById('time-gallery').value = cfg.deadlines?.gallery || "";
                     document.getElementById('time-contest').value = cfg.deadlines?.contest || "";
                 }
             }
         });
-
-        function applyLock(secId, isLocked) {
-            const overlay = document.getElementById(`locked-${secId}`);
-            const content = document.getElementById(`content-${secId}`);
-            if(isLocked && (!currentUser || !isAdmin(currentUser.email))) {
-                if(overlay) overlay.style.display = 'block';
-                if(content) content.style.display = 'none';
-            } else {
-                if(overlay) overlay.style.display = 'none';
-                if(content) content.style.display = 'block';
-            }
-        }
-
+        function applyLock(s, l) { const o=document.getElementById(`locked-${s}`); const c=document.getElementById(`content-${s}`); if(l && (!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';} }
         let intervals = {};
-        function handleTimer(elId, boxId, deadline) {
-            if(!deadline) { document.getElementById(boxId).style.display = 'none'; return; }
-            document.getElementById(boxId).style.display = 'block';
-            if(intervals[elId]) clearInterval(intervals[elId]);
-            const end = new Date(deadline).getTime();
-            intervals[elId] = setInterval(() => {
-                const now = new Date().getTime(); const dist = end - now;
-                if (dist < 0) { clearInterval(intervals[elId]); document.getElementById(elId).innerHTML = "HẾT GIỜ"; } 
-                else { 
-                    const d = Math.floor(dist / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
-                    document.getElementById(elId).innerHTML = `${d}d ${h}h ${m}p`; 
-                }
-            }, 1000);
-        }
+        function handleTimer(e, b, d) { if(!d){document.getElementById(b).style.display='none';return;} document.getElementById(b).style.display='block'; if(intervals[e])clearInterval(intervals[e]); const end=new Date(d).getTime(); intervals[e]=setInterval(()=>{ const now=new Date().getTime();const dist=end-now; if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const da=Math.floor(dist/(1000*60*60*24));const ho=Math.floor((dist%(1000*60*60*24))/(1000*60*60));const mi=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${da}d ${ho}h ${mi}p`;} },1000); }
 
         // --- 2. AUTH ---
         window.handleLogout = async () => { await signOut(auth); alert("Đã đăng xuất!"); location.reload(); }
         window.checkAdminLogin = () => signInWithPopup(auth, provider);
-
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const ref = doc(db, "users", user.uid);
-                const snap = await getDoc(ref);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.banned) { alert("⛔ Tài khoản bị khóa!"); signOut(auth); return; }
-                    currentUser = data;
-                } else {
-                    currentUser = { uid: user.uid, email: user.email, displayName: isAdmin(user.email)?"Admin_xinhxinh":user.displayName, photoURL: user.photoURL, role: isAdmin(user.email)?'admin':'member', status: 'active', class: "" };
-                    await setDoc(ref, currentUser);
-                }
-                document.getElementById('profile-in').style.display = 'block';
-                document.getElementById('profile-out').style.display = 'none';
-                document.getElementById('p-avatar').src = currentUser.photoURL;
-                document.getElementById('p-name').innerHTML = getDisplayName(currentUser);
-                document.getElementById('p-email').innerText = currentUser.email;
-                document.getElementById('edit-name').value = currentUser.displayName;
-                document.getElementById('edit-class').value = currentUser.class || "";
-                document.getElementById('edit-bio').value = currentUser.bio || "";
-                if(isAdmin(currentUser.email)) {
-                    document.getElementById('menu-admin').style.display = 'block';
-                    document.getElementById('maintenance-overlay').style.display = 'none';
-                }
-            } else {
-                currentUser = null;
-                document.getElementById('profile-in').style.display = 'none';
-                document.getElementById('profile-out').style.display = 'block';
-                document.getElementById('menu-admin').style.display = 'none';
-            }
+                const ref = doc(db, "users", user.uid); const snap = await getDoc(ref);
+                if (snap.exists()) { const d = snap.data(); if(d.banned){alert("Bị khóa!");signOut(auth);return;} currentUser=d; }
+                else { currentUser={uid:user.uid,email:user.email,displayName:isAdmin(user.email)?"Admin_xinhxinh":user.displayName,photoURL:user.photoURL,role:isAdmin(user.email)?'admin':'member',status:'active',class:""}; await setDoc(ref,currentUser); }
+                document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
+                document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=getDisplayName(currentUser); document.getElementById('p-email').innerText=currentUser.email;
+                document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
+                if(isAdmin(currentUser.email)) { document.getElementById('menu-admin').style.display='block'; document.getElementById('maintenance-overlay').style.display='none'; }
+            } else { currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('menu-admin').style.display='none'; }
         });
         function getDisplayName(u) { return (u.role === 'admin' || isAdmin(u.email)) ? `<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>` : u.displayName; }
 
-        // --- 3. AVATAR & UPLOAD ---
-        window.changeAvatar = async (input) => {
-            const file = input.files[0]; if(!file) return;
-            document.getElementById('upload-overlay').style.display = 'flex';
-            const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', UPLOAD_PRESET);
-            try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-                const json = await res.json();
-                if(json.secure_url) { await updateDoc(doc(db, "users", currentUser.uid), { photoURL: json.secure_url }); alert("Đổi avatar thành công!"); location.reload(); }
-            } catch(e) { alert("Lỗi tải ảnh!"); }
-            document.getElementById('upload-overlay').style.display = 'none';
-        }
-        window.checkLoginAndUpload = (col) => {
-            if(!currentUser) { alert("Vui lòng đăng nhập!"); return; }
-            if(!currentUser.class) { alert("Cập nhật LỚP trước!"); showPage('profile'); return; }
-            currentCollection = col; document.getElementById('file-input').click();
-        }
-        window.executeUpload = async (input) => {
-            const file = input.files[0]; if(!file) return;
-            const desc = prompt("Mô tả ảnh:"); if(desc === null) return;
-            document.getElementById('upload-overlay').style.display = 'flex';
-            const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', UPLOAD_PRESET);
-            try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
-                const json = await res.json();
-                if(json.secure_url) {
-                    await addDoc(collection(db, currentCollection), {
-                        url: json.secure_url, desc: desc, uid: currentUser.uid,
-                        authorName: currentUser.displayName, authorAvatar: currentUser.photoURL, className: currentUser.class,
-                        createdAt: serverTimestamp(), likes: [], comments: [], archived: false 
-                    });
-                    alert("Đăng thành công!");
-                }
-            } catch(e) { alert("Lỗi mạng!"); }
-            document.getElementById('upload-overlay').style.display = 'none'; input.value = "";
-        }
+        // --- 3. UPLOAD ---
+        window.changeAvatar = async (input) => { const f=input.files[0]; if(!f)return; document.getElementById('upload-overlay').style.display='flex'; const fd=new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi!");} document.getElementById('upload-overlay').style.display='none'; }
+        window.checkLoginAndUpload = (c) => { if(!currentUser){alert("Đăng nhập!");return;} if(!currentUser.class){alert("Cập nhật Lớp!");showPage('profile');return;} currentCollection=c; document.getElementById('file-input').click(); }
+        window.executeUpload = async (input) => { const f=input.files[0]; if(!f)return; const d=prompt("Mô tả:"); if(d===null)return; document.getElementById('upload-overlay').style.display='flex'; const fd=new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await addDoc(collection(db,currentCollection),{url:j.secure_url,desc:d,uid:currentUser.uid,authorName:currentUser.displayName,authorAvatar:currentUser.photoURL,className:currentUser.class,createdAt:serverTimestamp(),likes:[],comments:[],archived:false});alert("Đăng thành công!");}}catch(e){alert("Lỗi!");} document.getElementById('upload-overlay').style.display='none'; input.value=""; }
 
-        // --- 4. RENDER POSTS (Active Only) ---
-        function renderGrid(colName, elementId, rankUserParams, rankClassParams) {
-            onSnapshot(query(collection(db, colName), where("archived", "!=", true)), (snap) => {
-                const grid = document.getElementById(elementId); grid.innerHTML = "";
-                let userStats = {}; let classStats = {};
-                let docs = []; snap.forEach(d => docs.push({id:d.id, ...d.data()}));
-                docs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-
-                docs.forEach(data => {
-                    const likes = data.likes ? data.likes.length : 0;
-                    if(!userStats[data.authorName]) userStats[data.authorName] = 0; userStats[data.authorName] += likes;
-                    const className = data.className || "Khác";
-                    if(!classStats[className]) classStats[className] = 0; classStats[className] += likes;
-
-                    let controls = "";
-                    if(currentUser && (currentUser.uid === data.uid || isAdmin(currentUser.email))) {
-                        controls = `<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation(); editPost('${colName}', '${data.id}', '${data.desc}')">✏️</button><button class="ctrl-btn" onclick="event.stopPropagation(); deletePost('${colName}', '${data.id}')" style="color:red">🗑️</button></div>`;
-                    }
-                    const div = document.createElement('div'); div.className = 'gallery-item';
-                    div.innerHTML = `${controls}<div class="gallery-img-container"><img src="${data.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${data.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${data.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${data.authorName} (${data.className})</span></div><span>❤️ ${likes}</span></div></div>`;
-                    div.onclick = () => openLightbox(colName, data.id, data);
-                    grid.appendChild(div);
+        // --- 4. RENDER ---
+        function renderGrid(col, elId, uR, cR) {
+            onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
+                const g = document.getElementById(elId); g.innerHTML = ""; let uS={}; let cS={}; let docs=[]; snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+                docs.forEach(d => {
+                    const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
+                    let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')">✏️</button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red">🗑️</button></div>`; }
+                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorName} (${d.className})</span></div><span>❤️ ${l}</span></div></div></div>`;
                 });
-                renderRankTable(rankUserParams.id, userStats);
-                renderRankTable(rankClassParams.id, classStats);
+                renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
         }
-        function renderRankTable(elId, dataObj) {
-            const sorted = Object.entries(dataObj).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            const tbody = document.getElementById(elId); tbody.innerHTML = "";
-            sorted.forEach((item, index) => { tbody.innerHTML += `<tr class="${index===0?'rank-top-1':''}"><td><span class="rank-num">${index+1}</span> ${item[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${item[1]} ❤️</td></tr>`; });
-            if(sorted.length === 0) tbody.innerHTML = "<tr><td style='text-align:center;color:#999'>Chưa có dữ liệu</td></tr>";
-        }
+        function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} ❤️</td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'});
         renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
-        // --- 5. ARCHIVE SYSTEM ---
-        window.archiveSeason = async (col) => {
-            if(!confirm("⚠️ BẠN CÓ CHẮC CHẮN?\n\nChuyển TẤT CẢ bài hiện tại vào lưu trữ và làm trống trang chủ?")) return;
-            const seasonName = prompt("Nhập tên đợt (VD: Tháng 11 - 2025):");
-            if(!seasonName) return;
-            const q = query(collection(db, col), where("archived", "!=", true));
-            const snap = await getDocs(q);
-            const updates = [];
-            snap.forEach(d => { updates.push(updateDoc(doc(db, col, d.id), { archived: true, archiveLabel: seasonName })); });
-            await Promise.all(updates);
-            await addDoc(collection(db, "archives_meta"), { collection: col, label: seasonName, archivedAt: serverTimestamp() });
-            alert(`Đã lưu trữ ${updates.length} bài vào đợt: ${seasonName}`);
+        // --- 5. LIGHTBOX NEW ---
+        window.openLightbox = async (c, i, dataPreload) => {
+            currentImgId = i; currentImgCollection = c;
+            document.getElementById('lightbox').style.display = 'flex';
+            const snap = await getDoc(doc(db, c, i));
+            const data = snap.data();
+            
+            document.getElementById('lb-img').src = data.url;
+            document.getElementById('lb-author-avatar').src = data.authorAvatar || 'https://via.placeholder.com/35';
+            document.getElementById('lb-author-name').innerHTML = `${data.authorName} <span style="font-weight:normal;color:#777;font-size:0.8rem">(${data.className})</span>`;
+            document.getElementById('lb-desc').innerText = data.desc;
+            document.getElementById('lb-like-count').innerText = `${data.likes ? data.likes.length : 0} lượt thích`;
+            
+            // Buttons status
+            const likeBtn = document.getElementById('lb-like');
+            if(currentUser && data.likes && data.likes.includes(currentUser.uid)) likeBtn.classList.add('liked'); else likeBtn.classList.remove('liked');
+            document.getElementById('lb-admin-pin').style.display = (currentUser && isAdmin(currentUser.email)) ? 'block' : 'none';
+            
+            renderComments(data.comments || []);
         }
-        window.switchArchiveTab = (tab) => {
-            activeArchiveTab = tab;
-            document.querySelectorAll('.archive-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(`tab-ar-${tab}`).classList.add('active');
-            loadArchiveSeasons();
-        }
-        window.loadArchiveSeasons = async () => {
-            const sel = document.getElementById('archive-season-select');
-            sel.innerHTML = '<option value="">-- Đang tải... --</option>';
-            const q = query(collection(db, "archives_meta"), where("collection", "==", activeArchiveTab), orderBy("archivedAt", "desc"));
-            const snap = await getDocs(q);
-            sel.innerHTML = '<option value="">-- Chọn đợt --</option>';
-            snap.forEach(d => { const data = d.data(); sel.innerHTML += `<option value="${data.label}">${data.label}</option>`; });
-        }
-        window.loadArchiveGrid = async () => {
-            const label = document.getElementById('archive-season-select').value;
-            const grid = document.getElementById('archive-grid');
-            if(!label) { grid.innerHTML = ""; return; }
-            grid.innerHTML = "Đang tải...";
-            const q = query(collection(db, activeArchiveTab), where("archived", "==", true), where("archiveLabel", "==", label));
-            const snap = await getDocs(q);
-            grid.innerHTML = "";
-            snap.forEach(d => {
-                const data = d.data();
-                const div = document.createElement('div'); div.className = 'gallery-item';
-                div.innerHTML = `<div class="gallery-img-container"><img src="${data.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${data.desc}</div><div class="gallery-meta"><span>👤 ${data.authorName}</span><span>❤️ ${data.likes?data.likes.length:0}</span></div></div>`;
-                div.onclick = () => openLightbox(activeArchiveTab, d.id, data);
-                grid.appendChild(div);
-            });
-            if(snap.empty) grid.innerHTML = "Không tìm thấy ảnh.";
-        }
-
-        // --- 6. ADMIN CONFIG & USER EDIT ---
-        window.updateMainConfig = async () => {
-            await setDoc(doc(db, "settings", "config"), { maintenance: document.getElementById('cfg-maintenance').checked }, {merge: true});
-            alert("Đã cập nhật chế độ bảo trì!");
-        }
-        window.updateLocks = async () => {
-            await setDoc(doc(db, "settings", "config"), {
-                locks: {
-                    home: document.getElementById('lock-home').checked,
-                    greenclass: document.getElementById('lock-greenclass').checked,
-                    contest: document.getElementById('lock-contest').checked,
-                    activities: document.getElementById('lock-activities').checked
-                }
-            }, {merge: true});
-            alert("Đã cập nhật khóa mục!");
-        }
-        window.updateDeadlines = async () => {
-            await setDoc(doc(db, "settings", "config"), {
-                deadlines: {
-                    gallery: document.getElementById('time-gallery').value,
-                    contest: document.getElementById('time-contest').value
-                }
-            }, {merge: true});
-            alert("Đã cập nhật deadline!");
-        }
-        window.adminEditUser = async (uid, oldName, oldClass) => {
-            const n = prompt("Tên mới:", oldName); const c = prompt("Lớp mới:", oldClass);
-            if(n && c) { await updateDoc(doc(db, "users", uid), { displayName: n, class: c }); loadAdminData(); }
-        }
-        window.loadAdminData = async () => {
-            if(!currentUser || !isAdmin(currentUser.email)) return;
-            const t = document.getElementById('user-table-body'); t.innerHTML="Loading...";
-            const s = await getDocs(collection(db, "users")); t.innerHTML="";
-            s.forEach(d=>{ 
-                const u=d.data(); 
-                const banBtn = u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; 
-                const editBtn = `<button onclick="adminEditUser('${d.id}', '${u.displayName}', '${u.class||''}')">✏️</button>`;
-                t.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${editBtn}</td><td>${banBtn}</td></tr>`; 
-            });
-        }
-
-        // --- 7. UTILS ---
-        window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
-        window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
-        const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
-        window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="trash-item"><div class="${i.c}">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
-        
-        window.openLightbox = (c, i, d) => { currentImgId = i; currentImgCollection = c; document.getElementById('lightbox').style.display = 'flex'; document.getElementById('lb-img').src = d.url; document.getElementById('lb-like-count').innerText = d.likes ? d.likes.length : 0; document.getElementById('lb-admin-pin').style.display = (currentUser && isAdmin(currentUser.email)) ? 'flex' : 'none'; renderComments(d.comments || []); const btn = document.getElementById('lb-like'); btn.style.color = (currentUser && d.likes && d.likes.includes(currentUser.uid)) ? 'red' : 'white'; }
         window.closeLightbox = () => document.getElementById('lightbox').style.display = 'none';
-        window.handleLike = async () => { if(!currentUser) return alert("Đăng nhập!"); const r = doc(db, currentImgCollection, currentImgId); const s = await getDoc(r); const l = s.data().likes || []; if(l.includes(currentUser.uid)) await updateDoc(r, { likes: arrayRemove(currentUser.uid) }); else await updateDoc(r, { likes: arrayUnion(currentUser.uid) }); }
-        window.toggleComments = () => { const e = document.getElementById('lb-comments'); e.style.display=e.style.display==='none'?'block':'none'; }
-        window.postComment = async (e) => { e.preventDefault(); if(!currentUser) return; const t = document.getElementById('lb-cmt-input').value; await updateDoc(doc(db, currentImgCollection, currentImgId), { comments: arrayUnion({ uid: currentUser.uid, name: currentUser.displayName, text: t, time: Date.now() }) }); document.getElementById('lb-cmt-input').value = ""; }
-        function renderComments(arr) { const l = document.getElementById('lb-cmt-list'); l.innerHTML = arr.length?"":"<p style='color:#777;text-align:center'>Trống</p>"; arr.forEach(c => l.innerHTML += `<div style="padding:5px;border-bottom:1px solid #eee"><strong>${c.name}</strong>: ${c.text}</div>`); }
+        window.handleLike = async () => {
+            if(!currentUser) return alert("Đăng nhập!"); const ref=doc(db,currentImgCollection,currentImgId); const s=await getDoc(ref); const l=s.data().likes||[];
+            if(l.includes(currentUser.uid)) { await updateDoc(ref,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').classList.remove('liked'); }
+            else { await updateDoc(ref,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').classList.add('liked'); }
+            // Auto update count via realtime listener is better, but manual here for instant feel
+            const newL = l.includes(currentUser.uid) ? l.length-1 : l.length+1;
+            document.getElementById('lb-like-count').innerText = `${newL} lượt thích`;
+        }
+        window.postComment = async (e) => {
+            e.preventDefault(); if(!currentUser) return; const t=document.getElementById('lb-cmt-input').value;
+            await updateDoc(doc(db,currentImgCollection,currentImgId), { comments: arrayUnion({uid:currentUser.uid, name:currentUser.displayName, text:t, time:Date.now()}) });
+            document.getElementById('lb-cmt-input').value = "";
+            // Reload comments
+            const s = await getDoc(doc(db, currentImgCollection, currentImgId));
+            renderComments(s.data().comments);
+        }
+        function renderComments(arr) {
+            const list = document.getElementById('lb-cmt-list'); list.innerHTML = "";
+            arr.forEach(c => {
+                list.innerHTML += `<div class="lb-comment-item"><span class="lb-comment-user">${c.name}:</span><span>${c.text}</span></div>`;
+            });
+        }
+
+        // --- 6. EXPORT DATA (NEW) ---
+        window.exportData = async (type) => {
+            if(!currentUser || !isAdmin(currentUser.email)) return;
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // BOM for Excel
+            
+            if(type === 'users') {
+                csvContent += "Ten,Email,Lop,TrangThai\n";
+                const snap = await getDocs(collection(db, "users"));
+                snap.forEach(d => { const u = d.data(); csvContent += `"${u.displayName}","${u.email}","${u.class||''}","${u.banned?'Ban':u.status}"\n`; });
+                downloadCSV(csvContent, "Danh_sach_thanh_vien.csv");
+            } else {
+                csvContent += "NguoiDang,Lop,MoTa,LuotTim,LinkAnh,NgayDang\n";
+                const snap = await getDocs(collection(db, type));
+                snap.forEach(d => { const p = d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleDateString() : ''; csvContent += `"${p.authorName}","${p.className}","${p.desc}","${p.likes?p.likes.length:0}","${p.url}","${date}"\n`; });
+                downloadCSV(csvContent, `Bao_cao_${type}.csv`);
+            }
+        }
+        function downloadCSV(content, fileName) {
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI(content)); link.setAttribute("download", fileName); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        // --- 7. ARCHIVE ---
+        window.archiveSeason = async (col) => { if(!confirm("Lưu trữ và làm mới?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,col),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,col,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:col,label:n,archivedAt:serverTimestamp()}); alert("Đã lưu trữ!"); }
+        window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); }
+        window.loadArchiveSeasons = async () => { const sel=document.getElementById('archive-season-select'); sel.innerHTML='<option>Loading...</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const s=await getDocs(q); sel.innerHTML='<option value="">-- Chọn đợt --</option>'; s.forEach(d=>sel.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
+        window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const g=document.getElementById('archive-grid'); if(!l){g.innerHTML="";return;} g.innerHTML="Loading..."; const q=query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; s.forEach(d=>{ const da=d.data(); g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorName}</span><span>❤️ ${da.likes?da.likes.length:0}</span></div></div></div>`; }); }
+
+        // --- 8. ADMIN CONFIG & OTHERS ---
+        window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
+        window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked}},{merge:true}); alert("Đã lưu!"); }
+        window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
+        window.adminEditUser = async (u,n,c) => { const nn=prompt("Tên:",n); const cc=prompt("Lớp:",c); if(nn&&cc){await updateDoc(doc(db,"users",u),{displayName:nn,class:cc});loadAdminData();} }
+        window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); b.innerHTML=""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; const edt=`<button onclick="adminEditUser('${d.id}','${u.displayName}','${u.class||''}')">✏️</button>`; b.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${edt}</td><td>${btn}</td></tr>`}); }
         window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
         window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
-        onSnapshot(doc(db, "settings", "featured"), async (s) => { if(s.exists()) { const p = await getDoc(doc(db, s.data().col, s.data().id)); if(p.exists()) { const d=p.data(); document.getElementById('featured-post').style.display = 'flex'; document.getElementById('feat-img').src=d.url; document.getElementById('feat-title').innerText="Khoảnh khắc ấn tượng"; document.getElementById('feat-desc').innerText=d.desc; document.getElementById('feat-author').innerText="— "+d.authorName; } } });
+        onSnapshot(doc(db, "settings", "featured"), async (s) => { if(s.exists()) { const p = await getDoc(doc(db, s.data().col, s.data().id)); if(p.exists()) { const d=p.data(); document.getElementById('featured-post').style.display='flex'; document.getElementById('feat-img').src=d.url; document.getElementById('feat-title').innerText="Khoảnh khắc ấn tượng"; document.getElementById('feat-desc').innerText=d.desc; document.getElementById('feat-author').innerText="— "+d.authorName; } } });
+        window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
+        window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
+        
         window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
         window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
         window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, class: c, bio: b }); alert("Đã lưu!"); }
         window.showPage = (id) => { document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('nav a').forEach(a => a.classList.remove('active-menu')); document.getElementById('menu-'+id).classList.add('active-menu'); localStorage.setItem('page', id); if(id==='archive') loadArchiveSeasons(); }
+        const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
+        window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="trash-item"><div class="${i.c}">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
+        
         document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
         document.querySelectorAll('.btn-login').forEach(b => b.onclick = () => signInWithPopup(auth, provider));
         showPage(localStorage.getItem('page') || 'home');
