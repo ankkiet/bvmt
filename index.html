@@ -14,8 +14,8 @@
             --accent: #ffca28; --danger: #d32f2f; --info: #0288d1;
             --bg: #f8f9fa; --text: #333; --white: #ffffff;
             --admin-color: #c62828; --archive-color: #4e342e;
-            --nav-height: 65px;
             --fb-bg: #f0f2f5; --fb-blue: #1877f2;
+            --nav-height: 65px;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
@@ -38,13 +38,10 @@
         .page-section { display: none; animation: fadeIn 0.4s ease-out; }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
         .locked-overlay { text-align: center; padding: 60px 20px; background: #fffde7; border: 2px dashed #fbc02d; border-radius: 15px; color: #f57f17; margin-bottom: 30px; }
-        
         h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 4px solid var(--accent); display: inline-block; padding-bottom: 8px; margin-bottom: 35px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 2rem; }
         h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.4rem; border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; }
         .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; }
-        .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.08); transform: translateY(-2px); }
 
         /* --- 4. BUTTONS & INPUTS --- */
         .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
@@ -52,6 +49,11 @@
         .btn-danger { background: var(--danger); } 
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-sm { padding: 6px 14px; font-size: 0.85rem; border-radius: 6px; }
+        
+        /* Nút Xóa tài khoản (Chìm) */
+        .btn-ghost-danger { background: transparent; color: #999; border: 1px solid #eee; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
+        .btn-ghost-danger:hover { background: #ffebee; color: var(--danger); border-color: var(--danger); }
+
         input, textarea, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; font-size: 1rem; transition: 0.3s; background: #fafafa; }
         input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
 
@@ -63,14 +65,13 @@
         .music-fab:active { transform: scale(0.95); }
         .music-icon { font-size: 35px; color: #333; transition: 0.5s; }
         .music-icon.playing { animation: spin 3s linear infinite; color: var(--primary); }
-        .music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         #home-login-area { margin-top: 20px; text-align: center; }
         .home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 30px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .home-login-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
 
-        /* --- 6. GALLERY --- */
+        /* --- 6. GALLERY & GRID --- */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #fff; border: 1px solid #eee; transition: 0.3s; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
@@ -82,16 +83,13 @@
         .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; align-items: center; }
         .post-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; margin-right: 6px; vertical-align: middle; }
         .grid-actions { display:flex; gap:10px; margin-top:5px; padding-top:5px; border-top:1px solid #f0f0f0; font-size:0.8rem; color:#555; }
-        .grid-act-btn { cursor:pointer; background:none; border:none; color:#555; transition:0.2s; }
-        .grid-act-btn:hover { color:var(--primary); }
         .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; }
-        .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: 0.2s; }
+        .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 
         .featured-section { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 2px solid var(--primary); border-radius: 20px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: center; position: relative; overflow: hidden; }
         .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 20px; font-weight: 800; border-bottom-right-radius: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         .featured-img { width: 160px; height: 160px; object-fit: cover; border-radius: 15px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .featured-content h3 { font-size: 1.5rem; margin: 0 0 10px 0; color: var(--primary-dark); }
-        .featured-content p { font-size: 1.1rem; color: #555; font-style: italic; }
 
         /* --- 7. RANKING & ARCHIVE --- */
         .ranking-wrapper { display: flex; gap: 25px; flex-wrap: wrap; margin-top: 30px; }
@@ -101,13 +99,11 @@
         .rank-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
         .rank-table td { padding: 12px 15px; border-bottom: 1px solid #f5f5f5; }
         .rank-top-1 { background: #fffde7; font-weight: bold; color: #f9a825; }
-        .rank-num { display: inline-flex; width: 26px; height: 26px; background: #eee; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: #555; margin-right: 8px; }
-        .rank-top-1 .rank-num { background: #fbc02d; color: white; }
         .archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; overflow-x: auto; }
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- 8. LIGHTBOX & ZOOM & FB COMMENTS --- */
+        /* --- 8. LIGHTBOX & COMMENTS (FACEBOOK STYLE) --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); overflow-y: auto; padding: 20px 0; }
         .lb-container { margin: 20px auto; width: 95%; max-width: 900px; background: white; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; max-height: 90vh; }
         .lb-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; z-index: 100; font-weight: bold; }
@@ -120,32 +116,40 @@
         .lb-details { padding: 20px; display: flex; flex-direction: column; height: 30vh; background: #fff; }
         .lb-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; flex-shrink: 0; }
         .lb-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
-        
-        /* Actions Bar */
         .lb-actions { margin-top: 10px; display: flex; gap: 20px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .lb-action-item { cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #555; background: none; border: none; }
         .lb-action-item:hover { color: var(--primary); }
         .lb-action-item.liked { color: #e53935; }
         .lb-action-item.liked i { font-weight: 900; }
 
-        /* FB Style Comments */
-        .lb-comments-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; padding-right: 5px; display: none; /* Hidden by default */ }
+        /* Comments Wrapper */
+        .lb-comments-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; padding-right: 5px; display: none; }
         .lb-comments-wrapper.show { display: block; }
         
-        .lb-comment-item { margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
+        /* Comment Item Structure */
+        .lb-comment-item { margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
         .lb-comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .lb-comment-bubble { background: var(--fb-bg); padding: 8px 12px; border-radius: 18px; position: relative; max-width: 85%; }
+        .lb-comment-content { display: flex; flex-direction: column; max-width: 85%; }
+        .lb-comment-bubble { background: var(--fb-bg); padding: 8px 12px; border-radius: 18px; position: relative; }
         .lb-comment-user { font-weight: bold; font-size: 0.85rem; color: #050505; display: block; margin-bottom: 2px; }
         .lb-comment-text { font-size: 0.9rem; color: #050505; line-height: 1.4; word-wrap: break-word; }
-        .lb-comment-actions { margin-left: 50px; font-size: 0.75rem; color: #65676b; margin-top: 2px; }
-        .lb-reply-btn { cursor: pointer; font-weight: bold; margin-right: 10px; }
+        
+        /* Tag Styling */
+        .mention-tag { color: var(--info); font-weight: bold; background: rgba(2, 136, 209, 0.1); padding: 0 4px; border-radius: 4px; }
+        
+        /* Reply Button & Nested Look */
+        .lb-comment-actions { margin-left: 12px; font-size: 0.75rem; color: #65676b; margin-top: 2px; }
+        .lb-reply-btn { cursor: pointer; font-weight: bold; }
         .lb-reply-btn:hover { text-decoration: underline; }
+        
+        /* Reply Indentation (Visual only since flat data) */
+        .lb-comment-item.is-reply { margin-left: 42px; transform: scale(0.95); transform-origin: top left; }
 
-        .lb-input-area { display: none; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; flex-shrink: 0; } /* Hidden by default */
+        .lb-input-area { display: none; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; flex-shrink: 0; }
         .lb-input-area.show { display: flex; }
         .lb-input-area input { border-radius: 20px; padding: 8px 15px; background: var(--fb-bg); border: none; }
 
-        /* --- 9. ADMIN TABLE & SWITCH --- */
+        /* --- 9. ADMIN --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
         .admin-table th { text-align: left; padding: 12px; background: #f1f1f1; color: #555; }
         .admin-table td { padding: 12px; border-bottom: 1px solid #eee; }
@@ -209,7 +213,6 @@
                         <button class="home-login-btn" onclick="signInWithPopup(auth, provider)"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
                     </div>
                 </div>
-                
                 <div id="featured-post" class="featured-section" style="display: none;">
                     <div class="featured-badge">🌟 TOP 1 ĐƯỢC YÊU THÍCH</div>
                     <img id="feat-img" src="" class="featured-img">
@@ -219,7 +222,6 @@
                         <p id="feat-author" style="margin-top: 10px;">— Tác giả: ...</p>
                     </div>
                 </div>
-
                 <div class="card" style="border-left: 5px solid var(--accent);"><h3>💡 Thông điệp hôm nay</h3><p id="daily-tip">Loading...</p></div>
             </div>
         </div>
@@ -273,11 +275,12 @@
                     </div>
                     
                     <div style="margin-bottom:15px; display:flex; gap:10px;">
-                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên hoặc Nội dung..." style="flex:1;">
-                        <button class="btn btn-sm" onclick="loadArchiveGrid()">Tìm</button>
+                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên, Nội dung (Gõ để lọc...)" style="flex:1;" onkeyup="loadArchiveGrid()">
                     </div>
 
-                    <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%"><option value="">-- Chọn đợt thi đua --</option></select>
+                    <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%">
+                        <option value="ALL">📂 Tất cả ảnh lưu trữ</option>
+                    </select>
                     <div id="archive-grid" class="gallery-grid"></div>
                 </div>
             </div>
@@ -302,7 +305,7 @@
 
         <div id="profile" class="page-section">
             <h1>👤 Hồ Sơ Của Tôi</h1>
-            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
+            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập để sử dụng tính năng.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
             <div id="profile-in" style="display: none;">
                 <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>
                 <div class="card">
@@ -317,12 +320,18 @@
                     </div>
                     <form onsubmit="updateProfile(event)">
                         <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
-                        <label>ID Cá nhân (Không được trùng):</label><input type="text" id="edit-custom-id" placeholder="@..." pattern="@[a-zA-Z0-9_]+" title="Bắt đầu bằng @, không dấu, không cách" required>
+                        <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
                         <label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option><option>12A4</option><option>12A5</option><option>12A6</option><option>12A7</option><option>12A8</option><option>12A9</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option><option>11A4</option><option>11A5</option><option>11A6</option><option>11A7</option><option>11A8</option><option>11A9</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option><option>10A4</option><option>10A5</option><option>10A6</option><option>10A7</option><option>10A8</option><option>10A9</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select>
                         <label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea>
-                        <div style="margin-top:20px; display:flex; justify-content:space-between"><button type="submit" class="btn">💾 Lưu Hồ Sơ</button><button type="button" class="btn btn-outline" onclick="handleLogout()">🚪 Đăng Xuất</button></div>
+                        
+                        <div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">
+                            <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
+                            <button type="button" class="btn" style="background:var(--primary-dark); color:white;" onclick="handleLogout()">🚪 ĐĂNG XUẤT</button>
+                        </div>
                     </form>
-                    <div style="margin-top:30px; padding-top:20px; border-top:1px solid #eee;"><button class="btn btn-danger" onclick="requestDeleteAccount()" style="width:100%"><i class="fas fa-trash"></i> Xóa Tài Khoản</button></div>
+                    <div style="margin-top:20px; text-align:center;">
+                        <button class="btn-ghost-danger" onclick="requestDeleteAccount()"><i class="fas fa-trash"></i> Xóa tài khoản vĩnh viễn</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -334,7 +343,7 @@
                 <h3>🎵 Quản Lý Nhạc (Playlist)</h3>
                 <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
                     <input type="text" id="new-song-name" placeholder="Tên bài hát" style="flex:1">
-                    <input type="text" id="new-song-url" placeholder="Dán Link YouTube vào đây..." style="flex:1">
+                    <input type="text" id="new-song-url" placeholder="Dán Link YouTube..." style="flex:1">
                     <button class="btn btn-sm" onclick="addNewSong()">➕ Thêm</button>
                 </div>
                 <div id="music-playlist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius:8px;"></div>
@@ -543,62 +552,45 @@
         window.openLightbox = async (c, i) => { 
             currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
             const s=await getDoc(doc(db,c,i)); const d=s.data(); 
-            
-            // Reset Zoom
-            const imgArea = document.getElementById('lb-zoom-area');
-            imgArea.classList.remove('zoomed');
-            document.getElementById('lb-img').style.transform = "scale(1)";
-
+            const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)";
             document.getElementById('lb-img').src=d.url; 
             document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; 
             document.getElementById('lb-author-name').innerHTML=d.authorName;
             document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
             document.getElementById('lb-desc').innerText=d.desc; 
             document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
-            const btn = document.getElementById('lb-like'); 
-            if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } 
-            else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
-            
+            const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
             document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; 
-            
-            // Reset Comments UI
-            document.getElementById('lb-comments-wrapper').classList.remove('show');
-            document.getElementById('lb-input-area').classList.remove('show');
+            document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show');
             renderComments(d.comments||[]); 
         }
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         
         window.toggleZoom = (e) => {
-            const area = document.getElementById('lb-zoom-area');
-            const img = document.getElementById('lb-img');
-            
-            if (area.classList.contains('zoomed')) {
-                area.classList.remove('zoomed');
-                img.style.transform = "scale(1)";
-            } else {
-                area.classList.add('zoomed');
-                // Calculate scale origin based on click position
-                const rect = area.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                img.style.transformOrigin = `${x}px ${y}px`;
-                img.style.transform = "scale(2.5)";
-            }
+            const area = document.getElementById('lb-zoom-area'); const img = document.getElementById('lb-img');
+            if (area.classList.contains('zoomed')) { area.classList.remove('zoomed'); img.style.transform = "scale(1)"; } else { area.classList.add('zoomed'); const rect = area.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; img.style.transformOrigin = `${x}px ${y}px`; img.style.transform = "scale(2.5)"; }
         }
-
-        window.toggleComments = () => {
-            const wrap = document.getElementById('lb-comments-wrapper');
-            const inp = document.getElementById('lb-input-area');
-            wrap.classList.toggle('show');
-            inp.classList.toggle('show');
-        }
-
+        window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); const inp = document.getElementById('lb-input-area'); wrap.classList.toggle('show'); inp.classList.toggle('show'); }
         window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
         window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
+        
+        // --- NEW COMMENT STYLE (NESTED LOOK) ---
         function renderComments(arr) { 
             const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
-            arr.forEach(c=>{ l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; }); 
+            arr.forEach(c=>{ 
+                // Colorify @mentions and simple indentation
+                let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>');
+                let isReply = text.includes('@');
+                let replyClass = isReply ? 'is-reply' : '';
+                l.innerHTML+=`<div class="lb-comment-item ${replyClass}">
+                    <img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar">
+                    <div class="lb-comment-content">
+                        <div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div>
+                        <div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div>
+                    </div>
+                </div>`; 
+            }); 
         }
 
         // --- UTILS & ADMIN ---
@@ -615,17 +607,32 @@
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
         window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
-        window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option>Loading...</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); s.innerHTML='<option value="">-- Chọn đợt --</option>'; sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
+        window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option>Loading...</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
+        
+        // --- FIXED ARCHIVE SEARCH ---
         window.loadArchiveGrid = async () => { 
             const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
-            const g=document.getElementById('archive-grid'); if(!l){g.innerHTML="";return;} g.innerHTML="Loading..."; 
-            const q=query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; 
+            const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; 
+            
+            let q;
+            if(l === 'ALL') {
+                // If ALL is selected, just get archived items.
+                q = query(collection(db,activeArchiveTab),where("archived","==",true));
+            } else {
+                // Specific season
+                q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l));
+            }
+            
+            const s=await getDocs(q); g.innerHTML=""; 
+            if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; }
+
             s.forEach(d=>{
                 const da=d.data();
                 if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return;
                 g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`;
             }); 
         }
+        
         window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); }
         window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
         
