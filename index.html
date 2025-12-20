@@ -5,177 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Green School - A2K41 Official</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         /* --- 1. CORE STYLES --- */
         :root { 
             --primary: #2e7d32; --primary-dark: #1b5e20;
             --accent: #ffca28; --danger: #e53935; --info: #0288d1;
-            --bg: #f0f4f0; --text: #333; --white: #ffffff;
+            --bg: #f4f6f4; --text: #333; --white: #ffffff;
             --admin-color: #d32f2f; --archive-color: #5d4037;
+            --nav-height: 60px;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+        body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
 
-        /* --- 2. NAVIGATION --- */
-        nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 12px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        nav ul { list-style: none; margin: 0; padding: 0 10px; display: flex; justify-content: center; overflow-x: auto; white-space: nowrap; gap: 5px; }
-        nav ul::-webkit-scrollbar { display: none; }
-        nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 8px 16px; display: block; font-size: 0.85rem; border-radius: 30px; transition: 0.3s; opacity: 0.95; cursor: pointer; }
-        nav ul li a:hover, nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); opacity: 1; transform: translateY(-2px); }
-        #menu-admin { background: var(--admin-color); display: none; } 
-        #menu-archive { background: var(--archive-color); }
+        /* --- 2. NAVIGATION (MOBILE FIRST DESIGN) --- */
+        /* PC Nav */
+        nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 12px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: block; }
+        nav.pc-nav ul { list-style: none; margin: 0; padding: 0 10px; display: flex; justify-content: center; gap: 5px; }
+        nav.pc-nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 8px 16px; display: block; font-size: 0.85rem; border-radius: 30px; transition: 0.3s; cursor: pointer; }
+        nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgba(255,255,255,0.25); color: var(--accent); transform: translateY(-2px); }
+
+        /* Mobile Bottom Nav (App Style) */
+        nav.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid #eee; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .mobile-nav-inner { display: flex; justify-content: space-around; align-items: center; height: var(--nav-height); }
+        .nav-item { flex: 1; text-align: center; color: #888; text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
+        .nav-item.active-menu { color: var(--primary); font-weight: bold; }
+        .nav-item.active-menu i { transform: translateY(-2px); color: var(--primary); }
 
         /* --- 3. LAYOUT & CARDS --- */
         .container { max-width: 1200px; width: 95%; margin: 20px auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 80vh; }
         .page-section { display: none; animation: fadeIn 0.4s ease-out; }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .locked-section-overlay { text-align: center; padding: 50px; background: #fff3e0; border: 2px dashed #ffb74d; border-radius: 10px; color: #e65100; margin-bottom: 20px; }
+        .locked-section-overlay { text-align: center; padding: 40px; background: #fff8e1; border: 2px dashed #ffb300; border-radius: 10px; color: #f57c00; margin-bottom: 20px; }
 
         h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 30px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; }
         h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.3rem; border-left: 4px solid var(--accent); padding-left: 10px; }
         .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; }
-        .card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
 
         /* --- 4. BUTTONS & INPUTS --- */
         .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.95rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
         .btn-danger { background: var(--danger); } .btn-danger:hover { background: #c62828; }
-        .btn-google { background: #DB4437; width: 100%; max-width: 280px; margin: 10px auto; }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
-        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 1rem; transition: 0.3s; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 1rem; }
 
         /* --- 5. GRID & IMAGES --- */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.1); background: #fff; border: 1px solid #eee; transition: 0.3s; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        .gallery-img-container { width: 100%; aspect-ratio: 1/1; overflow: hidden; }
+        .gallery-img-container { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: #eee; }
         .gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
         .gallery-item:hover .gallery-img { transform: scale(1.1); }
         .gallery-info { padding: 10px; background: white; }
-        .gallery-title { font-weight: bold; font-size: 0.95rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; margin-top: 5px; align-items: center; }
+        .gallery-title { font-weight: bold; font-size: 0.9rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-meta { font-size: 0.75rem; color: #666; display: flex; justify-content: space-between; margin-top: 5px; align-items: center; }
         .post-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 5px; border: 1px solid #ccc; }
         .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; }
-        .ctrl-btn { background: rgba(255,255,255,0.9); border: 1px solid #ddd; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .ctrl-btn:hover { transform: scale(1.1); background: white; }
+        .ctrl-btn { background: rgba(255,255,255,0.95); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         /* --- 6. RANKING & ARCHIVE --- */
         .ranking-wrapper { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
         .ranking-card { flex: 1; min-width: 300px; background: #fff; border-radius: 10px; border: 1px solid #eee; overflow: hidden; }
         .ranking-header { background: var(--primary); color: white; padding: 10px; text-align: center; font-weight: bold; }
-        .ranking-header.class-rank { background: var(--info); }
         .rank-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .rank-table td { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; }
         .rank-top-1 { background: #fffde7; font-weight: bold; color: #fbc02d; }
         .rank-num { display: inline-block; width: 24px; height: 24px; background: #eee; border-radius: 50%; text-align: center; line-height: 24px; font-size: 0.8rem; font-weight: bold; color: #555; }
         .rank-top-1 .rank-num { background: #fbc02d; color: white; }
-        .archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; }
-        .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 5px; font-weight: bold; }
+        .archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 10px; border-radius: 10px; overflow-x: auto; }
+        .archive-tab { cursor: pointer; padding: 8px 16px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; }
         .archive-tab.active { background: var(--archive-color); color: white; }
 
-        /* --- 7. ADMIN --- */
+        /* --- 7. ADMIN & SWITCH --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .admin-table th { text-align: left; padding: 10px; background: #eee; }
         .admin-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        .st-active { color: green; font-weight: bold; } .st-banned { color: red; font-weight: bold; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; -webkit-transition: .4s; transition: .4s; border-radius: 50%; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { -webkit-transform: translateX(20px); transform: translateX(20px); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        /* --- 8. NEW LIGHTBOX (INSTAGRAM STYLE) --- */
+        /* --- 8. MUSIC PLAYER UI (ROTATING DISC) --- */
+        .music-player-fab { position: fixed; bottom: 80px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary); overflow: hidden; transition: 0.3s; }
+        .music-player-fab:active { transform: scale(0.9); }
+        .music-disc { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; animation: spin 4s linear infinite; animation-play-state: paused; }
+        .music-disc.playing { animation-play-state: running; }
+        .music-icon-center { position: absolute; font-size: 1.2rem; color: var(--primary); text-shadow: 0 0 5px white; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- 9. NEW LIGHTBOX (Instagram Style) --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
         .lb-container { display: flex; background: white; max-width: 1100px; width: 100%; height: 85vh; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .lb-image-area { flex: 2; background: black; display: flex; align-items: center; justify-content: center; position: relative; }
+        .lb-image-area { flex: 2; background: black; display: flex; align-items: center; justify-content: center; }
         .lb-image-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .lb-sidebar { flex: 1; display: flex; flex-direction: column; border-left: 1px solid #ddd; background: #fff; min-width: 320px; }
-        
         .lb-header { padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .lb-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
         .lb-comments-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .lb-comment-item { margin-bottom: 15px; font-size: 0.9rem; }
-        .lb-comment-user { font-weight: bold; margin-right: 5px; color: var(--primary-dark); }
-        .lb-desc { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .lb-comment-item { margin-bottom: 10px; font-size: 0.9rem; display: flex; gap: 5px; }
+        .lb-comment-user { font-weight: bold; color: var(--primary-dark); }
         .lb-footer { padding: 15px; border-top: 1px solid #eee; }
         .lb-actions { display: flex; gap: 15px; margin-bottom: 10px; font-size: 1.5rem; }
-        .lb-action-btn { cursor: pointer; transition: 0.2s; color: #333; background: none; border: none; font-size: inherit; }
+        .lb-action-btn { cursor: pointer; background: none; border: none; font-size: inherit; color: #333; }
         .lb-action-btn:hover { color: var(--primary); }
         .lb-action-btn.liked { color: #e53935; }
         .lb-input-group { display: flex; gap: 10px; }
-        
-        /* Mobile Lightbox */
-        @media (max-width: 768px) {
-            .lb-container { flex-direction: column; height: 95vh; }
-            .lb-image-area { flex: 1; background: #000; min-height: 40%; }
-            .lb-sidebar { flex: 1; min-width: auto; }
-        }
+        .lb-input-group input { border: none; flex: 1; outline: none; }
 
-        /* --- 9. FEATURED & COUNTDOWN --- */
-        .featured-section { background: linear-gradient(135deg, #fff9c4, #fff); border: 2px solid var(--accent); border-radius: 15px; padding: 20px; margin-bottom: 30px; position: relative; display: flex; gap: 20px; align-items: center; }
-        .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); padding: 5px 15px; font-weight: bold; border-bottom-right-radius: 10px; color: #333; }
-        .countdown-box { background: var(--primary); color: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(46,125,50,0.3); display: none; }
-        .timer-display { font-size: 1.5rem; font-weight: bold; font-family: monospace; }
-        .trash-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; background: #fafafa; }
-        .bin-recycle { color: #1976d2; font-weight: bold; } .bin-organic { color: #388e3c; font-weight: bold; } .bin-other { color: #f57c00; font-weight: bold; }
-
-        /* --- 10. MAINTENANCE --- */
+        /* --- 10. MAINTENANCE & RESPONSIVE --- */
         #maintenance-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        #maintenance-overlay h1 { border: none; font-size: 2rem; }
-        #maintenance-overlay img { max-width: 200px; margin-bottom: 20px; }
-
+        
+        /* MOBILE OPTIMIZATIONS */
         @media (max-width: 768px) {
-            .container { width: 100%; margin: 0; border-radius: 0; padding: 15px; }
+            .container { width: 100%; margin: 0; border-radius: 0; padding: 15px 15px 100px 15px; box-shadow: none; }
+            nav.pc-nav { display: none; }
+            nav.mobile-nav { display: block; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .featured-section { flex-direction: column; text-align: center; }
             .ranking-wrapper { flex-direction: column; }
+            
+            /* Card Ranking on Mobile */
+            .rank-table thead { display: none; }
+            .rank-table tr { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+            .rank-table td { padding: 5px; border: none; }
+            
+            /* Lightbox Mobile */
+            .lb-container { flex-direction: column; height: 100%; border-radius: 0; }
+            .lb-image-area { flex: 1; background: #000; min-height: 40vh; }
+            .lb-sidebar { flex: 1.5; min-width: auto; }
+            .modal { padding: 0; width: 100%; height: 100%; }
+            .music-player-fab { bottom: 70px; right: 15px; }
+            
+            h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
 
     <div id="maintenance-overlay">
-        <img src="https://cdn-icons-png.flaticon.com/512/3233/3233483.png" alt="Maintenance">
-        <h1>🚧 Hệ thống đang bảo trì</h1>
-        <p style="font-size: 1.2rem; color: #666;">Admin đang cải tiến hệ thống. Xin vui lòng quay lại sau!</p>
-        <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
+        <i class="fas fa-tools" style="font-size: 4rem; color: var(--accent); margin-bottom: 20px;"></i>
+        <h1>Hệ thống đang bảo trì</h1>
+        <p>Admin đang nâng cấp. Vui lòng quay lại sau!</p>
+        <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Login</button>
     </div>
 
-    <nav>
+    <div class="music-player-fab" onclick="toggleMusic()" title="Bật/Tắt Nhạc">
+        <img src="https://media.istockphoto.com/id/1141495869/vector/vinyl-record-vector-illustration-vinyl-record-icon.jpg?s=612x612&w=0&k=20&c=N5M9943_s_yN6T_I-rF2O4tZk_4XkC5gHk_9k_Xk_Xk=" class="music-disc" id="music-disc-img">
+        <i class="fas fa-music music-icon-center"></i>
+    </div>
+    <div id="player" style="display:none;"></div>
+
+    <nav class="pc-nav">
         <ul>
-            <li><a onclick="showPage('home')" id="menu-home">🏠 Trang Chủ</a></li>
-            <li><a onclick="showPage('greenclass')" id="menu-greenclass">🌿 Góc Xanh</a></li>
-            <li><a onclick="showPage('contest')" id="menu-contest">🏆 Thi Đua</a></li>
-            <li><a onclick="showPage('archive')" id="menu-archive">🗄️ Lưu Trữ</a></li>
-            <li><a onclick="showPage('activities')" id="menu-activities">📅 Hoạt Động</a></li>
-            <li><a onclick="showPage('guide')" id="menu-guide">🔍 Tra Cứu</a></li>
-            <li><a onclick="showPage('profile')" id="menu-profile">👤 Tài Khoản</a></li>
-            <li><a onclick="showPage('admin')" id="menu-admin">🛠 Quản Trị</a></li>
+            <li><a onclick="showPage('home')" id="menu-pc-home">Trang Chủ</a></li>
+            <li><a onclick="showPage('greenclass')" id="menu-pc-greenclass">Góc Xanh</a></li>
+            <li><a onclick="showPage('contest')" id="menu-pc-contest">Thi Đua</a></li>
+            <li><a onclick="showPage('archive')" id="menu-pc-archive">Lưu Trữ</a></li>
+            <li><a onclick="showPage('activities')" id="menu-pc-activities">Hoạt Động</a></li>
+            <li><a onclick="showPage('guide')" id="menu-pc-guide">Tra Cứu</a></li>
+            <li><a onclick="showPage('profile')" id="menu-pc-profile">Tài Khoản</a></li>
+            <li><a onclick="showPage('admin')" id="menu-pc-admin" style="display:none">Admin</a></li>
         </ul>
     </nav>
 
     <div class="container">
-        
         <div id="home" class="page-section">
-            <div id="locked-home" class="locked-section-overlay" style="display:none"><h2>🔒 Mục này đang tạm khóa</h2></div>
+            <div id="locked-home" class="locked-section-overlay" style="display:none"><h3>🔒 Mục này đang tạm khóa</h3></div>
             <div id="content-home">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1000&q=80" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px;">
-                    <h1 style="border:none; margin-top: 15px;">A2K41 - Green School</h1>
-                    <p>Chung tay vì một môi trường xanh - sạch - đẹp</p>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1000&q=80" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px;">
+                    <h1 style="border:none; margin-top: 15px;">A2K41 Green School</h1>
                 </div>
                 <div id="featured-post" class="featured-section" style="display: none;">
-                    <div class="featured-badge">🌟 NGÔI SAO TUẦN NÀY</div>
-                    <img id="feat-img" src="" style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; border: 2px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <div class="featured-badge">🌟 STAR OF THE WEEK</div>
+                    <img id="feat-img" src="" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                     <div>
-                        <h3 id="feat-title" style="margin: 0 0 5px 0; color: var(--primary);">Tiêu đề bài viết</h3>
-                        <p id="feat-desc" style="margin: 0; color: #555;">Mô tả...</p>
-                        <p id="feat-author" style="margin-top: 10px; font-weight: bold; font-size: 0.9rem;">— Tác giả: ...</p>
+                        <h3 id="feat-title" style="margin: 0 0 5px 0; color: var(--primary);">Tiêu điểm</h3>
+                        <p id="feat-desc" style="margin: 0; color: #555;">...</p>
+                        <p id="feat-author" style="margin-top: 5px; font-weight: bold; font-size: 0.9rem;">— ...</p>
                     </div>
                 </div>
                 <div class="card" style="border-left: 5px solid var(--accent);">
@@ -186,30 +198,31 @@
         </div>
 
         <div id="activities" class="page-section">
-            <div id="locked-activities" class="locked-section-overlay" style="display:none"><h2>🔒 Mục này đang tạm khóa</h2></div>
+            <div id="locked-activities" class="locked-section-overlay" style="display:none"><h3>🔒 Mục này đang tạm khóa</h3></div>
             <div id="content-activities">
-                <h1>📅 Hoạt Động & Tin Tức</h1>
-                <div class="card"><h2>♻️ Phong trào "Đổi giấy lấy cây"</h2><p><strong>Thời gian:</strong> 15:00 - 17:00 chiều Thứ 5 hàng tuần.</p><p><strong>Địa điểm:</strong> Phòng Đội (Tầng 1).</p></div>
-                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức & Kết Nối</h2><ul style="line-height: 1.8;"><li><a href="#" style="text-decoration: none; color: var(--primary);">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh" tuần tới.</a></li></ul></div>
+                <h1>📅 Hoạt Động</h1>
+                <div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div>
+                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
             </div>
         </div>
 
         <div id="guide" class="page-section">
-            <h1>🔍 Tra Cứu Phân Loại Rác</h1>
+            <h1>🔍 Tra Cứu Rác</h1>
             <div style="max-width: 500px; margin: 0 auto 20px auto;"><input type="text" id="trashSearchInput" placeholder="Nhập tên rác..." onkeyup="filterTrash()"></div>
             <div id="trashContainer" class="trash-result"></div>
         </div>
 
         <div id="greenclass" class="page-section">
-            <div id="locked-greenclass" class="locked-section-overlay" style="display:none"><h2>🔒 Admin đang khóa mục này</h2></div>
+            <div id="locked-greenclass" class="locked-section-overlay" style="display:none"><h3>🔒 Admin đang khóa mục này</h3></div>
             <div id="content-greenclass">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
-                    <h1>🌿 Góc "Lớp Học Xanh"</h1>
-                    <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')">📸 Đăng Ảnh Ngay</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:15px">
+                    <h2 style="margin:0">🌿 Góc Xanh</h2>
+                    <button class="btn btn-sm btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh</button>
                 </div>
-                <div class="countdown-box" id="cd-gallery"><div style="font-size: 0.9rem; text-transform: uppercase;">⏳ Thời gian còn lại:</div><div id="timer-gallery" class="timer-display">Loading...</div></div>
-                <p style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px dashed #2196f3; font-size: 0.9rem;">ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh góc lớp, cây xanh.</p>
+                <div class="countdown-box" id="cd-gallery" style="display:none; text-align:center; padding:10px; background:var(--primary); color:white; border-radius:8px; margin-bottom:15px"><span id="timer-gallery">Loading...</span></div>
+                
                 <div id="gallery-grid" class="gallery-grid"></div>
+                
                 <div class="ranking-wrapper">
                     <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-gallery-user"></tbody></table></div>
                     <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-gallery-class"></tbody></table></div>
@@ -218,15 +231,16 @@
         </div>
 
         <div id="contest" class="page-section">
-            <div id="locked-contest" class="locked-section-overlay" style="display:none"><h2>🔒 Admin đang khóa mục này</h2></div>
+            <div id="locked-contest" class="locked-section-overlay" style="display:none"><h3>🔒 Admin đang khóa mục này</h3></div>
             <div id="content-contest">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
-                    <h1>🏆 Phong Trào Thi Đua</h1>
-                    <button class="btn btn-upload" onclick="checkLoginAndUpload('contest')">📤 Báo Cáo Hoạt Động</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:15px">
+                    <h2 style="margin:0">🏆 Thi Đua</h2>
+                    <button class="btn btn-sm btn-upload" onclick="checkLoginAndUpload('contest')"><i class="fas fa-upload"></i> Báo Cáo</button>
                 </div>
-                <div class="countdown-box" id="cd-contest"><div style="font-size: 0.9rem; text-transform: uppercase;">⏳ Thời gian còn lại:</div><div id="timer-contest" class="timer-display">Loading...</div></div>
-                <p style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px dashed #2196f3; font-size: 0.9rem;">ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh hoạt động thực tế.</p>
+                <div class="countdown-box" id="cd-contest" style="display:none; text-align:center; padding:10px; background:var(--primary); color:white; border-radius:8px; margin-bottom:15px"><span id="timer-contest">Loading...</span></div>
+                
                 <div id="contest-grid" class="gallery-grid"></div>
+                
                 <div class="ranking-wrapper">
                     <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-contest-user"></tbody></table></div>
                     <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-contest-class"></tbody></table></div>
@@ -235,99 +249,106 @@
         </div>
 
         <div id="archive" class="page-section">
-            <h1>🗄️ Kho Lưu Trữ</h1>
+            <h1>🗄️ Lưu Trữ</h1>
             <div class="card">
                 <div class="archive-controls">
                     <div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div>
                     <div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <label>Chọn đợt thi đua:</label>
-                    <select id="archive-season-select" onchange="loadArchiveGrid()"><option value="">-- Chọn đợt --</option></select>
-                </div>
+                <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:15px"><option value="">-- Chọn đợt --</option></select>
                 <div id="archive-grid" class="gallery-grid"></div>
             </div>
         </div>
 
         <div id="profile" class="page-section">
-            <h1>👤 Hồ Sơ Của Tôi</h1>
-            <div id="profile-out" style="text-align: center; padding: 40px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login">G Đăng nhập bằng Google</button></div>
+            <h1>👤 Tài Khoản</h1>
+            <div id="profile-out" style="text-align: center; padding: 40px;"><p>Đăng nhập để tham gia.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Google Login</button></div>
             <div id="profile-in" style="display: none;">
-                <div id="soft-delete-msg" style="background:#ffebee; color:#c62828; padding:10px; border-radius:8px; display:none; margin-bottom:15px;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục</button></div>
+                <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:10px; border-radius:5px; margin-bottom:10px">⚠️ Đang chờ xóa <button onclick="restoreAccount()">Khôi phục</button></div>
                 <div class="card">
-                    <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
-                        <div style="position:relative;">
-                            <img id="p-avatar" src="" style="width: 80px; height: 80px; border-radius: 50%; border:3px solid var(--primary); object-fit: cover;">
-                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:0; right:0; background:var(--accent); border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">📷</button>
-                            <input type="file" id="avatar-upload" accept="image/*" style="display:none" onchange="changeAvatar(this)">
+                    <div style="text-align:center; margin-bottom:15px">
+                        <div style="position:relative; display:inline-block">
+                            <img id="p-avatar" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border:3px solid var(--primary);">
+                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:0; right:0; background:var(--accent); border:none; border-radius:50%; width:30px; height:30px; cursor:pointer;"><i class="fas fa-camera"></i></button>
                         </div>
-                        <div><h2 id="p-name" style="margin:0">Name</h2><p id="p-email" style="margin:0; color:#666">Email</p></div>
+                        <h2 id="p-name" style="margin:5px 0">User</h2>
+                        <p id="p-email" style="color:#666">Email</p>
                     </div>
                     <form onsubmit="updateProfile(event)">
-                        <label>📝 Tên hiển thị:</label><input type="text" id="edit-name" required>
-                        <label>🏫 Lớp:</label>
-                        <select id="edit-class" required style="width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 1rem;">
-                            <option value="">-- Chọn lớp --</option>
-                            <optgroup label="Khối 12"><option value="12A1">12A1</option><option value="12A2">12A2</option><option value="12A3">12A3</option><option value="12A4">12A4</option><option value="12A5">12A5</option><option value="12A6">12A6</option><option value="12A7">12A7</option><option value="12A8">12A8</option><option value="12A9">12A9</option></optgroup>
-                            <optgroup label="Khối 11"><option value="11A1">11A1</option><option value="11A2">11A2</option><option value="11A3">11A3</option><option value="11A4">11A4</option><option value="11A5">11A5</option><option value="11A6">11A6</option><option value="11A7">11A7</option><option value="11A8">11A8</option><option value="11A9">11A9</option></optgroup>
-                            <optgroup label="Khối 10"><option value="10A1">10A1</option><option value="10A2">10A2</option><option value="10A3">10A3</option><option value="10A4">10A4</option><option value="10A5">10A5</option><option value="10A6">10A6</option><option value="10A7">10A7</option><option value="10A8">10A8</option><option value="10A9">10A9</option></optgroup>
+                        <label>Tên:</label><input type="text" id="edit-name" required>
+                        <label>Lớp:</label>
+                        <select id="edit-class" required>
+                            <option value="">-- Chọn --</option>
+                            <optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option><option>12A4</option><option>12A5</option><option>12A6</option><option>12A7</option><option>12A8</option><option>12A9</option></optgroup>
+                            <optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option><option>11A4</option><option>11A5</option><option>11A6</option><option>11A7</option><option>11A8</option><option>11A9</option></optgroup>
+                            <optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option><option>10A4</option><option>10A5</option><option>10A6</option><option>10A7</option><option>10A8</option><option>10A9</option></optgroup>
                             <option value="GV">Giáo Viên</option><option value="Khac">Khác</option>
                         </select>
-                        <label>💬 Tiểu sử:</label><textarea id="edit-bio"></textarea>
-                        <div style="margin-top:15px; display:flex; gap:10px;"><button type="submit" class="btn">💾 Lưu Hồ Sơ</button><button type="button" class="btn btn-outline" onclick="handleLogout()">🚪 Đăng Xuất</button></div>
+                        <label>Bio:</label><textarea id="edit-bio"></textarea>
+                        <div style="margin-top:15px; display:flex; justify-content:space-between">
+                            <button type="submit" class="btn">Lưu</button>
+                            <button type="button" class="btn btn-outline" onclick="handleLogout()">Đăng Xuất</button>
+                        </div>
                     </form>
+                    <button class="btn btn-danger" onclick="requestDeleteAccount()" style="margin-top:20px; width:100%">Xóa Tài Khoản</button>
                 </div>
             </div>
         </div>
 
         <div id="admin" class="page-section">
-            <h1>🛠 Quản Trị Hệ Thống</h1>
+            <h1>🛠 Admin Panel</h1>
+            
             <div class="card" style="border-left: 5px solid var(--admin-color);">
                 <h3>⚙️ Cấu hình Hệ thống</h3>
-                <div style="margin-bottom: 20px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:#ffebee; padding:10px; border-radius:5px;">
-                        <span style="font-weight:bold; color:red">🚧 BẢO TRÌ TOÀN TRANG:</span>
-                        <label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label>
-                    </div>
-                    <h4>🔒 Khóa từng mục</h4>
-                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                        <label class="switch"><input type="checkbox" id="lock-home" onchange="updateLocks()"><span class="slider"></span></label> Trang Chủ
-                        <label class="switch"><input type="checkbox" id="lock-greenclass" onchange="updateLocks()"><span class="slider"></span></label> Góc Xanh
-                        <label class="switch"><input type="checkbox" id="lock-contest" onchange="updateLocks()"><span class="slider"></span></label> Thi Đua
-                    </div>
+                <div style="padding:10px; background:#ffebee; margin-bottom:15px; border-radius:5px;">
+                    <div style="display:flex; justify-content:space-between;"><b>🚧 BẢO TRÌ:</b><label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label></div>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div><h4>⏳ Deadline Góc Xanh</h4><input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('gallery')">📦 Kết thúc & Lưu trữ</button></div>
-                    <div><h4>⏳ Deadline Thi Đua</h4><input type="datetime-local" id="time-contest" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="margin-top:5px; width:100%" onclick="archiveSeason('contest')">📦 Kết thúc & Lưu trữ</button></div>
+                <h4>🎵 Nhạc nền (YouTube ID)</h4>
+                <div style="display:flex; gap:5px; margin-bottom:15px;">
+                    <input type="text" id="cfg-music-id" placeholder="VD: jfKfPfyJRdk">
+                    <button class="btn btn-sm" onclick="updateMusicConfig()">Lưu Nhạc</button>
+                </div>
+                <h4>🔒 Khóa mục</h4>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                    <label>Home <input type="checkbox" id="lock-home" onchange="updateLocks()"></label>
+                    <label>GócXanh <input type="checkbox" id="lock-greenclass" onchange="updateLocks()"></label>
+                    <label>ThiĐua <input type="checkbox" id="lock-contest" onchange="updateLocks()"></label>
+                </div>
+                <h4>⏳ Deadline</h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                    <div>Góc Xanh <input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"></div>
+                    <div>Thi Đua <input type="datetime-local" id="time-contest" onchange="updateDeadlines()"></div>
                 </div>
             </div>
-            
-            <div class="card" style="border-left: 5px solid #2e7d32;">
-                <h3>📊 Xuất Báo Cáo (Excel/CSV)</h3>
-                <p>Tải xuống dữ liệu để tổng kết:</p>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn" onclick="exportData('users')">📄 Danh sách Thành viên</button>
-                    <button class="btn" onclick="exportData('gallery')">📄 Bài đăng Góc Xanh</button>
-                    <button class="btn" onclick="exportData('contest')">📄 Bài đăng Thi Đua</button>
+
+            <div class="card" style="border-left: 5px solid #0288d1;">
+                <h3>📊 Xuất Excel (Bảng chuẩn)</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:10px">
+                    <button class="btn btn-sm" onclick="exportExcel('users')">📄 Thành viên</button>
+                    <button class="btn btn-sm" onclick="exportExcel('gallery')">📄 Góc Xanh</button>
+                    <button class="btn btn-sm" onclick="exportExcel('contest')">📄 Thi Đua</button>
                 </div>
+                <table id="export-table" style="display:none"></table>
             </div>
 
             <div class="card">
-                <h3>Danh sách thành viên</h3>
-                <div style="overflow-x: auto;">
-                    <table class="admin-table">
-                        <thead><tr><th>Tên</th><th>Email</th><th>Lớp</th><th>Trạng thái</th><th>Sửa</th><th>Khóa</th></tr></thead>
-                        <tbody id="user-table-body"></tbody>
-                    </table>
-                </div>
-                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px;">🔄 Làm mới</button>
+                <h3>Thành viên</h3>
+                <div style="overflow-x:auto"><table class="admin-table"><tbody id="user-table-body"></tbody></table></div>
+                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px">Refresh</button>
             </div>
         </div>
-
     </div>
 
-    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
-    <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; flex-direction:column; justify-content:center; align-items:center;"><h2 style="color:var(--primary)">⏳ Đang tải ảnh lên...</h2></div>
+    <nav class="mobile-nav">
+        <div class="mobile-nav-inner">
+            <a onclick="showPage('home')" id="mob-home" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+            <a onclick="showPage('greenclass')" id="mob-greenclass" class="nav-item"><i class="fas fa-leaf"></i><span>GócXanh</span></a>
+            <a onclick="showPage('contest')" id="mob-contest" class="nav-item"><i class="fas fa-trophy"></i><span>ThiĐua</span></a>
+            <a onclick="showPage('archive')" id="mob-archive" class="nav-item"><i class="fas fa-box"></i><span>LưuTrữ</span></a>
+            <a onclick="showPage('profile')" id="mob-profile" class="nav-item"><i class="fas fa-user"></i><span>Tôi</span></a>
+            <a onclick="showPage('admin')" id="mob-admin" class="nav-item" style="display:none; color:red"><i class="fas fa-cog"></i><span>Admin</span></a>
+        </div>
+    </nav>
 
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container">
@@ -335,22 +356,20 @@
             <div class="lb-sidebar">
                 <div class="lb-header">
                     <img id="lb-author-avatar" class="lb-avatar">
-                    <div id="lb-author-name">Author Name</div>
-                    <div style="margin-left:auto;">
-                        <button id="lb-admin-pin" style="display:none; border:none; background:none; cursor:pointer;" onclick="pinPost()" title="Ghim">🌟</button>
-                        <button onclick="window.open(document.getElementById('lb-img').src)" style="border:none; background:none; cursor:pointer;" title="Tải">⬇️</button>
-                    </div>
+                    <div style="flex:1; margin-left:10px" id="lb-author-name">Name</div>
+                    <button onclick="window.open(document.getElementById('lb-img').src)" style="background:none;border:none;cursor:pointer"><i class="fas fa-download"></i></button>
+                    <button id="lb-admin-pin" style="background:none;border:none;cursor:pointer;display:none;color:gold;margin-left:10px" onclick="pinPost()"><i class="fas fa-star"></i></button>
                 </div>
-                <div class="lb-desc" style="padding: 15px; font-size: 0.95rem;" id="lb-desc">Description here</div>
+                <div style="padding:15px; border-bottom:1px solid #eee" id="lb-desc"></div>
                 <div class="lb-comments-list" id="lb-cmt-list"></div>
                 <div class="lb-footer">
                     <div class="lb-actions">
-                        <button class="lb-action-btn" onclick="handleLike()" id="lb-like">❤️</button>
-                        <span style="font-size:1rem; margin-top:5px" id="lb-like-count">0 lượt thích</span>
+                        <button class="lb-action-btn" onclick="handleLike()" id="lb-like"><i class="fas fa-heart"></i></button>
+                        <span style="font-size:1rem" id="lb-like-count">0</span>
                     </div>
                     <form onsubmit="postComment(event)" class="lb-input-group">
-                        <input id="lb-cmt-input" required placeholder="Thêm bình luận..." style="border:none;">
-                        <button class="btn btn-sm" style="background:transparent; color:var(--info);">Gửi</button>
+                        <input id="lb-cmt-input" required placeholder="Thêm bình luận...">
+                        <button style="border:none;background:none;color:var(--info);font-weight:bold">Gửi</button>
                     </form>
                 </div>
             </div>
@@ -360,158 +379,125 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
+        const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
-        const CLOUD_NAME = "dekxvneap";
-        const UPLOAD_PRESET = "a2k41nvc_upload";
-        const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
+        let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
+        const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        let currentUser = null;
-        let currentCollection = 'gallery';
-        let currentImgId = null;
-        let currentImgCollection = null;
-        let activeArchiveTab = 'gallery';
-        const isAdmin = (email) => ADMIN_EMAILS.includes(email);
-
-        // --- 1. GLOBAL SETTINGS ---
+        // --- 1. CONFIG & MUSIC ---
+        // Inject YouTube API
+        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; 
+        var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        let player; window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
+        function onPlayerStateChange(event) {
+            const disc = document.getElementById('music-disc-img');
+            if(event.data == YT.PlayerState.PLAYING) disc.classList.add('playing'); else disc.classList.remove('playing');
+        }
+        window.toggleMusic = () => { if(player && player.getPlayerState() == YT.PlayerState.PLAYING) player.pauseVideo(); else if(player) player.playVideo(); }
+        
         onSnapshot(doc(db, "settings", "config"), (doc) => {
             if(doc.exists()) {
                 const cfg = doc.data();
                 const mDiv = document.getElementById('maintenance-overlay');
-                if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display = 'flex'; else mDiv.style.display = 'none';
+                if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
+                applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities);
+                handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
                 
-                applyLock('home', cfg.locks?.home); applyLock('greenclass', cfg.locks?.greenclass); applyLock('contest', cfg.locks?.contest); applyLock('activities', cfg.locks?.activities);
-                handleTimer('timer-gallery', 'cd-gallery', cfg.deadlines?.gallery); handleTimer('timer-contest', 'cd-contest', cfg.deadlines?.contest);
+                if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; if(player) player.loadVideoById(musicId); }
 
                 if(currentUser && isAdmin(currentUser.email)) {
-                    document.getElementById('cfg-maintenance').checked = cfg.maintenance;
-                    document.getElementById('lock-home').checked = cfg.locks?.home;
-                    document.getElementById('lock-greenclass').checked = cfg.locks?.greenclass;
-                    document.getElementById('lock-contest').checked = cfg.locks?.contest;
-                    document.getElementById('time-gallery').value = cfg.deadlines?.gallery || "";
-                    document.getElementById('time-contest').value = cfg.deadlines?.contest || "";
+                    document.getElementById('cfg-maintenance').checked=cfg.maintenance;
+                    document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest;
+                    document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
+                    document.getElementById('cfg-music-id').value=cfg.musicId||"";
                 }
             }
         });
-        function applyLock(s, l) { const o=document.getElementById(`locked-${s}`); const c=document.getElementById(`content-${s}`); if(l && (!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';} }
-        let intervals = {};
-        function handleTimer(e, b, d) { if(!d){document.getElementById(b).style.display='none';return;} document.getElementById(b).style.display='block'; if(intervals[e])clearInterval(intervals[e]); const end=new Date(d).getTime(); intervals[e]=setInterval(()=>{ const now=new Date().getTime();const dist=end-now; if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const da=Math.floor(dist/(1000*60*60*24));const ho=Math.floor((dist%(1000*60*60*24))/(1000*60*60));const mi=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${da}d ${ho}h ${mi}p`;} },1000); }
+        function applyLock(s,l){const o=document.getElementById(`locked-${s}`), c=document.getElementById(`content-${s}`); if(l&&(!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';}}
+        let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const d=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${d}d ${h}h ${m}p`;}},1000);}
 
         // --- 2. AUTH ---
-        window.handleLogout = async () => { await signOut(auth); alert("Đã đăng xuất!"); location.reload(); }
-        window.checkAdminLogin = () => signInWithPopup(auth, provider);
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const ref = doc(db, "users", user.uid); const snap = await getDoc(ref);
-                if (snap.exists()) { const d = snap.data(); if(d.banned){alert("Bị khóa!");signOut(auth);return;} currentUser=d; }
-                else { currentUser={uid:user.uid,email:user.email,displayName:isAdmin(user.email)?"Admin_xinhxinh":user.displayName,photoURL:user.photoURL,role:isAdmin(user.email)?'admin':'member',status:'active',class:""}; await setDoc(ref,currentUser); }
+        window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
+        window.checkAdminLogin=()=>signInWithPopup(auth,provider);
+        onAuthStateChanged(auth, async(u)=>{
+            if(u){
+                const r=doc(db,"users",u.uid), s=await getDoc(r);
+                if(s.exists()){const d=s.data();if(d.banned){alert("Khóa!");signOut(auth);return;}currentUser=d;}
+                else{currentUser={uid:u.uid,email:u.email,displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,photoURL:u.photoURL,role:isAdmin(u.email)?'admin':'member',status:'active',class:""};await setDoc(r,currentUser);}
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
-                document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=getDisplayName(currentUser); document.getElementById('p-email').innerText=currentUser.email;
-                document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
-                if(isAdmin(currentUser.email)) { document.getElementById('menu-admin').style.display='block'; document.getElementById('maintenance-overlay').style.display='none'; }
-            } else { currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('menu-admin').style.display='none'; }
+                document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
+                document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
+                if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
+            }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
         });
-        function getDisplayName(u) { return (u.role === 'admin' || isAdmin(u.email)) ? `<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>` : u.displayName; }
 
         // --- 3. UPLOAD ---
-        window.changeAvatar = async (input) => { const f=input.files[0]; if(!f)return; document.getElementById('upload-overlay').style.display='flex'; const fd=new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi!");} document.getElementById('upload-overlay').style.display='none'; }
-        window.checkLoginAndUpload = (c) => { if(!currentUser){alert("Đăng nhập!");return;} if(!currentUser.class){alert("Cập nhật Lớp!");showPage('profile');return;} currentCollection=c; document.getElementById('file-input').click(); }
-        window.executeUpload = async (input) => { const f=input.files[0]; if(!f)return; const d=prompt("Mô tả:"); if(d===null)return; document.getElementById('upload-overlay').style.display='flex'; const fd=new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await addDoc(collection(db,currentCollection),{url:j.secure_url,desc:d,uid:currentUser.uid,authorName:currentUser.displayName,authorAvatar:currentUser.photoURL,className:currentUser.class,createdAt:serverTimestamp(),likes:[],comments:[],archived:false});alert("Đăng thành công!");}}catch(e){alert("Lỗi!");} document.getElementById('upload-overlay').style.display='none'; input.value=""; }
+        window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong");location.reload();}}catch(e){alert("Lỗi")}}
+        window.checkLoginAndUpload=(c)=>{if(!currentUser){alert("Đăng nhập!");return;}if(!currentUser.class){alert("Chọn lớp!");showPage('profile');return;}currentCollection=c;document.getElementById('file-input').click();}
+        window.executeUpload=async(i)=>{const f=i.files[0];if(!f)return;const d=prompt("Mô tả:");if(d===null)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await addDoc(collection(db,currentCollection),{url:j.secure_url,desc:d,uid:currentUser.uid,authorName:currentUser.displayName,authorAvatar:currentUser.photoURL,className:currentUser.class,createdAt:serverTimestamp(),likes:[],comments:[],archived:false});alert("Thành công");}}catch(e){alert("Lỗi")}document.getElementById('upload-overlay').style.display='none';i.value="";}
 
         // --- 4. RENDER ---
         function renderGrid(col, elId, uR, cR) {
             onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
-                const g = document.getElementById(elId); g.innerHTML = ""; let uS={}; let cS={}; let docs=[]; snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+                const g = document.getElementById(elId); g.innerHTML = ""; let uS={}, cS={}, docs=[];
+                snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
-                    let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')">✏️</button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red">🗑️</button></div>`; }
-                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorName} (${d.className})</span></div><span>❤️ ${l}</span></div></div></div>`;
+                    let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; }
+                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorName} (${d.className})</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div></div></div>`;
                 });
                 renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
         }
-        function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} ❤️</td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
-        renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'});
-        renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+        function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
+        renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
-        // --- 5. LIGHTBOX NEW ---
-        window.openLightbox = async (c, i, dataPreload) => {
-            currentImgId = i; currentImgCollection = c;
-            document.getElementById('lightbox').style.display = 'flex';
-            const snap = await getDoc(doc(db, c, i));
-            const data = snap.data();
-            
-            document.getElementById('lb-img').src = data.url;
-            document.getElementById('lb-author-avatar').src = data.authorAvatar || 'https://via.placeholder.com/35';
-            document.getElementById('lb-author-name').innerHTML = `${data.authorName} <span style="font-weight:normal;color:#777;font-size:0.8rem">(${data.className})</span>`;
-            document.getElementById('lb-desc').innerText = data.desc;
-            document.getElementById('lb-like-count').innerText = `${data.likes ? data.likes.length : 0} lượt thích`;
-            
-            // Buttons status
-            const likeBtn = document.getElementById('lb-like');
-            if(currentUser && data.likes && data.likes.includes(currentUser.uid)) likeBtn.classList.add('liked'); else likeBtn.classList.remove('liked');
-            document.getElementById('lb-admin-pin').style.display = (currentUser && isAdmin(currentUser.email)) ? 'block' : 'none';
-            
-            renderComments(data.comments || []);
-        }
-        window.closeLightbox = () => document.getElementById('lightbox').style.display = 'none';
-        window.handleLike = async () => {
-            if(!currentUser) return alert("Đăng nhập!"); const ref=doc(db,currentImgCollection,currentImgId); const s=await getDoc(ref); const l=s.data().likes||[];
-            if(l.includes(currentUser.uid)) { await updateDoc(ref,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').classList.remove('liked'); }
-            else { await updateDoc(ref,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').classList.add('liked'); }
-            // Auto update count via realtime listener is better, but manual here for instant feel
-            const newL = l.includes(currentUser.uid) ? l.length-1 : l.length+1;
-            document.getElementById('lb-like-count').innerText = `${newL} lượt thích`;
-        }
-        window.postComment = async (e) => {
-            e.preventDefault(); if(!currentUser) return; const t=document.getElementById('lb-cmt-input').value;
-            await updateDoc(doc(db,currentImgCollection,currentImgId), { comments: arrayUnion({uid:currentUser.uid, name:currentUser.displayName, text:t, time:Date.now()}) });
-            document.getElementById('lb-cmt-input').value = "";
-            // Reload comments
-            const s = await getDoc(doc(db, currentImgCollection, currentImgId));
-            renderComments(s.data().comments);
-        }
-        function renderComments(arr) {
-            const list = document.getElementById('lb-cmt-list'); list.innerHTML = "";
-            arr.forEach(c => {
-                list.innerHTML += `<div class="lb-comment-item"><span class="lb-comment-user">${c.name}:</span><span>${c.text}</span></div>`;
-            });
-        }
-
-        // --- 6. EXPORT DATA (NEW) ---
-        window.exportData = async (type) => {
+        // --- 5. EXPORT EXCEL (HTML TABLE METHOD) ---
+        window.exportExcel = async (type) => {
             if(!currentUser || !isAdmin(currentUser.email)) return;
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // BOM for Excel
+            const table = document.getElementById('export-table'); table.innerHTML = "";
+            let html = "";
             
             if(type === 'users') {
-                csvContent += "Ten,Email,Lop,TrangThai\n";
+                html += `<thead><tr><th>Tên hiển thị</th><th>Email</th><th>Lớp</th><th>Trạng thái</th></tr></thead><tbody>`;
                 const snap = await getDocs(collection(db, "users"));
-                snap.forEach(d => { const u = d.data(); csvContent += `"${u.displayName}","${u.email}","${u.class||''}","${u.banned?'Ban':u.status}"\n`; });
-                downloadCSV(csvContent, "Danh_sach_thanh_vien.csv");
+                snap.forEach(d => { const u=d.data(); html += `<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||''}</td><td>${u.banned?'Bị khóa':u.status}</td></tr>`; });
             } else {
-                csvContent += "NguoiDang,Lop,MoTa,LuotTim,LinkAnh,NgayDang\n";
+                html += `<thead><tr><th>Người đăng</th><th>Lớp</th><th>Mô tả</th><th>Lượt tim</th><th>Link Ảnh</th><th>Ngày đăng</th></tr></thead><tbody>`;
                 const snap = await getDocs(collection(db, type));
-                snap.forEach(d => { const p = d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleDateString() : ''; csvContent += `"${p.authorName}","${p.className}","${p.desc}","${p.likes?p.likes.length:0}","${p.url}","${date}"\n`; });
-                downloadCSV(csvContent, `Bao_cao_${type}.csv`);
+                snap.forEach(d => { const p=d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleString('vi-VN') : ''; html += `<tr><td>${p.authorName}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; });
             }
-        }
-        function downloadCSV(content, fileName) {
-            const link = document.createElement("a"); link.setAttribute("href", encodeURI(content)); link.setAttribute("download", fileName); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            html += "</tbody>"; table.innerHTML = html;
+
+            // Generate Excel Blob
+            const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`;
+            const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Bao_cao_${type}.xls`; a.click();
         }
 
-        // --- 7. ARCHIVE ---
-        window.archiveSeason = async (col) => { if(!confirm("Lưu trữ và làm mới?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,col),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,col,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:col,label:n,archivedAt:serverTimestamp()}); alert("Đã lưu trữ!"); }
-        window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); }
-        window.loadArchiveSeasons = async () => { const sel=document.getElementById('archive-season-select'); sel.innerHTML='<option>Loading...</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const s=await getDocs(q); sel.innerHTML='<option value="">-- Chọn đợt --</option>'; s.forEach(d=>sel.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
-        window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const g=document.getElementById('archive-grid'); if(!l){g.innerHTML="";return;} g.innerHTML="Loading..."; const q=query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; s.forEach(d=>{ const da=d.data(); g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorName}</span><span>❤️ ${da.likes?da.likes.length:0}</span></div></div></div>`; }); }
+        // --- 6. LIGHTBOX ---
+        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||''; document.getElementById('lb-author-name').innerHTML=`${d.authorName} <small>(${d.className})</small>`; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; if(currentUser&&d.likes?.includes(currentUser.uid))document.getElementById('lb-like').classList.add('liked'); else document.getElementById('lb-like').classList.remove('liked'); document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; renderComments(d.comments||[]); }
+        window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
+        window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){await updateDoc(r,{likes:arrayRemove(currentUser.uid)});document.getElementById('lb-like').classList.remove('liked');document.getElementById('lb-like-count').innerText=l.length-1;}else{await updateDoc(r,{likes:arrayUnion(currentUser.uid)});document.getElementById('lb-like').classList.add('liked');document.getElementById('lb-like-count').innerText=l.length+1;} }
+        window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
+        function renderComments(arr) { const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; arr.forEach(c=>{l.innerHTML+=`<div class="lb-comment-item"><span class="lb-comment-user">${c.name}</span> <span>${c.text}</span></div>`;}); }
 
-        // --- 8. ADMIN CONFIG & OTHERS ---
+        // --- 7. ADMIN & ARCHIVE ---
+        window.updateMusicConfig = async () => { await setDoc(doc(db,"settings","config"),{musicId:document.getElementById('cfg-music-id').value},{merge:true}); alert("Đã đổi nhạc!"); }
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
+        window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
+        window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option>Loading...</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); s.innerHTML='<option value="">-- Chọn đợt --</option>'; sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
+        window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const g=document.getElementById('archive-grid'); if(!l){g.innerHTML="";return;} g.innerHTML="Loading..."; const q=query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; s.forEach(d=>{const da=d.data();g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div></div></div>`;}); }
+        window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); }
+        
+        // --- 8. UTILS ---
         window.adminEditUser = async (u,n,c) => { const nn=prompt("Tên:",n); const cc=prompt("Lớp:",c); if(nn&&cc){await updateDoc(doc(db,"users",u),{displayName:nn,class:cc});loadAdminData();} }
         window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); b.innerHTML=""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; const edt=`<button onclick="adminEditUser('${d.id}','${u.displayName}','${u.class||''}')">✏️</button>`; b.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${edt}</td><td>${btn}</td></tr>`}); }
         window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
@@ -519,11 +505,15 @@
         onSnapshot(doc(db, "settings", "featured"), async (s) => { if(s.exists()) { const p = await getDoc(doc(db, s.data().col, s.data().id)); if(p.exists()) { const d=p.data(); document.getElementById('featured-post').style.display='flex'; document.getElementById('feat-img').src=d.url; document.getElementById('feat-title').innerText="Khoảnh khắc ấn tượng"; document.getElementById('feat-desc').innerText=d.desc; document.getElementById('feat-author').innerText="— "+d.authorName; } } });
         window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
         window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
-        
-        window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
-        window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
         window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, class: c, bio: b }); alert("Đã lưu!"); }
-        window.showPage = (id) => { document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('nav a').forEach(a => a.classList.remove('active-menu')); document.getElementById('menu-'+id).classList.add('active-menu'); localStorage.setItem('page', id); if(id==='archive') loadArchiveSeasons(); }
+        window.showPage = (id) => { 
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); 
+            document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
+            if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu');
+            if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu');
+            localStorage.setItem('page', id); if(id==='archive') loadArchiveSeasons();
+        }
+        
         const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
         window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="trash-item"><div class="${i.c}">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
         
@@ -532,4 +522,4 @@
         showPage(localStorage.getItem('page') || 'home');
     </script>
 </body>
-</html>
+</html>0
