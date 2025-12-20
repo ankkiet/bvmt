@@ -10,8 +10,8 @@
         /* --- 1. CORE STYLES --- */
         :root { 
             --primary: #2e7d32; --primary-dark: #1b5e20;
-            --accent: #ffca28; --danger: #e53935; --info: #039be5;
-            --bg: #f4f9f4; --text: #333; --white: #ffffff;
+            --accent: #ffca28; --danger: #e53935; --info: #0288d1;
+            --bg: #f0f4f0; --text: #333; --white: #ffffff;
             --admin-color: #d32f2f;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -21,9 +21,9 @@
         nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 12px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         nav ul { list-style: none; margin: 0; padding: 0 10px; display: flex; justify-content: center; overflow-x: auto; white-space: nowrap; gap: 5px; }
         nav ul::-webkit-scrollbar { display: none; }
-        nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 8px 16px; display: block; font-size: 0.85rem; border-radius: 30px; transition: 0.3s; opacity: 0.9; cursor: pointer; }
-        nav ul li a:hover, nav ul li a.active-menu { background-color: rgba(255,255,255,0.25); color: var(--accent); opacity: 1; transform: translateY(-2px); }
-        #menu-admin { background: var(--admin-color); display: none; } /* Mặc định ẩn nút Admin */
+        nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 8px 16px; display: block; font-size: 0.85rem; border-radius: 30px; transition: 0.3s; opacity: 0.95; cursor: pointer; }
+        nav ul li a:hover, nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); opacity: 1; transform: translateY(-2px); }
+        #menu-admin { background: var(--admin-color); display: none; } 
 
         /* --- 3. LAYOUT & CARDS --- */
         .container { max-width: 1200px; width: 95%; margin: 20px auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 80vh; }
@@ -31,8 +31,8 @@
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 30px; position: relative; left: 50%; transform: translateX(-50%); }
-        h2 { color: var(--primary-dark); margin-top: 0; }
+        h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 30px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+        h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.3rem; border-left: 4px solid var(--accent); padding-left: 10px; }
         .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; }
         .card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
 
@@ -45,48 +45,61 @@
         .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
         input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 1rem; transition: 0.3s; }
 
-        /* --- 5. GRID & IMAGES --- */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
-        .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.1); aspect-ratio: 1/1; }
+        /* --- 5. GRID & IMAGES (Styled) --- */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.1); background: #fff; border: 1px solid #eee; transition: 0.3s; }
+        .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .gallery-img-container { width: 100%; aspect-ratio: 1/1; overflow: hidden; }
         .gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
         .gallery-item:hover .gallery-img { transform: scale(1.1); }
-        .gallery-overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 10px; display: flex; justify-content: space-between; align-items: flex-end; }
-
-        /* --- 6. ADMIN & USER TOOLS (Edit/Delete) --- */
-        .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; opacity: 0; transition: 0.3s; }
-        .gallery-item:hover .owner-controls { opacity: 1; }
-        .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 4px; padding: 5px; cursor: pointer; font-size: 0.9rem; }
-        .ctrl-btn:hover { transform: scale(1.1); }
+        .gallery-info { padding: 10px; background: white; }
+        .gallery-title { font-weight: bold; font-size: 0.95rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; margin-top: 5px; }
         
+        /* Owner Controls (Edit/Delete) */
+        .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; }
+        .ctrl-btn { background: rgba(255,255,255,0.9); border: 1px solid #ddd; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .ctrl-btn:hover { transform: scale(1.1); background: white; }
+
+        /* --- 6. RANKING TABLES --- */
+        .ranking-wrapper { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+        .ranking-card { flex: 1; min-width: 300px; background: #fff; border-radius: 10px; border: 1px solid #eee; overflow: hidden; }
+        .ranking-header { background: var(--primary); color: white; padding: 10px; text-align: center; font-weight: bold; }
+        .ranking-header.class-rank { background: var(--info); }
+        .rank-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .rank-table td { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; }
+        .rank-top-1 { background: #fffde7; font-weight: bold; color: #fbc02d; }
+        .rank-num { display: inline-block; width: 24px; height: 24px; background: #eee; border-radius: 50%; text-align: center; line-height: 24px; font-size: 0.8rem; font-weight: bold; color: #555; }
+        .rank-top-1 .rank-num { background: #fbc02d; color: white; }
+
+        /* --- 7. TRA CỨU & HOẠT ĐỘNG --- */
+        .trash-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; background: #fafafa; }
+        .bin-recycle { color: #1976d2; font-weight: bold; } .bin-organic { color: #388e3c; font-weight: bold; } .bin-other { color: #f57c00; font-weight: bold; }
+
+        /* --- 8. ADMIN TABLE --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .admin-table th { text-align: left; padding: 10px; background: #eee; }
         .admin-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
-        .st-active { background: #e8f5e9; color: green; }
-        .st-banned { background: #ffebee; color: red; }
-        .st-deleted { background: #fff3e0; color: orange; }
+        .st-active { color: green; font-weight: bold; } .st-banned { color: red; font-weight: bold; }
 
-        /* --- 7. TRA CỨU & HOẠT ĐỘNG (Restored) --- */
-        .trash-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; }
-        .trash-icon { font-size: 2rem; display: block; margin-bottom: 5px; }
-        .bin-recycle { color: #1976d2; font-weight: bold; } .bin-organic { color: #388e3c; font-weight: bold; } .bin-other { color: #f57c00; font-weight: bold; }
-
-        /* --- 8. LIGHTBOX --- */
+        /* --- 9. LIGHTBOX --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); flex-direction: column; justify-content: center; align-items: center; }
-        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 5px; }
+        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
         .dock { position: absolute; bottom: 20px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 10px 20px; border-radius: 50px; display: flex; gap: 15px; }
         .dock-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .dock-btn span { font-size: 0.6rem; }
+        .dock-btn:hover { color: var(--accent); transform: translateY(-3px); }
+        .dock-btn span { font-size: 0.6rem; margin-top: 2px; }
 
-        /* --- 9. HOME FEATURED --- */
+        /* --- 10. FEATURED POST --- */
         .featured-section { background: linear-gradient(135deg, #fff9c4, #fff); border: 2px solid var(--accent); border-radius: 15px; padding: 20px; margin-bottom: 30px; position: relative; display: flex; gap: 20px; align-items: center; }
-        .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); padding: 5px 15px; font-weight: bold; border-bottom-right-radius: 10px; }
+        .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); padding: 5px 15px; font-weight: bold; border-bottom-right-radius: 10px; color: #333; }
 
         @media (max-width: 768px) {
-            .container { width: 100%; margin: 0; border-radius: 0; }
-            .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+            .container { width: 100%; margin: 0; border-radius: 0; padding: 15px; }
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .featured-section { flex-direction: column; text-align: center; }
+            .ranking-wrapper { flex-direction: column; }
         }
     </style>
 </head>
@@ -94,13 +107,13 @@
 
     <nav>
         <ul>
-            <li><a onclick="showPage('home')" id="menu-home">Trang Chủ</a></li>
-            <li><a onclick="showPage('greenclass')" id="menu-greenclass">Góc Xanh</a></li>
-            <li><a onclick="showPage('contest')" id="menu-contest">Thi Đua</a></li>
-            <li><a onclick="showPage('activities')" id="menu-activities">Hoạt Động</a></li>
-            <li><a onclick="showPage('guide')" id="menu-guide">Tra Cứu</a></li>
-            <li><a onclick="showPage('profile')" id="menu-profile">Tài Khoản</a></li>
-            <li><a onclick="showPage('admin')" id="menu-admin">🛠 QUẢN TRỊ</a></li>
+            <li><a onclick="showPage('home')" id="menu-home">🏠 Trang Chủ</a></li>
+            <li><a onclick="showPage('greenclass')" id="menu-greenclass">🌿 Góc Xanh</a></li>
+            <li><a onclick="showPage('contest')" id="menu-contest">🏆 Thi Đua</a></li>
+            <li><a onclick="showPage('activities')" id="menu-activities">📅 Hoạt Động</a></li>
+            <li><a onclick="showPage('guide')" id="menu-guide">🔍 Tra Cứu</a></li>
+            <li><a onclick="showPage('profile')" id="menu-profile">👤 Tài Khoản</a></li>
+            <li><a onclick="showPage('admin')" id="menu-admin">🛠 Quản Trị</a></li>
         </ul>
     </nav>
 
@@ -109,7 +122,8 @@
         <div id="home" class="page-section">
             <div style="text-align: center; margin-bottom: 30px;">
                 <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1000&q=80" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px;">
-                <h1 style="border:none; margin-top: 15px;">Chào mừng đến với A2K41</h1>
+                <h1 style="border:none; margin-top: 15px;">A2K41 - Green School</h1>
+                <p>Chung tay vì một môi trường xanh - sạch - đẹp</p>
             </div>
 
             <div id="featured-post" class="featured-section" style="display: none;">
@@ -129,7 +143,7 @@
         </div>
 
         <div id="activities" class="page-section">
-            <h1>Hoạt Động</h1>
+            <h1>📅 Hoạt Động & Tin Tức</h1>
             <div class="card">
                 <h2>♻️ Phong trào "Đổi giấy lấy cây"</h2>
                 <p><strong>Thời gian:</strong> 15:00 - 17:00 chiều Thứ 5 hàng tuần.</p>
@@ -146,8 +160,10 @@
         </div>
 
         <div id="guide" class="page-section">
-            <h1>Tra Cứu Phân Loại Rác</h1>
-            <input type="text" id="trashSearchInput" placeholder="Nhập tên rác (VD: Vỏ sữa, Pin...)" onkeyup="filterTrash()" style="margin-bottom: 20px;">
+            <h1>🔍 Tra Cứu Phân Loại Rác</h1>
+            <div style="max-width: 500px; margin: 0 auto 20px auto;">
+                <input type="text" id="trashSearchInput" placeholder="Nhập tên rác (VD: Vỏ sữa, Pin...)" onkeyup="filterTrash()">
+            </div>
             <div id="trashContainer" class="trash-result"></div>
             <hr style="margin: 30px 0;">
             <div class="card" style="text-align: center;">
@@ -158,29 +174,51 @@
 
         <div id="greenclass" class="page-section">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
-                <h1>Góc "Lớp Học Xanh"</h1>
+                <h1>🌿 Góc "Lớp Học Xanh"</h1>
                 <button class="btn" onclick="checkLoginAndUpload('gallery')">📸 Đăng Ảnh Ngay</button>
             </div>
             
             <p style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px dashed #2196f3; font-size: 0.9rem;">
-                ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh góc lớp, cây xanh. Nội dung không phù hợp sẽ bị xóa và khóa tài khoản.
+                ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh góc lớp, cây xanh. Nội dung không phù hợp sẽ bị xóa.
             </p>
 
             <div id="gallery-grid" class="gallery-grid"></div>
+
+            <div class="ranking-wrapper">
+                <div class="ranking-card">
+                    <div class="ranking-header">👤 Top Cá Nhân (Góc Xanh)</div>
+                    <table class="rank-table"><tbody id="rank-gallery-user"><tr><td style="text-align:center">Đang tải...</td></tr></tbody></table>
+                </div>
+                <div class="ranking-card">
+                    <div class="ranking-header class-rank">🏫 Top Lớp (Góc Xanh)</div>
+                    <table class="rank-table"><tbody id="rank-gallery-class"><tr><td style="text-align:center">Đang tải...</td></tr></tbody></table>
+                </div>
+            </div>
         </div>
 
         <div id="contest" class="page-section">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
-                <h1>Phong Trào Thi Đua</h1>
+                <h1>🏆 Phong Trào Thi Đua</h1>
                 <button class="btn" onclick="checkLoginAndUpload('contest')">📤 Báo Cáo Hoạt Động</button>
             </div>
-            <p style="text-align: center;">Ghi lại khoảnh khắc lao động, nhặt rác, chăm sóc môi trường.</p>
+            <p style="text-align: center; color:#666">Ghi lại khoảnh khắc lao động, nhặt rác, chăm sóc môi trường.</p>
             
             <div id="contest-grid" class="gallery-grid"></div>
+
+            <div class="ranking-wrapper">
+                <div class="ranking-card">
+                    <div class="ranking-header">👤 Top Cá Nhân (Thi Đua)</div>
+                    <table class="rank-table"><tbody id="rank-contest-user"><tr><td style="text-align:center">Đang tải...</td></tr></tbody></table>
+                </div>
+                <div class="ranking-card">
+                    <div class="ranking-header class-rank">🏫 Top Lớp (Thi Đua)</div>
+                    <table class="rank-table"><tbody id="rank-contest-class"><tr><td style="text-align:center">Đang tải...</td></tr></tbody></table>
+                </div>
+            </div>
         </div>
 
         <div id="profile" class="page-section">
-            <h1>Hồ Sơ Của Tôi</h1>
+            <h1>👤 Hồ Sơ Của Tôi</h1>
             <div id="profile-out" style="text-align: center; padding: 40px;">
                 <p>Vui lòng đăng nhập để sử dụng tính năng.</p>
                 <button class="btn btn-google btn-login">G Đăng nhập bằng Google</button>
@@ -193,23 +231,25 @@
                 
                 <div class="card">
                     <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
-                        <img id="p-avatar" src="" style="width: 80px; height: 80px; border-radius: 50%;">
+                        <img id="p-avatar" src="" style="width: 80px; height: 80px; border-radius: 50%; border:3px solid var(--primary)">
                         <div>
                             <h2 id="p-name" style="margin:0">Name</h2>
                             <p id="p-email" style="margin:0; color:#666">Email</p>
                         </div>
                     </div>
                     <form onsubmit="updateProfile(event)">
-                        <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
-                        <label>Lớp:</label><input type="text" id="edit-class" placeholder="VD: 11A2">
-                        <label>Tiểu sử:</label><textarea id="edit-bio"></textarea>
-                        <button type="submit" class="btn">Lưu Thay Đổi</button>
-                        <button type="button" class="btn btn-outline" onclick="auth.signOut()">Đăng Xuất</button>
+                        <label>📝 Tên hiển thị:</label><input type="text" id="edit-name" required>
+                        <label>🏫 Lớp (Quan trọng để tính điểm):</label><input type="text" id="edit-class" placeholder="VD: 11A2" required>
+                        <label>💬 Tiểu sử:</label><textarea id="edit-bio"></textarea>
+                        <div style="margin-top:15px; display:flex; gap:10px;">
+                            <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
+                            <button type="button" class="btn btn-outline" onclick="handleLogout()">🚪 Đăng Xuất</button>
+                        </div>
                     </form>
                 </div>
                 <div class="card" style="border:1px solid #ffcdd2">
                     <h3 style="color:red">Vùng nguy hiểm</h3>
-                    <button class="btn btn-danger" onclick="requestDeleteAccount()">Xóa Tài Khoản</button>
+                    <button class="btn btn-danger" onclick="requestDeleteAccount()">🗑 Xóa Tài Khoản</button>
                 </div>
             </div>
         </div>
@@ -224,7 +264,7 @@
                         <tbody id="user-table-body"></tbody>
                     </table>
                 </div>
-                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px;">🔄 Làm mới danh sách</button>
+                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px;">🔄 Làm mới</button>
             </div>
         </div>
 
@@ -252,9 +292,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIG
+        // CONFIG (Giữ nguyên thông tin của bạn)
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
 
@@ -263,43 +303,41 @@
         const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
         let currentUser = null;
-        let currentCollection = 'gallery'; // 'gallery' or 'contest'
+        let currentCollection = 'gallery';
         let currentImgId = null;
         let currentImgCollection = null;
 
-        // --- 1. AUTH & ADMIN CHECK ---
         const isAdmin = (email) => ADMIN_EMAILS.includes(email);
+
+        // --- 1. AUTH ---
+        window.handleLogout = async () => {
+            await signOut(auth);
+            alert("Đã đăng xuất thành công!");
+            location.reload();
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Check in DB
                 const ref = doc(db, "users", user.uid);
                 const snap = await getDoc(ref);
-                
                 if (snap.exists()) {
                     const data = snap.data();
                     if (data.banned) { alert("⛔ Tài khoản bị khóa!"); signOut(auth); return; }
                     currentUser = data;
                 } else {
-                    currentUser = { uid: user.uid, email: user.email, displayName: isAdmin(user.email) ? "Admin_xinhxinh" : user.displayName, photoURL: user.photoURL, role: isAdmin(user.email) ? 'admin' : 'member', status: 'active' };
+                    currentUser = { uid: user.uid, email: user.email, displayName: isAdmin(user.email)?"Admin_xinhxinh":user.displayName, photoURL: user.photoURL, role: isAdmin(user.email)?'admin':'member', status: 'active', class: "" };
                     await setDoc(ref, currentUser);
                 }
 
-                // UI Logic
                 document.getElementById('profile-in').style.display = 'block';
                 document.getElementById('profile-out').style.display = 'none';
                 document.getElementById('p-avatar').src = currentUser.photoURL;
-                document.getElementById('p-name').innerText = getDisplayName(currentUser);
+                document.getElementById('p-name').innerHTML = getDisplayName(currentUser);
                 document.getElementById('p-email').innerText = currentUser.email;
                 document.getElementById('edit-name').value = currentUser.displayName;
                 document.getElementById('edit-class').value = currentUser.class || "";
                 document.getElementById('edit-bio').value = currentUser.bio || "";
-                document.getElementById('soft-delete-msg').style.display = (currentUser.status === 'deleted') ? 'block' : 'none';
-
-                // Show Admin Menu
-                if(isAdmin(currentUser.email)) {
-                    document.getElementById('menu-admin').style.display = 'block';
-                }
+                if(isAdmin(currentUser.email)) document.getElementById('menu-admin').style.display = 'block';
 
             } else {
                 currentUser = null;
@@ -310,208 +348,157 @@
         });
 
         function getDisplayName(u) {
-            return (u.role === 'admin' || isAdmin(u.email)) 
-                ? `<span style="color:red;font-weight:bold">Admin_xinhxinh <span style="font-size:0.8em">✓</span></span>` 
-                : u.displayName;
+            return (u.role === 'admin' || isAdmin(u.email)) ? `<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>` : u.displayName;
         }
 
-        // --- 2. RESTORED CONTENT (TRA CỨU) ---
-        const trashDB = [
-            {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"},
-            {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"},
-            {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"},
-            {n:"Pin",t:"Nguy hại",c:"bin-other"} // Pin xử lý riêng nhưng tạm để other
-        ];
+        // --- 2. TRA CỨU ---
+        const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
         window.filterTrash = () => {
             const k = document.getElementById('trashSearchInput').value.toLowerCase();
-            const res = document.getElementById('trashContainer');
-            res.innerHTML = "";
-            trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{
-                res.innerHTML += `<div class="trash-item"><div class="${i.c}">${i.t}</div><strong>${i.n}</strong></div>`;
-            });
-        }; window.filterTrash(); // Init
+            const res = document.getElementById('trashContainer'); res.innerHTML = "";
+            trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ res.innerHTML += `<div class="trash-item"><div class="${i.c}">${i.t}</div><strong>${i.n}</strong></div>`; });
+        }; window.filterTrash();
 
-        // --- 3. UPLOAD SYSTEM (GENERIC FOR GREEN & CONTEST) ---
+        // --- 3. UPLOAD ---
         window.checkLoginAndUpload = (col) => {
             if(!currentUser) { alert("Vui lòng đăng nhập để đăng bài!"); return; }
-            currentCollection = col;
-            document.getElementById('file-input').click();
+            if(!currentUser.class) { alert("Vui lòng cập nhật LỚP trong phần Tài Khoản trước khi đăng!"); showPage('profile'); return; }
+            currentCollection = col; document.getElementById('file-input').click();
         }
 
         window.executeUpload = async (input) => {
-            const file = input.files[0];
-            if(!file) return;
-            
-            // Hỏi caption
-            const desc = prompt("Nhập mô tả cho bức ảnh:");
-            if(desc === null) return; // Cancel
-
+            const file = input.files[0]; if(!file) return;
+            const desc = prompt("Mô tả ảnh:"); if(desc === null) return;
             document.getElementById('upload-overlay').style.display = 'flex';
-            const fd = new FormData();
-            fd.append('file', file); fd.append('upload_preset', UPLOAD_PRESET);
+            const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', UPLOAD_PRESET);
 
             try {
                 const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
                 const json = await res.json();
-                
                 if(json.secure_url) {
                     await addDoc(collection(db, currentCollection), {
-                        url: json.secure_url,
-                        desc: desc,
-                        uid: currentUser.uid,
-                        authorName: currentUser.displayName, // Lưu tên lúc đăng
-                        createdAt: serverTimestamp(),
-                        likes: [], comments: []
+                        url: json.secure_url, desc: desc, uid: currentUser.uid,
+                        authorName: currentUser.displayName, className: currentUser.class,
+                        createdAt: serverTimestamp(), likes: [], comments: []
                     });
                     alert("Đăng thành công!");
-                } else { alert("Lỗi: " + json.error.message); }
+                } else alert("Lỗi: " + json.error.message);
             } catch(e) { alert("Lỗi mạng!"); }
-            
-            document.getElementById('upload-overlay').style.display = 'none';
-            input.value = "";
+            document.getElementById('upload-overlay').style.display = 'none'; input.value = "";
         }
 
-        // --- 4. RENDER POSTS (Unified) ---
-        function setupRealtimeListener(colName, elementId) {
+        // --- 4. RENDER POSTS & RANKINGS ---
+        function renderGrid(colName, elementId, rankUserParams, rankClassParams) {
             onSnapshot(query(collection(db, colName), orderBy("createdAt", "desc")), (snap) => {
-                const grid = document.getElementById(elementId);
-                grid.innerHTML = "";
+                const grid = document.getElementById(elementId); grid.innerHTML = "";
+                let userStats = {}; let classStats = {};
+
                 snap.forEach(d => {
                     const data = d.data();
-                    // Tạo nút Edit/Delete nếu là chủ hoặc Admin
+                    const likes = data.likes ? data.likes.length : 0;
+                    
+                    // Calc Rankings
+                    if(!userStats[data.authorName]) userStats[data.authorName] = 0; userStats[data.authorName] += likes;
+                    const className = data.className || "Khác";
+                    if(!classStats[className]) classStats[className] = 0; classStats[className] += likes;
+
+                    // Controls
                     let controls = "";
                     if(currentUser && (currentUser.uid === data.uid || isAdmin(currentUser.email))) {
-                        controls = `<div class="owner-controls">
-                            <button class="ctrl-btn" onclick="event.stopPropagation(); editPost('${colName}', '${d.id}', '${data.desc}')">✏️</button>
-                            <button class="ctrl-btn" onclick="event.stopPropagation(); deletePost('${colName}', '${d.id}')" style="color:red">🗑️</button>
-                        </div>`;
+                        controls = `<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation(); editPost('${colName}', '${d.id}', '${data.desc}')">✏️</button><button class="ctrl-btn" onclick="event.stopPropagation(); deletePost('${colName}', '${d.id}')" style="color:red">🗑️</button></div>`;
                     }
 
-                    const div = document.createElement('div');
-                    div.className = 'gallery-item';
-                    div.innerHTML = `${controls}<img src="${data.url}" class="gallery-img">
-                                     <div class="gallery-overlay">
-                                        <span>${data.desc || 'Ảnh'}</span>
-                                        <span>❤️ ${data.likes?data.likes.length:0}</span>
-                                     </div>`;
+                    // Item HTML
+                    const div = document.createElement('div'); div.className = 'gallery-item';
+                    div.innerHTML = `${controls}
+                        <div class="gallery-img-container"><img src="${data.url}" class="gallery-img"></div>
+                        <div class="gallery-info">
+                            <div class="gallery-title">${data.desc}</div>
+                            <div class="gallery-meta">
+                                <span>👤 ${data.authorName} (${data.className||'?'})</span>
+                                <span>❤️ ${likes}</span>
+                            </div>
+                        </div>`;
                     div.onclick = () => openLightbox(colName, d.id, data);
                     grid.appendChild(div);
                 });
+
+                // Render Rankings
+                renderRankTable(rankUserParams.id, userStats);
+                renderRankTable(rankClassParams.id, classStats);
             });
         }
-        setupRealtimeListener('gallery', 'gallery-grid');
-        setupRealtimeListener('contest', 'contest-grid');
-
-        // --- 5. EDIT / DELETE LOGIC ---
-        window.deletePost = async (col, id) => {
-            if(confirm("Bạn chắc chắn muốn xóa bài này?")) {
-                await deleteDoc(doc(db, col, id));
-            }
-        }
-        window.editPost = async (col, id, oldDesc) => {
-            const newDesc = prompt("Sửa mô tả:", oldDesc);
-            if(newDesc !== null && newDesc !== oldDesc) {
-                await updateDoc(doc(db, col, id), { desc: newDesc });
-            }
+        
+        function renderRankTable(elId, dataObj) {
+            const sorted = Object.entries(dataObj).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            const tbody = document.getElementById(elId); tbody.innerHTML = "";
+            sorted.forEach((item, index) => {
+                const cls = index === 0 ? 'rank-top-1' : '';
+                tbody.innerHTML += `<tr class="${cls}">
+                    <td><span class="rank-num">${index+1}</span> ${item[0]}</td>
+                    <td style="text-align:right; font-weight:bold; color:var(--primary)">${item[1]} ❤️</td>
+                </tr>`;
+            });
+            if(sorted.length === 0) tbody.innerHTML = "<tr><td style='text-align:center; color:#999'>Chưa có dữ liệu</td></tr>";
         }
 
+        renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'});
+        renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+
+        // --- 5. ACTIONS ---
+        window.deletePost = async (c, i) => { if(confirm("Xóa bài này?")) await deleteDoc(doc(db, c, i)); }
+        window.editPost = async (c, i, o) => { const n = prompt("Mô tả mới:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
+        
         // --- 6. LIGHTBOX ---
-        window.openLightbox = (col, id, data) => {
-            currentImgId = id; currentImgCollection = col;
+        window.openLightbox = (c, i, d) => {
+            currentImgId = i; currentImgCollection = c;
             document.getElementById('lightbox').style.display = 'flex';
-            document.getElementById('lb-img').src = data.url;
-            document.getElementById('lb-like-count').innerText = data.likes ? data.likes.length : 0;
-            // Admin Pin
-            if(currentUser && isAdmin(currentUser.email)) {
-                document.getElementById('lb-admin-pin').style.display = 'flex';
-            } else { document.getElementById('lb-admin-pin').style.display = 'none'; }
-            renderComments(data.comments || []);
-            // Like status
+            document.getElementById('lb-img').src = d.url;
+            document.getElementById('lb-like-count').innerText = d.likes ? d.likes.length : 0;
+            document.getElementById('lb-admin-pin').style.display = (currentUser && isAdmin(currentUser.email)) ? 'flex' : 'none';
+            renderComments(d.comments || []);
             const btn = document.getElementById('lb-like');
-            if(currentUser && data.likes && data.likes.includes(currentUser.uid)) btn.style.color = 'red';
-            else btn.style.color = 'white';
+            btn.style.color = (currentUser && d.likes && d.likes.includes(currentUser.uid)) ? 'red' : 'white';
         }
         window.closeLightbox = () => document.getElementById('lightbox').style.display = 'none';
-        
         window.handleLike = async () => {
-            if(!currentUser) return alert("Đăng nhập đi bạn!");
+            if(!currentUser) return alert("Đăng nhập để thả tim!");
             const ref = doc(db, currentImgCollection, currentImgId);
             const snap = await getDoc(ref);
             const likes = snap.data().likes || [];
             if(likes.includes(currentUser.uid)) await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
             else await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
-            // UI cập nhật tự động khi mở lại, ở đây làm nhanh đổi màu
-            document.getElementById('lb-like').style.color = likes.includes(currentUser.uid) ? 'white' : 'red';
         }
-        
-        window.toggleComments = () => {
-            const el = document.getElementById('lb-comments');
-            el.style.display = el.style.display==='none'?'block':'none';
-        }
-        
-        function renderComments(arr) {
-            const list = document.getElementById('lb-cmt-list');
-            list.innerHTML = arr.length?"":"<p style='color:#777;text-align:center'>Chưa có tin nhắn</p>";
-            arr.forEach(c => {
-                list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #eee">
-                    <strong>${c.name}</strong>: ${c.text}
-                </div>`;
-            });
-        }
+        window.toggleComments = () => { const e = document.getElementById('lb-comments'); e.style.display=e.style.display==='none'?'block':'none'; }
         window.postComment = async (e) => {
             e.preventDefault(); if(!currentUser) return;
             const txt = document.getElementById('lb-cmt-input').value;
-            await updateDoc(doc(db, currentImgCollection, currentImgId), {
-                comments: arrayUnion({ uid: currentUser.uid, name: currentUser.displayName, text: txt, time: Date.now() })
-            });
+            await updateDoc(doc(db, currentImgCollection, currentImgId), { comments: arrayUnion({ uid: currentUser.uid, name: currentUser.displayName, text: txt, time: Date.now() }) });
             document.getElementById('lb-cmt-input').value = "";
-            // Reload cmt manually for instant feel
-            const s = await getDoc(doc(db, currentImgCollection, currentImgId));
-            renderComments(s.data().comments);
+        }
+        function renderComments(arr) {
+            const list = document.getElementById('lb-cmt-list'); list.innerHTML = arr.length?"":"<p style='color:#777;text-align:center'>Chưa có tin nhắn</p>";
+            arr.forEach(c => { list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #eee"><strong>${c.name}</strong>: ${c.text}</div>`; });
         }
 
-        // --- 7. ADMIN DASHBOARD ---
+        // --- 7. ADMIN ---
         window.loadAdminData = async () => {
             if(!currentUser || !isAdmin(currentUser.email)) return;
-            const tbody = document.getElementById('user-table-body');
-            tbody.innerHTML = "<tr><td colspan='4'>Đang tải...</td></tr>";
-            
-            const snap = await getDocs(collection(db, "users"));
-            tbody.innerHTML = "";
+            const tb = document.getElementById('user-table-body'); tb.innerHTML = "<tr><td>Loading...</td></tr>";
+            const snap = await getDocs(collection(db, "users")); tb.innerHTML = "";
             snap.forEach(d => {
                 const u = d.data();
-                const stClass = u.banned ? 'st-banned' : (u.status==='deleted' ? 'st-deleted' : 'st-active');
-                const stText = u.banned ? 'Bị Khóa' : (u.status==='deleted' ? 'Chờ Xóa' : 'Hoạt động');
-                const actionBtn = u.banned 
-                    ? `<button onclick="toggleBan('${d.id}', false)">Mở khóa</button>` 
-                    : `<button onclick="toggleBan('${d.id}', true)" style="color:red">Khóa</button>`;
-                
-                tbody.innerHTML += `<tr>
-                    <td>${u.displayName}</td>
-                    <td>${u.email}</td>
-                    <td><span class="status-badge ${stClass}">${stText}</span></td>
-                    <td>${actionBtn}</td>
-                </tr>`;
+                const btn = u.banned ? `<button onclick="togBan('${d.id}',0)">Mở</button>` : `<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`;
+                tb.innerHTML += `<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`;
             });
         }
+        window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
+        window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
         
-        window.toggleBan = async (uid, banStatus) => {
-            if(confirm(banStatus ? "Khóa tài khoản này?" : "Mở khóa tài khoản này?")) {
-                await updateDoc(doc(db, "users", uid), { banned: banStatus });
-                loadAdminData();
-            }
-        }
-        
-        window.pinPost = async () => {
-            await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId });
-            alert("Đã ghim bài!");
-        }
-
-        // --- 8. HOME FEATURED ---
-        onSnapshot(doc(db, "settings", "featured"), async (snap) => {
-            if(snap.exists()) {
-                const s = snap.data();
-                const p = await getDoc(doc(db, s.col, s.id));
+        // --- 8. FEATURED & PROFILE ---
+        onSnapshot(doc(db, "settings", "featured"), async (s) => {
+            if(s.exists()) {
+                const p = await getDoc(doc(db, s.data().col, s.data().id));
                 if(p.exists()) {
                     const d = p.data();
                     document.getElementById('featured-post').style.display = 'flex';
@@ -522,45 +509,26 @@
                 }
             }
         });
-
-        // --- 9. PROFILE ACTIONS ---
-        window.requestDeleteAccount = async () => {
-            if(confirm("Ẩn tài khoản 14 ngày?")) {
-                await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' });
-                location.reload();
-            }
-        }
-        window.restoreAccount = async () => {
-            await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' });
-            location.reload();
-        }
+        window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
+        window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
         window.updateProfile = async (e) => {
             e.preventDefault();
-            const n = document.getElementById('edit-name').value;
-            const c = document.getElementById('edit-class').value;
-            const b = document.getElementById('edit-bio').value;
-            // Admin name fix
-            const finalName = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n;
-            await updateDoc(doc(db, "users", currentUser.uid), { displayName: finalName, class: c, bio: b });
+            const n = document.getElementById('edit-name').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value;
+            const final = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n;
+            await updateDoc(doc(db, "users", currentUser.uid), { displayName: final, class: c, bio: b });
             alert("Đã lưu!");
         }
 
-        // --- 10. PAGE ROUTING ---
+        // --- 9. ROUTING ---
         window.showPage = (id) => {
-            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active-menu'));
-            document.getElementById('menu-'+id).classList.add('active-menu');
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active');
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active-menu')); document.getElementById('menu-'+id).classList.add('active-menu');
             localStorage.setItem('page', id);
         }
-        
-        // Inits
         const tips = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác.", "Hạn chế túi nilon."];
         document.getElementById('daily-tip').innerText = tips[Math.floor(Math.random()*tips.length)];
         document.querySelectorAll('.btn-login').forEach(b => b.onclick = () => signInWithPopup(auth, provider));
-        
         showPage(localStorage.getItem('page') || 'home');
-
     </script>
 </body>
 </html>
