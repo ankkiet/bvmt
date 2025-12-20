@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -13,7 +12,7 @@
             --primary: #2e7d32; --primary-dark: #1b5e20;
             --accent: #ffca28; --danger: #e53935; --info: #039be5;
             --bg: #f4f9f4; --text: #333; --white: #ffffff;
-            --admin-color: #d32f2f; /* Màu đỏ cho Admin */
+            --admin-color: #d32f2f;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
@@ -22,8 +21,9 @@
         nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 12px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         nav ul { list-style: none; margin: 0; padding: 0 10px; display: flex; justify-content: center; overflow-x: auto; white-space: nowrap; gap: 5px; }
         nav ul::-webkit-scrollbar { display: none; }
-        nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 8px 16px; display: block; font-size: 0.85rem; border-radius: 30px; transition: 0.3s; opacity: 0.9; }
+        nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 8px 16px; display: block; font-size: 0.85rem; border-radius: 30px; transition: 0.3s; opacity: 0.9; cursor: pointer; }
         nav ul li a:hover, nav ul li a.active-menu { background-color: rgba(255,255,255,0.25); color: var(--accent); opacity: 1; transform: translateY(-2px); }
+        #menu-admin { background: var(--admin-color); display: none; } /* Mặc định ẩn nút Admin */
 
         /* --- 3. LAYOUT & CARDS --- */
         .container { max-width: 1200px; width: 95%; margin: 20px auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 80vh; }
@@ -32,6 +32,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 30px; position: relative; left: 50%; transform: translateX(-50%); }
+        h2 { color: var(--primary-dark); margin-top: 0; }
         .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; }
         .card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
 
@@ -43,47 +44,49 @@
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
         input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 1rem; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
 
-        /* --- 5. ADMIN BADGE & TOOLS --- */
-        .admin-badge { background: var(--admin-color); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 5px; vertical-align: middle; display: inline-flex; align-items: center; gap: 3px; }
-        .admin-controls { margin-top: 5px; padding-top: 5px; border-top: 1px dashed #eee; display: flex; gap: 10px; justify-content: flex-end; }
-        .admin-btn { background: none; border: none; font-size: 0.8rem; cursor: pointer; font-weight: bold; opacity: 0.7; transition: 0.2s; }
-        .admin-btn:hover { opacity: 1; text-decoration: underline; }
-        .btn-ban { color: var(--danger); } .btn-pin { color: var(--accent); } .btn-del { color: #888; }
-        
-        /* --- 6. HOME FEATURED --- */
-        .featured-section { background: linear-gradient(135deg, #fff9c4, #fff); border: 2px solid var(--accent); border-radius: 15px; padding: 20px; margin-bottom: 30px; position: relative; overflow: hidden; }
-        .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 15px; font-weight: bold; border-bottom-right-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
-        .featured-content { display: flex; gap: 20px; align-items: center; }
-        .featured-img { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        
-        /* --- 7. GÓC XANH (MASONRY GRID) --- */
+        /* --- 5. GRID & IMAGES --- */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.1); aspect-ratio: 1/1; }
         .gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
         .gallery-item:hover .gallery-img { transform: scale(1.1); }
-        .gallery-overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 10px; display: flex; justify-content: space-between; align-items: flex-end; opacity: 1; }
-        
-        /* --- 8. LIGHTBOX & DOCK --- */
-        .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); flex-direction: column; justify-content: center; align-items: center; }
-        .modal-content { max-width: 90%; max-height: 85vh; border-radius: 5px; transition: transform 0.2s; }
-        .dock { position: absolute; bottom: 30px; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 10px 25px; border-radius: 50px; display: flex; gap: 20px; border: 1px solid rgba(255,255,255,0.2); }
-        .dock-btn { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.2s; }
-        .dock-btn span { font-size: 0.6rem; opacity: 0.8; font-weight: normal; }
-        .dock-btn:hover { color: var(--accent); transform: translateY(-5px); }
-        .dock-btn.liked { color: #f50057; }
-        
-        /* --- 9. PROFILE & FORM --- */
-        .profile-header { display: flex; align-items: center; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
-        .user-status-deleted { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffcdd2; display: none; }
+        .gallery-overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 10px; display: flex; justify-content: space-between; align-items: flex-end; }
 
-        /* --- 10. RESPONSIVE --- */
+        /* --- 6. ADMIN & USER TOOLS (Edit/Delete) --- */
+        .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 10; opacity: 0; transition: 0.3s; }
+        .gallery-item:hover .owner-controls { opacity: 1; }
+        .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 4px; padding: 5px; cursor: pointer; font-size: 0.9rem; }
+        .ctrl-btn:hover { transform: scale(1.1); }
+        
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .admin-table th { text-align: left; padding: 10px; background: #eee; }
+        .admin-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        .st-active { background: #e8f5e9; color: green; }
+        .st-banned { background: #ffebee; color: red; }
+        .st-deleted { background: #fff3e0; color: orange; }
+
+        /* --- 7. TRA CỨU & HOẠT ĐỘNG (Restored) --- */
+        .trash-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .trash-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; }
+        .trash-icon { font-size: 2rem; display: block; margin-bottom: 5px; }
+        .bin-recycle { color: #1976d2; font-weight: bold; } .bin-organic { color: #388e3c; font-weight: bold; } .bin-other { color: #f57c00; font-weight: bold; }
+
+        /* --- 8. LIGHTBOX --- */
+        .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); flex-direction: column; justify-content: center; align-items: center; }
+        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 5px; }
+        .dock { position: absolute; bottom: 20px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 10px 20px; border-radius: 50px; display: flex; gap: 15px; }
+        .dock-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .dock-btn span { font-size: 0.6rem; }
+
+        /* --- 9. HOME FEATURED --- */
+        .featured-section { background: linear-gradient(135deg, #fff9c4, #fff); border: 2px solid var(--accent); border-radius: 15px; padding: 20px; margin-bottom: 30px; position: relative; display: flex; gap: 20px; align-items: center; }
+        .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); padding: 5px 15px; font-weight: bold; border-bottom-right-radius: 10px; }
+
         @media (max-width: 768px) {
-            .container { padding: 15px; width: 100%; margin: 10px 0; border-radius: 0; }
+            .container { width: 100%; margin: 0; border-radius: 0; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-            .featured-content { flex-direction: column; text-align: center; }
+            .featured-section { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -97,6 +100,7 @@
             <li><a onclick="showPage('activities')" id="menu-activities">Hoạt Động</a></li>
             <li><a onclick="showPage('guide')" id="menu-guide">Tra Cứu</a></li>
             <li><a onclick="showPage('profile')" id="menu-profile">Tài Khoản</a></li>
+            <li><a onclick="showPage('admin')" id="menu-admin">🛠 QUẢN TRỊ</a></li>
         </ul>
     </nav>
 
@@ -106,453 +110,442 @@
             <div style="text-align: center; margin-bottom: 30px;">
                 <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1000&q=80" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px;">
                 <h1 style="border:none; margin-top: 15px;">Chào mừng đến với A2K41</h1>
-                <p>Ngôi nhà chung bảo vệ môi trường - Sáng tạo & Tiên phong</p>
             </div>
 
             <div id="featured-post" class="featured-section" style="display: none;">
                 <div class="featured-badge">🌟 NGÔI SAO TUẦN NÀY</div>
-                <div class="featured-content">
-                    <img id="feat-img" src="" class="featured-img">
-                    <div>
-                        <h3 id="feat-title" style="margin: 0 0 5px 0; color: var(--primary);">Tiêu đề bài viết</h3>
-                        <p id="feat-desc" style="margin: 0; color: #555;">Mô tả...</p>
-                        <p id="feat-author" style="margin-top: 10px; font-weight: bold; font-size: 0.9rem;">— Tác giả: ...</p>
-                    </div>
+                <img id="feat-img" src="" style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; border: 2px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <div>
+                    <h3 id="feat-title" style="margin: 0 0 5px 0; color: var(--primary);">Tiêu đề bài viết</h3>
+                    <p id="feat-desc" style="margin: 0; color: #555;">Mô tả...</p>
+                    <p id="feat-author" style="margin-top: 10px; font-weight: bold; font-size: 0.9rem;">— Tác giả: ...</p>
                 </div>
             </div>
 
             <div class="card" style="border-left: 5px solid var(--accent);">
                 <h3>💡 Thông điệp hôm nay</h3>
-                <p id="daily-tip" style="font-style: italic; font-size: 1.1rem;">Loading...</p>
+                <p id="daily-tip" style="font-style: italic;">Loading...</p>
+            </div>
+        </div>
+
+        <div id="activities" class="page-section">
+            <h1>Hoạt Động</h1>
+            <div class="card">
+                <h2>♻️ Phong trào "Đổi giấy lấy cây"</h2>
+                <p><strong>Thời gian:</strong> 15:00 - 17:00 chiều Thứ 5 hàng tuần.</p>
+                <p><strong>Địa điểm:</strong> Phòng Đội (Tầng 1).</p>
+                <p><strong>Quy đổi:</strong> 3kg giấy vụn/vở cũ = 1 chậu sen đá nhỏ.</p>
+            </div>
+            <div class="card" style="border-left: 5px solid #039be5;">
+                <h2>📰 Tin Tức & Kết Nối</h2>
+                <ul style="line-height: 1.8;">
+                    <li><a href="#" style="text-decoration: none; color: var(--primary);">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh" tuần tới.</a></li>
+                    <li><a href="#" style="text-decoration: none; color: var(--info);">📘 Tổng kết thi đua tháng 11: Chúc mừng A2K41 đạt giải Nhất.</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="guide" class="page-section">
+            <h1>Tra Cứu Phân Loại Rác</h1>
+            <input type="text" id="trashSearchInput" placeholder="Nhập tên rác (VD: Vỏ sữa, Pin...)" onkeyup="filterTrash()" style="margin-bottom: 20px;">
+            <div id="trashContainer" class="trash-result"></div>
+            <hr style="margin: 30px 0;">
+            <div class="card" style="text-align: center;">
+                <h3>🗺️ Sơ đồ vị trí thùng rác</h3>
+                <p>(Hình ảnh sơ đồ minh họa đang cập nhật...)</p>
             </div>
         </div>
 
         <div id="greenclass" class="page-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div><h1>Góc "Lớp Học Xanh"</h1><p style="text-align: left; margin:0; color:#666">Cuộc thi ảnh không gian lớp học 🌿</p></div>
-                <div>
-                    <button class="btn" onclick="document.getElementById('file-upload').click()">📸 Đăng Ảnh Ngay</button>
-                    <input type="file" id="file-upload" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
-                </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
+                <h1>Góc "Lớp Học Xanh"</h1>
+                <button class="btn" onclick="checkLoginAndUpload('gallery')">📸 Đăng Ảnh Ngay</button>
             </div>
-
-            <div class="card" style="background: #e3f2fd; border: 1px dashed #2196f3;">
-                <h4 style="margin:0 0 5px 0; color: #0d47a1;">ℹ️ QUY ĐỊNH ĐĂNG BÀI</h4>
-                <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem; color: #333;">
-                    <li>Chỉ đăng ảnh cây xanh, góc lớp, sản phẩm tái chế tại trường.</li>
-                    <li>Nghiêm cấm ảnh không liên quan. Admin sẽ <strong>KHÓA TÀI KHOẢN</strong> vĩnh viễn nếu vi phạm.</li>
-                </ul>
-            </div>
-
-            <div id="upload-status" style="display:none; text-align: center; color: var(--primary); font-weight: bold; margin: 10px 0;">⏳ Đang xử lý ảnh... Vui lòng chờ!</div>
+            
+            <p style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px dashed #2196f3; font-size: 0.9rem;">
+                ℹ️ <strong>Quy định:</strong> Chỉ đăng ảnh góc lớp, cây xanh. Nội dung không phù hợp sẽ bị xóa và khóa tài khoản.
+            </p>
 
             <div id="gallery-grid" class="gallery-grid"></div>
-            
-            <div style="margin-top: 40px;">
-                <h2 style="text-align: center; color: var(--primary);">🏆 Bảng Xếp Hạng Góc Xanh</h2>
-                <div class="ranking-container" style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div class="card" style="flex: 1; min-width: 250px;">
-                        <h4 style="text-align: center;">🌟 Top Cá Nhân (Tim)</h4>
-                        <table style="width:100%; font-size:0.9rem;" id="ranking-personal"></table>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div id="contest" class="page-section">
-            <h1>Phong Trào Thi Đua</h1>
-            <p style="text-align: center;">Ghi lại những khoảnh khắc lao động, nhặt rác, chăm sóc môi trường.</p>
-            
-            <div id="contest-auth-check">
-                <div id="contest-login-btn" style="text-align: center;"><p>🔒 Cần đăng nhập để tham gia</p><button class="btn btn-google btn-login">G Đăng nhập ngay</button></div>
-                <div id="contest-form" style="display: none;" class="card">
-                    <h3>📝 Báo cáo hoạt động</h3>
-                    <form onsubmit="submitContest(event)">
-                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                            <input type="text" id="c-name" disabled placeholder="Tên của bạn" style="background: #eee;">
-                            <input type="text" id="c-class" disabled placeholder="Lớp" style="background: #eee; width: 80px;">
-                        </div>
-                        <input type="text" id="c-desc" placeholder="Bạn đã làm việc tốt gì hôm nay?" required>
-                        <input type="url" id="c-img" placeholder="Link ảnh (nếu có)..." required>
-                        <button type="submit" class="btn" style="width: 100%;">Gửi Báo Cáo</button>
-                    </form>
-                </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px;">
+                <h1>Phong Trào Thi Đua</h1>
+                <button class="btn" onclick="checkLoginAndUpload('contest')">📤 Báo Cáo Hoạt Động</button>
             </div>
-
-            <div id="contest-list" style="margin-top: 20px;"></div>
+            <p style="text-align: center;">Ghi lại khoảnh khắc lao động, nhặt rác, chăm sóc môi trường.</p>
+            
+            <div id="contest-grid" class="gallery-grid"></div>
         </div>
 
         <div id="profile" class="page-section">
             <h1>Hồ Sơ Của Tôi</h1>
-            
-            <div id="profile-logged-out" style="text-align: center; padding: 50px;">
-                <p>Bạn chưa đăng nhập.</p>
+            <div id="profile-out" style="text-align: center; padding: 40px;">
+                <p>Vui lòng đăng nhập để sử dụng tính năng.</p>
                 <button class="btn btn-google btn-login">G Đăng nhập bằng Google</button>
             </div>
 
-            <div id="profile-logged-in" style="display: none;">
-                <div class="user-status-deleted" id="soft-delete-msg">
-                    ⚠️ Tài khoản đang trong thời gian chờ xóa (14 ngày). <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button>
+            <div id="profile-in" style="display: none;">
+                <div id="soft-delete-msg" style="background:#ffebee; color:#c62828; padding:10px; border-radius:8px; display:none; margin-bottom:15px;">
+                    ⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục</button>
                 </div>
-
+                
                 <div class="card">
-                    <div class="profile-header">
-                        <img id="p-avatar" src="" class="profile-avatar">
+                    <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+                        <img id="p-avatar" src="" style="width: 80px; height: 80px; border-radius: 50%;">
                         <div>
-                            <h2 id="p-name" style="margin: 0;">User Name</h2>
-                            <p id="p-email" style="margin: 5px 0; color: #666;">email@gmail.com</p>
-                            <span id="p-role-badge" style="display:none;"></span>
+                            <h2 id="p-name" style="margin:0">Name</h2>
+                            <p id="p-email" style="margin:0; color:#666">Email</p>
                         </div>
                     </div>
-
                     <form onsubmit="updateProfile(event)">
-                        <label>Tên hiển thị:</label>
-                        <input type="text" id="edit-name" required>
-                        <label>Lớp:</label>
-                        <select id="edit-class">
-                            <option value="">-- Chọn lớp --</option>
-                            <option value="10A1">10A1</option><option value="11A2">11A2</option><option value="12A1">12A1</option>
-                            </select>
-                        <label>Tiểu sử / Châm ngôn:</label>
-                        <textarea id="edit-bio" rows="2"></textarea>
-                        
-                        <div style="margin-top: 15px; display: flex; justify-content: space-between;">
-                            <button type="submit" class="btn">Lưu Thay Đổi</button>
-                            <button type="button" class="btn btn-outline" onclick="auth.signOut()">Đăng Xuất</button>
-                        </div>
+                        <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
+                        <label>Lớp:</label><input type="text" id="edit-class" placeholder="VD: 11A2">
+                        <label>Tiểu sử:</label><textarea id="edit-bio"></textarea>
+                        <button type="submit" class="btn">Lưu Thay Đổi</button>
+                        <button type="button" class="btn btn-outline" onclick="auth.signOut()">Đăng Xuất</button>
                     </form>
                 </div>
-
-                <div class="card" style="border: 1px solid #ffcdd2;">
-                    <h3 style="color: var(--danger);">Khu vực nguy hiểm</h3>
-                    <p>Xóa tài khoản sẽ ẩn mọi bài viết của bạn. Bạn có 14 ngày để khôi phục trước khi bị xóa vĩnh viễn.</p>
+                <div class="card" style="border:1px solid #ffcdd2">
+                    <h3 style="color:red">Vùng nguy hiểm</h3>
                     <button class="btn btn-danger" onclick="requestDeleteAccount()">Xóa Tài Khoản</button>
                 </div>
             </div>
         </div>
 
-        <div id="activities" class="page-section"><h1>Hoạt Động</h1><div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần tại phòng Đội.</p></div></div>
-        <div id="guide" class="page-section"><h1>Tra Cứu</h1><div class="card" style="text-align: center;"><p>Tính năng đang cập nhật...</p></div></div>
+        <div id="admin" class="page-section">
+            <h1>🛠 Quản Trị Hệ Thống</h1>
+            <div class="card">
+                <h3>Danh sách thành viên</h3>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead><tr><th>Tên</th><th>Email</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+                        <tbody id="user-table-body"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px;">🔄 Làm mới danh sách</button>
+            </div>
+        </div>
 
+    </div>
+
+    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
+    <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
+        <h2 style="color:var(--primary)">⏳ Đang tải ảnh lên...</h2>
     </div>
 
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <img id="lb-img" class="modal-content">
         <div class="dock">
             <button class="dock-btn" onclick="handleLike()" id="lb-like">❤️<span id="lb-like-count">0</span></button>
-            <button class="dock-btn" onclick="toggleComments()">💬<span>Bình luận</span></button>
+            <button class="dock-btn" onclick="toggleComments()">💬<span>Chat</span></button>
             <button class="dock-btn" onclick="window.open(document.getElementById('lb-img').src)">⬇️<span>Tải</span></button>
-            <button class="dock-btn" onclick="alert('Đã copy link!'); navigator.clipboard.writeText(window.location.href);">🔗<span>Share</span></button>
-            <button class="dock-btn" id="lb-admin-pin" style="display:none;" onclick="pinPost()" title="Ghim ra trang chủ">🌟<span>Ghim</span></button>
-            <button class="dock-btn" id="lb-admin-del" style="display:none; color:red;" onclick="deletePostAdmin()" title="Xóa bài">🗑️<span>Xóa</span></button>
+            <button class="dock-btn" id="lb-admin-pin" style="display:none; color: gold;" onclick="pinPost()">🌟<span>Ghim</span></button>
         </div>
-        <div id="lb-comments" class="card" style="position: fixed; bottom: 100px; width: 300px; max-height: 300px; overflow-y: auto; display: none;">
+        <div id="lb-comments" class="card" style="position:fixed; bottom:100px; width:300px; max-height:300px; overflow-y:auto; display:none;">
             <div id="lb-cmt-list"></div>
-            <form onsubmit="postComment(event)" style="margin-top: 10px; display: flex;"><input id="lb-cmt-input" placeholder="Viết gì đó..." required><button class="btn btn-sm">Gửi</button></form>
+            <form onsubmit="postComment(event)" style="display:flex; margin-top:5px;"><input id="lb-cmt-input" required placeholder="Bình luận..."><button class="btn btn-sm">Gửi</button></form>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- CẤU HÌNH ---
+        // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
 
-        // 🔥 THÔNG TIN CỦA BẠN (ĐỪNG QUÊN THAY CLOUD NAME) 🔥
+        const CLOUD_NAME = "dekxvneap";
+        const UPLOAD_PRESET = "a2k41nvc_upload";
         const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
-        const CLOUD_NAME = "dekxvneap"; // <-- Cloud Name của bạn
-        const UPLOAD_PRESET = "a2k41nvc_upload"; // <-- Preset Unsigned của bạn
 
-        let currentUserProfile = null;
+        let currentUser = null;
+        let currentCollection = 'gallery'; // 'gallery' or 'contest'
         let currentImgId = null;
+        let currentImgCollection = null;
 
-        // --- 1. HỆ THỐNG USER & ADMIN ---
-        window.isAdmin = (email) => ADMIN_EMAILS.includes(email);
-        
+        // --- 1. AUTH & ADMIN CHECK ---
+        const isAdmin = (email) => ADMIN_EMAILS.includes(email);
+
         onAuthStateChanged(auth, async (user) => {
-            const loginBtns = document.querySelectorAll('.btn-login');
-            const profileOut = document.getElementById('profile-logged-out');
-            const profileIn = document.getElementById('profile-logged-in');
-            const contestForm = document.getElementById('contest-form');
-            const contestBtn = document.getElementById('contest-login-btn');
-
             if (user) {
-                // Kiểm tra Ban/Soft Delete
-                const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
+                // Check in DB
+                const ref = doc(db, "users", user.uid);
+                const snap = await getDoc(ref);
                 
                 if (snap.exists()) {
                     const data = snap.data();
-                    if (data.banned) {
-                        alert("⛔ TÀI KHOẢN ĐÃ BỊ KHÓA VĨNH VIỄN DO VI PHẠM!");
-                        return signOut(auth);
-                    }
-                    if (data.status === 'deleted') {
-                        // Logic 14 ngày (Đơn giản hóa: Cứ hiện thông báo khôi phục)
-                        document.getElementById('soft-delete-msg').style.display = 'block';
-                    } else {
-                        document.getElementById('soft-delete-msg').style.display = 'none';
-                    }
-                    currentUserProfile = data;
+                    if (data.banned) { alert("⛔ Tài khoản bị khóa!"); signOut(auth); return; }
+                    currentUser = data;
                 } else {
-                    // Tạo profile mới
-                    const newProfile = {
-                        uid: user.uid, email: user.email,
-                        displayName: isAdmin(user.email) ? "Admin_xinhxinh" : user.displayName,
-                        photoURL: user.photoURL,
-                        role: isAdmin(user.email) ? "admin" : "member",
-                        class: "", bio: "", status: "active",
-                        createdAt: serverTimestamp()
-                    };
-                    await setDoc(userRef, newProfile);
-                    currentUserProfile = newProfile;
+                    currentUser = { uid: user.uid, email: user.email, displayName: isAdmin(user.email) ? "Admin_xinhxinh" : user.displayName, photoURL: user.photoURL, role: isAdmin(user.email) ? 'admin' : 'member', status: 'active' };
+                    await setDoc(ref, currentUser);
                 }
 
-                // UI Updates
-                loginBtns.forEach(b => b.style.display = 'none');
-                profileOut.style.display = 'none'; profileIn.style.display = 'block';
-                contestForm.style.display = 'block'; contestBtn.style.display = 'none';
-                
-                // Điền info vào form
-                document.getElementById('p-avatar').src = currentUserProfile.photoURL;
-                document.getElementById('p-name').innerHTML = getDisplayNameUI(currentUserProfile);
-                document.getElementById('p-email').innerText = currentUserProfile.email;
-                document.getElementById('edit-name').value = currentUserProfile.displayName;
-                document.getElementById('edit-class').value = currentUserProfile.class || "";
-                document.getElementById('edit-bio').value = currentUserProfile.bio || "";
-                document.getElementById('c-name').value = currentUserProfile.displayName;
-                document.getElementById('c-class').value = currentUserProfile.class || "Chưa cập nhật";
+                // UI Logic
+                document.getElementById('profile-in').style.display = 'block';
+                document.getElementById('profile-out').style.display = 'none';
+                document.getElementById('p-avatar').src = currentUser.photoURL;
+                document.getElementById('p-name').innerText = getDisplayName(currentUser);
+                document.getElementById('p-email').innerText = currentUser.email;
+                document.getElementById('edit-name').value = currentUser.displayName;
+                document.getElementById('edit-class').value = currentUser.class || "";
+                document.getElementById('edit-bio').value = currentUser.bio || "";
+                document.getElementById('soft-delete-msg').style.display = (currentUser.status === 'deleted') ? 'block' : 'none';
+
+                // Show Admin Menu
+                if(isAdmin(currentUser.email)) {
+                    document.getElementById('menu-admin').style.display = 'block';
+                }
 
             } else {
-                loginBtns.forEach(b => b.style.display = 'inline-block');
-                profileOut.style.display = 'block'; profileIn.style.display = 'none';
-                contestForm.style.display = 'none'; contestBtn.style.display = 'block';
-                currentUserProfile = null;
+                currentUser = null;
+                document.getElementById('profile-in').style.display = 'none';
+                document.getElementById('profile-out').style.display = 'block';
+                document.getElementById('menu-admin').style.display = 'none';
             }
         });
 
-        function getDisplayNameUI(user) {
-            let html = user.displayName;
-            if (user.role === 'admin' || isAdmin(user.email)) {
-                html = `<span style="color: var(--admin-color); font-weight:bold;">Admin_xinhxinh</span> <span class="admin-badge">✓ QTV</span>`;
-            }
-            return html;
+        function getDisplayName(u) {
+            return (u.role === 'admin' || isAdmin(u.email)) 
+                ? `<span style="color:red;font-weight:bold">Admin_xinhxinh <span style="font-size:0.8em">✓</span></span>` 
+                : u.displayName;
         }
 
-        // --- 2. LOGIC PROFILE ---
-        window.updateProfile = async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('edit-name').value;
-            const cls = document.getElementById('edit-class').value;
-            const bio = document.getElementById('edit-bio').value;
-            
-            // Nếu là Admin, tên luôn là Admin_xinhxinh
-            const finalName = isAdmin(currentUserProfile.email) ? "Admin_xinhxinh" : name;
-
-            await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                displayName: finalName, class: cls, bio: bio
+        // --- 2. RESTORED CONTENT (TRA CỨU) ---
+        const trashDB = [
+            {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"},
+            {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"},
+            {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"},
+            {n:"Pin",t:"Nguy hại",c:"bin-other"} // Pin xử lý riêng nhưng tạm để other
+        ];
+        window.filterTrash = () => {
+            const k = document.getElementById('trashSearchInput').value.toLowerCase();
+            const res = document.getElementById('trashContainer');
+            res.innerHTML = "";
+            trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{
+                res.innerHTML += `<div class="trash-item"><div class="${i.c}">${i.t}</div><strong>${i.n}</strong></div>`;
             });
-            alert("Đã cập nhật hồ sơ!");
-            location.reload();
+        }; window.filterTrash(); // Init
+
+        // --- 3. UPLOAD SYSTEM (GENERIC FOR GREEN & CONTEST) ---
+        window.checkLoginAndUpload = (col) => {
+            if(!currentUser) { alert("Vui lòng đăng nhập để đăng bài!"); return; }
+            currentCollection = col;
+            document.getElementById('file-input').click();
         }
 
-        window.requestDeleteAccount = async () => {
-            if(confirm("Bạn có chắc muốn xóa tài khoản? Bạn có 14 ngày để khôi phục.")) {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), { status: 'deleted', deletedAt: serverTimestamp() });
-                alert("Đã xóa tạm thời. Hẹn gặp lại!");
-                signOut(auth);
-            }
-        }
-        window.restoreAccount = async () => {
-            await updateDoc(doc(db, "users", auth.currentUser.uid), { status: 'active', deletedAt: null });
-            alert("Chào mừng quay lại!");
-            location.reload();
-        }
-
-        // --- 3. GÓC XANH & UPLOAD ---
-        const galleryGrid = document.getElementById('gallery-grid');
-        
-        // Load Gallery
-        onSnapshot(query(collection(db, "gallery"), orderBy("createdAt", "desc")), (snap) => {
-            galleryGrid.innerHTML = "";
-            let ranking = {}; // Tính BXH luôn
-            
-            snap.forEach(d => {
-                const data = d.data();
-                // Filter Soft Delete: Nếu user đã xóa tk -> Ẩn bài (trừ khi admin xem)
-                // Ở đây làm đơn giản: Vẫn hiện nhưng ẩn tên.
-                
-                const div = document.createElement('div');
-                div.className = 'gallery-item';
-                div.onclick = () => openLightbox(d.id, data);
-                div.innerHTML = `<img src="${data.url}" class="gallery-img" loading="lazy">
-                                 <div class="gallery-overlay"><span>${data.authorName}</span> <span>❤️ ${data.likes ? data.likes.length : 0}</span></div>`;
-                galleryGrid.appendChild(div);
-
-                // Tính điểm BXH
-                if(!ranking[data.authorName]) ranking[data.authorName] = 0;
-                ranking[data.authorName] += (data.likes ? data.likes.length : 0);
-            });
-
-            // Render Ranking
-            const sorted = Object.entries(ranking).sort((a,b) => b[1]-a[1]).slice(0,5);
-            document.getElementById('ranking-personal').innerHTML = sorted.map((i, idx) => 
-                `<tr><td>#${idx+1}</td><td>${i[0]}</td><td style="color:red;font-weight:bold">${i[1]}</td></tr>`
-            ).join('');
-        });
-
-        // Upload Cloudinary
-        window.handleImageUpload = async (input) => {
-            if(!auth.currentUser) return alert("Đăng nhập đi bạn ơi!");
+        window.executeUpload = async (input) => {
             const file = input.files[0];
             if(!file) return;
+            
+            // Hỏi caption
+            const desc = prompt("Nhập mô tả cho bức ảnh:");
+            if(desc === null) return; // Cancel
 
-            document.getElementById('upload-status').style.display = 'block';
+            document.getElementById('upload-overlay').style.display = 'flex';
             const fd = new FormData();
-            fd.append('file', file);
-            fd.append('upload_preset', UPLOAD_PRESET);
+            fd.append('file', file); fd.append('upload_preset', UPLOAD_PRESET);
 
             try {
                 const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
                 const json = await res.json();
+                
                 if(json.secure_url) {
-                    await addDoc(collection(db, "gallery"), {
+                    await addDoc(collection(db, currentCollection), {
                         url: json.secure_url,
-                        uid: auth.currentUser.uid,
-                        authorName: currentUserProfile.displayName, // Admin_xinhxinh nếu là admin
+                        desc: desc,
+                        uid: currentUser.uid,
+                        authorName: currentUser.displayName, // Lưu tên lúc đăng
                         createdAt: serverTimestamp(),
                         likes: [], comments: []
                     });
-                    alert("Đăng ảnh thành công!");
-                } else {
-                    alert("Lỗi Upload: " + json.error.message);
-                }
+                    alert("Đăng thành công!");
+                } else { alert("Lỗi: " + json.error.message); }
             } catch(e) { alert("Lỗi mạng!"); }
-            document.getElementById('upload-status').style.display = 'none';
+            
+            document.getElementById('upload-overlay').style.display = 'none';
+            input.value = "";
         }
 
-        // --- 4. LIGHTBOX & TƯƠNG TÁC ---
-        window.openLightbox = (id, data) => {
-            currentImgId = id;
+        // --- 4. RENDER POSTS (Unified) ---
+        function setupRealtimeListener(colName, elementId) {
+            onSnapshot(query(collection(db, colName), orderBy("createdAt", "desc")), (snap) => {
+                const grid = document.getElementById(elementId);
+                grid.innerHTML = "";
+                snap.forEach(d => {
+                    const data = d.data();
+                    // Tạo nút Edit/Delete nếu là chủ hoặc Admin
+                    let controls = "";
+                    if(currentUser && (currentUser.uid === data.uid || isAdmin(currentUser.email))) {
+                        controls = `<div class="owner-controls">
+                            <button class="ctrl-btn" onclick="event.stopPropagation(); editPost('${colName}', '${d.id}', '${data.desc}')">✏️</button>
+                            <button class="ctrl-btn" onclick="event.stopPropagation(); deletePost('${colName}', '${d.id}')" style="color:red">🗑️</button>
+                        </div>`;
+                    }
+
+                    const div = document.createElement('div');
+                    div.className = 'gallery-item';
+                    div.innerHTML = `${controls}<img src="${data.url}" class="gallery-img">
+                                     <div class="gallery-overlay">
+                                        <span>${data.desc || 'Ảnh'}</span>
+                                        <span>❤️ ${data.likes?data.likes.length:0}</span>
+                                     </div>`;
+                    div.onclick = () => openLightbox(colName, d.id, data);
+                    grid.appendChild(div);
+                });
+            });
+        }
+        setupRealtimeListener('gallery', 'gallery-grid');
+        setupRealtimeListener('contest', 'contest-grid');
+
+        // --- 5. EDIT / DELETE LOGIC ---
+        window.deletePost = async (col, id) => {
+            if(confirm("Bạn chắc chắn muốn xóa bài này?")) {
+                await deleteDoc(doc(db, col, id));
+            }
+        }
+        window.editPost = async (col, id, oldDesc) => {
+            const newDesc = prompt("Sửa mô tả:", oldDesc);
+            if(newDesc !== null && newDesc !== oldDesc) {
+                await updateDoc(doc(db, col, id), { desc: newDesc });
+            }
+        }
+
+        // --- 6. LIGHTBOX ---
+        window.openLightbox = (col, id, data) => {
+            currentImgId = id; currentImgCollection = col;
             document.getElementById('lightbox').style.display = 'flex';
             document.getElementById('lb-img').src = data.url;
             document.getElementById('lb-like-count').innerText = data.likes ? data.likes.length : 0;
-            
-            // Nút Admin
-            if(currentUserProfile && currentUserProfile.role === 'admin') {
+            // Admin Pin
+            if(currentUser && isAdmin(currentUser.email)) {
                 document.getElementById('lb-admin-pin').style.display = 'flex';
-                document.getElementById('lb-admin-del').style.display = 'flex';
-            } else {
-                document.getElementById('lb-admin-pin').style.display = 'none';
-                document.getElementById('lb-admin-del').style.display = 'none';
-            }
-
-            // Load comments
+            } else { document.getElementById('lb-admin-pin').style.display = 'none'; }
             renderComments(data.comments || []);
-            
-            // Check Like Status
-            const btnLike = document.getElementById('lb-like');
-            if(auth.currentUser && data.likes && data.likes.includes(auth.currentUser.uid)) {
-                btnLike.classList.add('liked');
-            } else {
-                btnLike.classList.remove('liked');
-            }
-        };
+            // Like status
+            const btn = document.getElementById('lb-like');
+            if(currentUser && data.likes && data.likes.includes(currentUser.uid)) btn.style.color = 'red';
+            else btn.style.color = 'white';
+        }
         window.closeLightbox = () => document.getElementById('lightbox').style.display = 'none';
-
+        
         window.handleLike = async () => {
-            if(!auth.currentUser) return alert("Đăng nhập để thả tim!");
-            const ref = doc(db, "gallery", currentImgId);
+            if(!currentUser) return alert("Đăng nhập đi bạn!");
+            const ref = doc(db, currentImgCollection, currentImgId);
             const snap = await getDoc(ref);
-            const data = snap.data();
-            const uid = auth.currentUser.uid;
-            
-            if(data.likes && data.likes.includes(uid)) {
-                await updateDoc(ref, { likes: arrayRemove(uid) });
-                document.getElementById('lb-like').classList.remove('liked');
-            } else {
-                await updateDoc(ref, { likes: arrayUnion(uid) });
-                document.getElementById('lb-like').classList.add('liked');
-            }
+            const likes = snap.data().likes || [];
+            if(likes.includes(currentUser.uid)) await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+            else await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+            // UI cập nhật tự động khi mở lại, ở đây làm nhanh đổi màu
+            document.getElementById('lb-like').style.color = likes.includes(currentUser.uid) ? 'white' : 'red';
         }
-
+        
         window.toggleComments = () => {
-            const box = document.getElementById('lb-comments');
-            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+            const el = document.getElementById('lb-comments');
+            el.style.display = el.style.display==='none'?'block':'none';
         }
-
+        
         function renderComments(arr) {
             const list = document.getElementById('lb-cmt-list');
-            list.innerHTML = arr.length ? "" : "<p style='color:#777;text-align:center'>Chưa có bình luận</p>";
+            list.innerHTML = arr.length?"":"<p style='color:#777;text-align:center'>Chưa có tin nhắn</p>";
             arr.forEach(c => {
-                // Nút Ban User (Chỉ Admin thấy)
-                let banBtn = "";
-                if(currentUserProfile && currentUserProfile.role === 'admin' && c.uid !== auth.currentUser.uid) {
-                    banBtn = `<span onclick="banUser('${c.uid}')" style="cursor:pointer; font-size:0.8rem;">🚫</span>`;
-                }
-
                 list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #eee">
-                    <strong>${c.name}</strong> ${banBtn}: ${c.text}
+                    <strong>${c.name}</strong>: ${c.text}
                 </div>`;
             });
         }
-
         window.postComment = async (e) => {
-            e.preventDefault();
-            if(!auth.currentUser) return;
-            const text = document.getElementById('lb-cmt-input').value;
-            const newCmt = { uid: auth.currentUser.uid, name: currentUserProfile.displayName, text: text, time: Date.now() };
-            await updateDoc(doc(db, "gallery", currentImgId), { comments: arrayUnion(newCmt) });
-            document.getElementById('lb-cmt-input').value = "";
-            
-            // Render lại tạm thời (Realtime sẽ tự lo nếu listen, ở đây làm nhanh)
-            const snap = await getDoc(doc(db, "gallery", currentImgId));
-            renderComments(snap.data().comments);
-        }
-
-        // --- 5. ADMIN TOOLS (Quyền Năng) ---
-        window.deletePostAdmin = async () => {
-            if(confirm("Admin xóa bài này vĩnh viễn?")) {
-                await deleteDoc(doc(db, "gallery", currentImgId));
-                closeLightbox();
-            }
-        }
-        window.pinPost = async () => {
-            // Lưu ID bài ghim vào một collection riêng 'settings'
-            await setDoc(doc(db, "settings", "featured"), {
-                postId: currentImgId,
-                updatedAt: serverTimestamp()
+            e.preventDefault(); if(!currentUser) return;
+            const txt = document.getElementById('lb-cmt-input').value;
+            await updateDoc(doc(db, currentImgCollection, currentImgId), {
+                comments: arrayUnion({ uid: currentUser.uid, name: currentUser.displayName, text: txt, time: Date.now() })
             });
-            alert("Đã ghim bài này ra Trang Chủ!");
-        }
-        window.banUser = async (targetUid) => {
-            if(confirm("CẤM CỬA thành viên này vĩnh viễn?")) {
-                await updateDoc(doc(db, "users", targetUid), { banned: true });
-                alert("Đã khóa tài khoản thành công!");
-            }
+            document.getElementById('lb-cmt-input').value = "";
+            // Reload cmt manually for instant feel
+            const s = await getDoc(doc(db, currentImgCollection, currentImgId));
+            renderComments(s.data().comments);
         }
 
-        // --- 6. TRANG CHỦ & FEATURED ---
-        // Load bài ghim
+        // --- 7. ADMIN DASHBOARD ---
+        window.loadAdminData = async () => {
+            if(!currentUser || !isAdmin(currentUser.email)) return;
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = "<tr><td colspan='4'>Đang tải...</td></tr>";
+            
+            const snap = await getDocs(collection(db, "users"));
+            tbody.innerHTML = "";
+            snap.forEach(d => {
+                const u = d.data();
+                const stClass = u.banned ? 'st-banned' : (u.status==='deleted' ? 'st-deleted' : 'st-active');
+                const stText = u.banned ? 'Bị Khóa' : (u.status==='deleted' ? 'Chờ Xóa' : 'Hoạt động');
+                const actionBtn = u.banned 
+                    ? `<button onclick="toggleBan('${d.id}', false)">Mở khóa</button>` 
+                    : `<button onclick="toggleBan('${d.id}', true)" style="color:red">Khóa</button>`;
+                
+                tbody.innerHTML += `<tr>
+                    <td>${u.displayName}</td>
+                    <td>${u.email}</td>
+                    <td><span class="status-badge ${stClass}">${stText}</span></td>
+                    <td>${actionBtn}</td>
+                </tr>`;
+            });
+        }
+        
+        window.toggleBan = async (uid, banStatus) => {
+            if(confirm(banStatus ? "Khóa tài khoản này?" : "Mở khóa tài khoản này?")) {
+                await updateDoc(doc(db, "users", uid), { banned: banStatus });
+                loadAdminData();
+            }
+        }
+        
+        window.pinPost = async () => {
+            await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId });
+            alert("Đã ghim bài!");
+        }
+
+        // --- 8. HOME FEATURED ---
         onSnapshot(doc(db, "settings", "featured"), async (snap) => {
             if(snap.exists()) {
-                const pid = snap.data().postId;
-                const postSnap = await getDoc(doc(db, "gallery", pid));
-                if(postSnap.exists()) {
-                    const pd = postSnap.data();
-                    document.getElementById('featured-post').style.display = 'block';
-                    document.getElementById('feat-img').src = pd.url;
+                const s = snap.data();
+                const p = await getDoc(doc(db, s.col, s.id));
+                if(p.exists()) {
+                    const d = p.data();
+                    document.getElementById('featured-post').style.display = 'flex';
+                    document.getElementById('feat-img').src = d.url;
                     document.getElementById('feat-title').innerText = "Khoảnh khắc ấn tượng";
-                    document.getElementById('feat-desc').innerText = `Được cộng đồng yêu thích với ${pd.likes?pd.likes.length:0} tim.`;
-                    document.getElementById('feat-author').innerText = "— Ảnh của: " + pd.authorName;
+                    document.getElementById('feat-desc').innerText = d.desc;
+                    document.getElementById('feat-author').innerText = "— " + d.authorName;
                 }
             }
         });
 
-        // --- 7. HELPER FUNCTIONS ---
+        // --- 9. PROFILE ACTIONS ---
+        window.requestDeleteAccount = async () => {
+            if(confirm("Ẩn tài khoản 14 ngày?")) {
+                await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' });
+                location.reload();
+            }
+        }
+        window.restoreAccount = async () => {
+            await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' });
+            location.reload();
+        }
+        window.updateProfile = async (e) => {
+            e.preventDefault();
+            const n = document.getElementById('edit-name').value;
+            const c = document.getElementById('edit-class').value;
+            const b = document.getElementById('edit-bio').value;
+            // Admin name fix
+            const finalName = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n;
+            await updateDoc(doc(db, "users", currentUser.uid), { displayName: finalName, class: c, bio: b });
+            alert("Đã lưu!");
+        }
+
+        // --- 10. PAGE ROUTING ---
         window.showPage = (id) => {
             document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -561,15 +554,11 @@
             localStorage.setItem('page', id);
         }
         
-        // Auth Listeners & Other Inits
-        const btns = document.querySelectorAll('.btn-login');
-        btns.forEach(b => b.onclick = () => signInWithPopup(auth, provider));
-        
-        // Random Tip
-        const tips = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm một cây xanh.", "Phân loại rác đúng quy định.", "Không dùng túi nilon."];
+        // Inits
+        const tips = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác.", "Hạn chế túi nilon."];
         document.getElementById('daily-tip').innerText = tips[Math.floor(Math.random()*tips.length)];
+        document.querySelectorAll('.btn-login').forEach(b => b.onclick = () => signInWithPopup(auth, provider));
         
-        // Load Page
         showPage(localStorage.getItem('page') || 'home');
 
     </script>
