@@ -363,7 +363,7 @@
             <div class="card" style="border-left: 5px solid #6200ea;">
                 <h3>🤖 Cấu Hình AI (Gemini)</h3>
                 <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
-                <p style="color:green; font-weight:bold;">✅ API Key đã được tích hợp sẵn trong Code!</p>
+                <p style="color:green; font-weight:bold;">✅ API Key đã được tích hợp sẵn!</p>
             </div>
 
             <div class="card" style="border-left: 5px solid #9c27b0;">
@@ -474,7 +474,7 @@
         const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
-        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY HARDCODED HERE
+        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
         let genAI = null; let model = null;
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
@@ -482,16 +482,17 @@
         function setupGemini() {
             if(geminiKey) {
                 genAI = new GoogleGenerativeAI(geminiKey);
-                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+                // Dùng gemini-pro cho chat để ổn định nhất
+                model = genAI.getGenerativeModel({ model: "gemini-pro"});
             }
         }
-        setupGemini(); // Init immediately
+        setupGemini();
 
         // 1. AI CHATBOT
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
         window.sendMessageToAI = async (e) => {
             e.preventDefault();
-            if(!model) return alert("Lỗi: Không tìm thấy Key AI!");
+            if(!model) return alert("Lỗi kết nối AI!");
             const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
             const msgList = document.getElementById('ai-messages');
             msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
@@ -500,16 +501,13 @@
                 msgList.innerHTML += `<div class="ai-msg bot">${result.response.text()}</div>`;
             } catch(err) {
                 console.error(err);
-                msgList.innerHTML += `<div class="ai-msg bot">Lỗi kết nối: ${err.message}</div>`;
+                msgList.innerHTML += `<div class="ai-msg bot">Lỗi: ${err.message}</div>`;
             }
             msgList.scrollTop = msgList.scrollHeight;
         }
 
-        // 2. AI VISION
-        async function fileToGenerativePart(file) {
-            const base64EncodedDataPromise = new Promise((resolve) => { const reader = new FileReader(); reader.onloadend = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(file); });
-            return { inlineData: { data: await base64EncodedDataPromise, mimeType: file.type } };
-        }
+        // 2. AI VISION (Tạm tắt để dùng Gemini Pro cho ổn định)
+        // Nếu cần vision, đổi model thành gemini-1.5-flash-latest
 
         // --- YOUTUBE ID & MUSIC ---
         function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
@@ -571,33 +569,23 @@
         
         window.executeUpload = async (i) => { 
             const f = i.files[0]; if(!f) return; 
-            let d = ""; const useAI = confirm("🤖 Dùng AI viết mô tả ảnh không?");
-            document.getElementById('upload-loading-text').innerText = "Đang xử lý...";
+            
+            document.getElementById('upload-overlay').style.display='none'; // Hide default loading
+            const d = prompt("Nhập mô tả cho ảnh:"); 
+            if(d === null) return; 
+            
+            document.getElementById('upload-loading-text').innerText = "Đang tải...";
             document.getElementById('upload-overlay').style.display='flex'; 
             
             try { 
                 const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
                 const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
                 const j = await r.json(); 
-                
                 if(j.secure_url) { 
-                    if(useAI && model) {
-                        try {
-                            const imagePart = await fileToGenerativePart(f);
-                            const result = await model.generateContent(["Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:", imagePart]);
-                            d = result.response.text();
-                        } catch(err) { console.error("AI Fail", err); d = prompt("AI lỗi, mời nhập mô tả:"); }
-                    } else {
-                        document.getElementById('upload-overlay').style.display='none';
-                        d = prompt("Nhập mô tả:");
-                        document.getElementById('upload-overlay').style.display='flex';
-                    }
-                    if(d === null) { document.getElementById('upload-overlay').style.display='none'; return; }
-
                     await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
-                    alert("Thành công!"); 
+                    alert("Đăng ảnh thành công!"); 
                 } 
-            } catch(e) { alert("Lỗi!"); } 
+            } catch(e) { alert("Lỗi tải ảnh!"); } 
             document.getElementById('upload-overlay').style.display='none'; i.value=""; 
         }
 
@@ -626,7 +614,7 @@
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
-        // --- LIGHTBOX ---
+        // --- LIGHTBOX ZOOM & COMMENTS ---
         window.openLightbox = async (c, i) => { 
             currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
             const s=await getDoc(doc(db,c,i)); const d=s.data(); 
@@ -649,6 +637,7 @@
         window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
         
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
+        
         function renderComments(arr) { 
             const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
             arr.forEach(c=>{ 
@@ -665,8 +654,6 @@
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
         window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
         window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
-        
-        // FIXED ARCHIVE SEARCH
         window.loadArchiveGrid = async () => { 
             const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
             const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; 
