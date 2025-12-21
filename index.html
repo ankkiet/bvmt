@@ -482,8 +482,8 @@
         function setupGemini() {
             if(geminiKey) {
                 genAI = new GoogleGenerativeAI(geminiKey);
-                // Dùng gemini-pro cho chat để ổn định nhất
-                model = genAI.getGenerativeModel({ model: "gemini-pro"});
+                // Dùng model chính xác: gemini-1.5-pro
+                model = genAI.getGenerativeModel({ model: "gemini-1.5-pro"});
             }
         }
         setupGemini();
@@ -492,7 +492,7 @@
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
         window.sendMessageToAI = async (e) => {
             e.preventDefault();
-            if(!model) return alert("Lỗi kết nối AI!");
+            if(!model) return alert("Lỗi: Không tìm thấy Key AI!");
             const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
             const msgList = document.getElementById('ai-messages');
             msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
@@ -506,8 +506,11 @@
             msgList.scrollTop = msgList.scrollHeight;
         }
 
-        // 2. AI VISION (Tạm tắt để dùng Gemini Pro cho ổn định)
-        // Nếu cần vision, đổi model thành gemini-1.5-flash-latest
+        // 2. AI VISION
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve) => { const reader = new FileReader(); reader.onloadend = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(file); });
+            return { inlineData: { data: await base64EncodedDataPromise, mimeType: file.type } };
+        }
 
         // --- YOUTUBE ID & MUSIC ---
         function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
