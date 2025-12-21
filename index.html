@@ -779,6 +779,48 @@
         document.querySelectorAll('.btn-login').forEach(b => b.onclick = () => signInWithPopup(auth, provider));
         
         // PWA REGISTRATION
+       // --- PWA INSTALLATION LOGIC (V41.1) ---
+        let deferredPrompt;
+        
+        // Thêm nút Cài đặt vào Menu PC
+        const pcMenu = document.querySelector('nav.pc-nav ul');
+        const installLi = document.createElement('li');
+        installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow"><i class="fas fa-download"></i> Tải App</a>';
+        pcMenu.appendChild(installLi);
+
+        // Thêm nút Cài đặt vào Mobile Nav
+        const mobNav = document.querySelector('.mobile-nav-inner');
+        // Tạo một thẻ a mới cho mobile
+        const installMob = document.createElement('a');
+        installMob.className = 'nav-item';
+        installMob.id = 'btn-install-mob';
+        installMob.style.display = 'none';
+        installMob.innerHTML = '<i class="fas fa-download"></i><span>TảiApp</span>';
+        // Chèn vào vị trí đầu tiên
+        mobNav.insertBefore(installMob, mobNav.firstChild);
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Hiện nút cài đặt khi trình duyệt cho phép
+            document.getElementById('btn-install-pc').style.display = 'inline-block';
+            document.getElementById('btn-install-mob').style.display = 'flex';
+            console.log("PWA Install Prompt Ready!");
+        });
+
+        async function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+            document.getElementById('btn-install-pc').style.display = 'none';
+            document.getElementById('btn-install-mob').style.display = 'none';
+        }
+
+        document.getElementById('btn-install-pc').addEventListener('click', installPWA);
+        document.getElementById('btn-install-mob').addEventListener('click', installPWA);
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -786,8 +828,7 @@
                 .catch(err => console.log('SW Error:', err));
             });
         }
-
-        showPage(localStorage.getItem('page') || 'home');
     </script>
 </body>
 </html>
+
