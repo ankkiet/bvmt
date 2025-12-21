@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nvc-green-v2-fix';
+const CACHE_NAME = 'nvc-green-v42-stable';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -8,6 +8,7 @@ const ASSETS_TO_CACHE = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
+// 1. Install
 self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil(
@@ -18,11 +19,13 @@ self.addEventListener('install', (event) => {
     );
 });
 
+// 2. Activate (Xóa cache cũ ngay lập tức)
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
                 if (key !== CACHE_NAME) {
+                    console.log('[SW] Deleting old cache:', key);
                     return caches.delete(key);
                 }
             }));
@@ -31,20 +34,25 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
+// 3. Fetch (Xử lý khi mất mạng hoặc lỗi)
 self.addEventListener('fetch', (event) => {
+    // Bỏ qua các request không phải GET hoặc request API
     if (event.request.method !== 'GET') return;
     if (event.request.url.includes('firestore') || 
         event.request.url.includes('googleapis') || 
-        event.request.url.includes('cloudinary')) {
+        event.request.url.includes('cloudinary') ||
+        event.request.url.includes('youtube')) {
         return; 
     }
 
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-            // Trả về cache nếu có, nếu không thì tải mới
+            // Ưu tiên Cache, nếu không có thì tải từ mạng
             return cachedResponse || fetch(event.request).catch(() => {
-                // Nếu mất mạng và không có cache, có thể trả về trang offline (nếu có)
-                // Ở đây ta giữ nguyên logic cũ để tránh lỗi
+                // Nếu cả mạng và cache đều lỗi, và đang gọi file HTML, trả về index.html từ cache
+                if (event.request.headers.get('accept').includes('text/html')) {
+                    return caches.match('./index.html');
+                }
             });
         })
     );
