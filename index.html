@@ -8,7 +8,7 @@
     <!-- PWA Config -->
     <meta name="theme-color" content="#2e7d32">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/432/432693.png">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Recycle_symbol_%28green%29.svg/512px-Recycle_symbol_%28green%29.svg.png">
     
     <meta name="description" content="Web lớp A2K41 - Green School.">
     <meta property="og:title" content="A2K41 - Green School">
@@ -167,7 +167,7 @@
         input:checked + .slider:before { transform: translateX(22px); }
 
         #home-login-area { margin-top: 20px; text-align: center; }
-        .home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 30px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 12px 35px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); font-size: 1.1rem; z-index: 100; position: relative; }
         .home-login-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
 
         @media (max-width: 768px) {
@@ -235,7 +235,7 @@
                     <img src="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
                     <h1 style="border:none; margin-top: 20px;">A2K41 - Green School</h1>
                     <div id="home-login-area" style="display:none;">
-                        <button class="home-login-btn" onclick="signInWithPopup(auth, provider)"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
+                        <button class="home-login-btn" id="main-login-btn"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
                     </div>
                 </div>
                 <div id="featured-post" class="featured-section" style="display: none;">
@@ -772,47 +772,69 @@
         window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
         async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
         window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
-        window.showPage = (id) => { document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); localStorage.setItem('page', id); if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } }
+        
+        window.showPage = (id) => { 
+            // V42.0: Sử dụng sessionStorage để chỉ nhớ trong phiên làm việc
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); 
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active'); 
+            else document.getElementById('home').classList.add('active'); // Fallback
+
+            document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
+            if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); 
+            if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); 
+            
+            sessionStorage.setItem('page', id); // Changed from localStorage
+            if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } 
+        }
+
         const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
         window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
         document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
-        document.querySelectorAll('.btn-login').forEach(b => b.onclick = () => signInWithPopup(auth, provider));
         
-        // PWA REGISTRATION
-       // --- PWA INSTALLATION LOGIC (V41.1) ---
+        // V42.0: Fix nút đăng nhập bằng Event Listener
+        const mainLoginBtn = document.getElementById('main-login-btn');
+        if(mainLoginBtn) {
+            mainLoginBtn.addEventListener('click', () => {
+                console.log("Login clicked");
+                signInWithPopup(auth, provider);
+            });
+        }
+        
+        // V42.0: Logic load trang đầu tiên
+        // Nếu không có trong sessionStorage -> Mặc định Home
+        const savedPage = sessionStorage.getItem('page') || 'home';
+        showPage(savedPage);
+
+        // --- PWA INSTALLATION LOGIC (V42.0) ---
         let deferredPrompt;
         
-        // Thêm nút Cài đặt vào Menu PC
+        // Tạo nút Cài đặt cho PC
         const pcMenu = document.querySelector('nav.pc-nav ul');
         const installLi = document.createElement('li');
-        installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow"><i class="fas fa-download"></i> Tải App</a>';
+        installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>';
         pcMenu.appendChild(installLi);
 
-        // Thêm nút Cài đặt vào Mobile Nav
+        // Tạo nút Cài đặt cho Mobile
         const mobNav = document.querySelector('.mobile-nav-inner');
-        // Tạo một thẻ a mới cho mobile
         const installMob = document.createElement('a');
         installMob.className = 'nav-item';
         installMob.id = 'btn-install-mob';
         installMob.style.display = 'none';
         installMob.innerHTML = '<i class="fas fa-download"></i><span>TảiApp</span>';
-        // Chèn vào vị trí đầu tiên
         mobNav.insertBefore(installMob, mobNav.firstChild);
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Hiện nút cài đặt khi trình duyệt cho phép
             document.getElementById('btn-install-pc').style.display = 'inline-block';
             document.getElementById('btn-install-mob').style.display = 'flex';
-            console.log("PWA Install Prompt Ready!");
         });
 
         async function installPWA() {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response to the install prompt: ${outcome}`);
             deferredPrompt = null;
             document.getElementById('btn-install-pc').style.display = 'none';
             document.getElementById('btn-install-mob').style.display = 'none';
@@ -831,4 +853,3 @@
     </script>
 </body>
 </html>
-
