@@ -11,14 +11,6 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
 
     <style>
         /* --- 1. CORE STYLES --- */
@@ -201,9 +193,9 @@
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Gemini AI)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot (Gemini 2.0)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
-            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ có thể giúp gì cho cậu về môi trường hoặc trường lớp không?</div>
+            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI siêu cấp của A2K41. Tớ dùng model mới nhất, hỏi gì tớ cũng biết!</div>
         </div>
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
             <input id="ai-input" required placeholder="Hỏi gì đó..." style="flex:1">
@@ -466,7 +458,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { GoogleGenerativeAI } from "@google/generative-ai";
 
         // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
@@ -475,41 +466,62 @@
 
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
-        let genAI = null; let model = null;
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI SETUP ---
-        function setupGemini() {
-            if(geminiKey) {
-                genAI = new GoogleGenerativeAI(geminiKey);
-                // Dùng model chính xác: gemini-1.5-flash (Chuẩn theo Quickstart)
-                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+        // --- GEMINI AI (REST API FIX) ---
+        async function callGeminiAPI(prompt, imageBase64 = null) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+            
+            let parts = [{ text: prompt }];
+            if (imageBase64) {
+                parts.push({
+                    inline_data: {
+                        mime_type: "image/jpeg",
+                        data: imageBase64
+                    }
+                });
             }
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: parts }] })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
         }
-        setupGemini();
 
         // 1. AI CHATBOT
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
         window.sendMessageToAI = async (e) => {
             e.preventDefault();
-            if(!model) return alert("Lỗi: Không tìm thấy Key AI!");
             const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
             const msgList = document.getElementById('ai-messages');
             msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
+            
             try {
-                const result = await model.generateContent(msg);
-                msgList.innerHTML += `<div class="ai-msg bot">${result.response.text()}</div>`;
+                const responseText = await callGeminiAPI(msg);
+                msgList.innerHTML += `<div class="ai-msg bot">${responseText}</div>`;
             } catch(err) {
                 console.error(err);
-                msgList.innerHTML += `<div class="ai-msg bot">Lỗi: ${err.message}</div>`;
+                msgList.innerHTML += `<div class="ai-msg bot">Lỗi kết nối AI: ${err.message}</div>`;
             }
             msgList.scrollTop = msgList.scrollHeight;
         }
 
-        // 2. AI VISION
-        async function fileToGenerativePart(file) {
-            const base64EncodedDataPromise = new Promise((resolve) => { const reader = new FileReader(); reader.onloadend = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(file); });
-            return { inlineData: { data: await base64EncodedDataPromise, mimeType: file.type } };
+        // 2. AI VISION HELPER
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
         }
 
         // --- YOUTUBE ID & MUSIC ---
@@ -585,6 +597,22 @@
                 const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
                 const j = await r.json(); 
                 if(j.secure_url) { 
+                    // Call AI Vision (New REST Method)
+                    const useAI = confirm("🤖 Dùng AI viết mô tả ảnh không?");
+                    if(useAI) {
+                        try {
+                            document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh...";
+                            const base64Img = await fileToBase64(f);
+                            const aiDesc = await callGeminiAPI("Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:", base64Img);
+                            // Lưu luôn mô tả AI, bỏ qua prompt người dùng nếu AI thành công (hoặc gộp cả 2)
+                            // Ở đây ta ưu tiên AI nếu chọn dùng AI
+                            await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: aiDesc, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
+                            alert("Đăng ảnh thành công với mô tả AI!");
+                            document.getElementById('upload-overlay').style.display='none'; i.value=""; 
+                            return; 
+                        } catch(err) { console.error(err); alert("AI lỗi, dùng mô tả gốc."); }
+                    }
+
                     await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
                     alert("Đăng ảnh thành công!"); 
                 } 
