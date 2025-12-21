@@ -193,9 +193,9 @@
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Gemini Flash)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot (Gemini 2.5)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
-            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ sử dụng model Gemini Flash siêu tốc để hỗ trợ cậu.</div>
+            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ sử dụng model Gemini 2.5 Flash siêu tốc để hỗ trợ cậu.</div>
         </div>
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
             <input id="ai-input" required placeholder="Hỏi gì đó..." style="flex:1">
@@ -471,24 +471,18 @@
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI (1.5 FLASH OPTIMIZED - V40.1) ---
-        // Đã tối ưu cho gemini-1.5-flash và cấu trúc request chuẩn
-        async function callGeminiAPI(prompt, imageBase64 = null) {
-            // URL chuẩn cho model flash
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        // --- GEMINI AI (V40.2 - FIX 404 NOT FOUND) ---
+        // Sửa lỗi: Thay model 'gemini-1.5-flash' (đã cũ) bằng 'gemini-2.5-flash' (mới nhất).
+        // Thêm cơ chế Fallback: Nếu model mới lỗi, tự động thử model cũ hơn ('gemini-pro').
+        
+        async function tryGeminiModel(modelName, prompt, imageBase64 = null) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
             
-            // Cấu trúc payload chuẩn
             const requestBody = {
-                contents: [{
-                    parts: [
-                        { text: prompt }
-                    ]
-                }],
-                // Chỉ dẫn hệ thống (System Instruction) giúp AI đóng vai tốt hơn
+                contents: [{ parts: [{ text: prompt }] }],
                 system_instruction: {
-                    parts: [{ text: "Bạn là trợ lý ảo AI của lớp Green School - A2K41. Hãy trả lời thân thiện, ngắn gọn, dùng emoji, và tập trung vào chủ đề môi trường, học tập và đoàn kết." }]
+                    parts: [{ text: "Bạn là trợ lý ảo AI của lớp Green School - A2K41. Hãy trả lời thân thiện, ngắn gọn, dùng emoji." }]
                 },
-                // Cấu hình an toàn để tránh block nhầm
                 safetySettings: [
                     { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
                     { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
@@ -497,13 +491,9 @@
                 ]
             };
 
-            // Nếu có ảnh (Vision)
             if (imageBase64) {
                 requestBody.contents[0].parts.push({
-                    inline_data: {
-                        mime_type: "image/jpeg",
-                        data: imageBase64
-                    }
+                    inline_data: { mime_type: "image/jpeg", data: imageBase64 }
                 });
             }
 
@@ -513,21 +503,31 @@
                 body: JSON.stringify(requestBody)
             });
 
-            if (response.status === 429) {
-                throw new Error("Hệ thống AI đang quá tải (429). Vui lòng thử lại sau 1 phút.");
-            }
             if (!response.ok) {
                 const errText = await response.text();
-                throw new Error(`API Error ${response.status}: ${errText}`);
+                throw new Error(`Model ${modelName} Error ${response.status}: ${errText}`);
             }
 
             const data = await response.json();
-            
-            // Kiểm tra xem có câu trả lời không (đôi khi bị finishReason: OTHER)
             if (data.candidates && data.candidates[0] && data.candidates[0].content) {
                 return data.candidates[0].content.parts[0].text;
-            } else {
-                return "Xin lỗi, tớ chưa hiểu ý cậu hoặc hệ thống đang bận. Thử lại nhé!";
+            }
+            return "Xin lỗi, tớ chưa hiểu ý cậu (Empty response).";
+        }
+
+        async function callGeminiAPI(prompt, imageBase64 = null) {
+            // Danh sách model ưu tiên: 2.5 Flash -> 1.5 Flash Latest -> Pro
+            const models = ["gemini-2.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+            
+            for (const model of models) {
+                try {
+                    // console.log("Trying model:", model); // Uncomment để debug
+                    return await tryGeminiModel(model, prompt, imageBase64);
+                } catch (e) {
+                    console.warn(`AI Warning: Model ${model} failed. Trying next...`, e);
+                    // Nếu là model cuối cùng mà vẫn lỗi thì ném lỗi ra ngoài
+                    if (model === models[models.length - 1]) throw new Error("Tất cả AI models đều bận hoặc lỗi. Vui lòng thử lại sau!");
+                }
             }
         }
 
@@ -537,7 +537,7 @@
             btn.innerText = "Đang test...";
             try {
                 const result = await callGeminiAPI("Chào Green Bot, cậu có khỏe không?");
-                alert("✅ Kết nối AI thành công (Gemini 1.5 Flash)!\nTrả lời: " + result);
+                alert("✅ Kết nối AI thành công!\nTrả lời: " + result);
             } catch(e) {
                 console.error(e);
                 alert("❌ Lỗi: " + e.message + "\n\nKiểm tra lại API Key trong Admin Panel.");
@@ -553,7 +553,6 @@
             const msgList = document.getElementById('ai-messages');
             msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
             
-            // Hiển thị trạng thái đang soạn tin
             const loadingId = "ai-loading-" + Date.now();
             msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`;
             msgList.scrollTop = msgList.scrollHeight;
@@ -652,7 +651,7 @@
                 const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
                 const j = await r.json(); 
                 if(j.secure_url) { 
-                    // Call AI Vision (New REST Method)
+                    // Call AI Vision (Fixed V40.2)
                     const useAI = confirm("🤖 Dùng AI viết mô tả ảnh không?");
                     if(useAI) {
                         try {
