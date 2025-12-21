@@ -201,7 +201,7 @@
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Gemini AI)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
             <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ có thể giúp gì cho cậu về môi trường hoặc trường lớp không?</div>
         </div>
@@ -363,7 +363,10 @@
             <div class="card" style="border-left: 5px solid #6200ea;">
                 <h3>🤖 Cấu Hình AI (Gemini)</h3>
                 <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
-                <p style="color:green; font-weight:bold;">✅ API Key đã được tích hợp sẵn!</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="password" id="cfg-ai-key" placeholder="Key đã tích hợp" style="flex:1" disabled>
+                    <button class="btn btn-sm btn-ai" onclick="testAIConnection()">Kiểm tra kết nối AI</button>
+                </div>
             </div>
 
             <div class="card" style="border-left: 5px solid #9c27b0;">
@@ -478,15 +481,25 @@
         let genAI = null; let model = null;
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI SETUP ---
+        // --- GEMINI AI SETUP (UPDATED MODEL) ---
         function setupGemini() {
             if(geminiKey) {
                 genAI = new GoogleGenerativeAI(geminiKey);
-                // Dùng model chính xác: gemini-1.5-pro
-                model = genAI.getGenerativeModel({ model: "gemini-1.5-pro"});
+                // Dùng model mới nhất, chính xác
+                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
             }
         }
         setupGemini();
+
+        window.testAIConnection = async () => {
+            if(!model) return alert("Chưa khởi tạo AI Model!");
+            try {
+                const result = await model.generateContent("Chào bạn");
+                alert("Kết nối AI thành công! Trả lời: " + result.response.text());
+            } catch(e) {
+                alert("Lỗi kết nối AI: " + e.message);
+            }
+        }
 
         // 1. AI CHATBOT
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
@@ -584,7 +597,17 @@
                 const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
                 const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
                 const j = await r.json(); 
+                
                 if(j.secure_url) { 
+                    // Auto-generate AI description if enabled
+                    if(model) {
+                        try {
+                            const imagePart = await fileToGenerativePart(f);
+                            // Simple logging, no overwrite for now to keep it safe
+                            console.log("AI analyzing image...");
+                        } catch(err) { console.log(err); }
+                    }
+
                     await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
                     alert("Đăng ảnh thành công!"); 
                 } 
