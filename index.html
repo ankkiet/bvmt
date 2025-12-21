@@ -93,7 +93,7 @@
         .ai-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: white; }
         .ai-input-area input { margin: 0; padding: 8px; font-size: 0.9rem; }
 
-        /* --- 7. GALLERY --- */
+        /* --- 7. GALLERY & RANKING --- */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #fff; border: 1px solid #eee; transition: 0.3s; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
@@ -201,7 +201,7 @@
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot (Gemini AI)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
             <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ có thể giúp gì cho cậu về môi trường hoặc trường lớp không?</div>
         </div>
@@ -363,11 +363,7 @@
             <div class="card" style="border-left: 5px solid #6200ea;">
                 <h3>🤖 Cấu Hình AI (Gemini)</h3>
                 <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <input type="password" id="cfg-ai-key" placeholder="Dán Google Gemini API Key vào đây..." style="flex:1">
-                    <button class="btn btn-sm btn-ai" onclick="updateAIConfig()">Lưu Key</button>
-                </div>
-                <div id="ai-status" style="margin-top:10px; font-weight:bold; color:#666"></div>
+                <p style="color:green; font-weight:bold;">✅ API Key đã được tích hợp sẵn!</p>
             </div>
 
             <div class="card" style="border-left: 5px solid #9c27b0;">
@@ -478,45 +474,34 @@
         const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
-        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // DEFAULT KEY
+        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
         let genAI = null; let model = null;
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI SETUP (AUTO FALLBACK) ---
+        // --- GEMINI AI SETUP ---
         function setupGemini() {
             if(geminiKey) {
                 genAI = new GoogleGenerativeAI(geminiKey);
-                // Try initializing with the most stable model first
-                model = genAI.getGenerativeModel({ model: "gemini-1.5-pro"});
+                // Dùng model chính xác: gemini-1.5-flash (Chuẩn theo Quickstart)
+                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
             }
         }
-        setupGemini(); // Init
+        setupGemini();
 
-        // 1. AI CHATBOT (WITH FALLBACK LOGIC)
+        // 1. AI CHATBOT
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
         window.sendMessageToAI = async (e) => {
             e.preventDefault();
+            if(!model) return alert("Lỗi: Không tìm thấy Key AI!");
             const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
             const msgList = document.getElementById('ai-messages');
             msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
-            
-            if(!model) { msgList.innerHTML += `<div class="ai-msg bot">Lỗi: Chưa có Key AI. Vui lòng liên hệ Admin.</div>`; return; }
-
             try {
                 const result = await model.generateContent(msg);
                 msgList.innerHTML += `<div class="ai-msg bot">${result.response.text()}</div>`;
             } catch(err) {
-                console.error("AI Error (1.5-pro):", err);
-                // Fallback attempt to 1.5-flash
-                try {
-                    console.log("Retrying with gemini-1.5-flash...");
-                    const modelFlash = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-                    const resultFlash = await modelFlash.generateContent(msg);
-                    msgList.innerHTML += `<div class="ai-msg bot">${resultFlash.response.text()}</div>`;
-                } catch(err2) {
-                     console.error("AI Error (1.5-flash):", err2);
-                     msgList.innerHTML += `<div class="ai-msg bot">Xin lỗi, AI đang quá tải hoặc Key bị lỗi.</div>`;
-                }
+                console.error(err);
+                msgList.innerHTML += `<div class="ai-msg bot">Lỗi: ${err.message}</div>`;
             }
             msgList.scrollTop = msgList.scrollHeight;
         }
@@ -557,7 +542,6 @@
                     document.getElementById('cfg-maintenance').checked=cfg.maintenance;
                     document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
                     document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
-                    if(cfg.geminiKey) { geminiKey = cfg.geminiKey; setupGemini(); document.getElementById('cfg-ai-key').value = cfg.geminiKey; }
                 }
             }
         });
@@ -588,7 +572,8 @@
         
         window.executeUpload = async (i) => { 
             const f = i.files[0]; if(!f) return; 
-            document.getElementById('upload-overlay').style.display='none';
+            
+            document.getElementById('upload-overlay').style.display='none'; // Hide default loading
             const d = prompt("Nhập mô tả cho ảnh:"); 
             if(d === null) return; 
             
@@ -632,6 +617,7 @@
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
+        // --- LIGHTBOX ZOOM & COMMENTS ---
         window.openLightbox = async (c, i) => { 
             currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
             const s=await getDoc(doc(db,c,i)); const d=s.data(); 
@@ -654,6 +640,7 @@
         window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
         
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
+        
         function renderComments(arr) { 
             const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
             arr.forEach(c=>{ 
@@ -665,7 +652,6 @@
         }
 
         window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; const table = document.getElementById('export-table'); table.innerHTML = ""; let html = ""; if(type === 'users') { html += `<thead><tr><th>Tên</th><th>ID</th><th>Email</th><th>Lớp</th><th>Trạng thái</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u=d.data(); html += `<tr><td>${u.displayName}</td><td>${u.customID||''}</td><td>${u.email}</td><td>${u.class||''}</td><td>${u.banned?'Bị khóa':u.status}</td></tr>`; }); } else { html += `<thead><tr><th>Người đăng</th><th>ID</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p=d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleString('vi-VN') : ''; html += `<tr><td>${p.authorName}</td><td>${p.authorID||''}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; }); } html += "</tbody>"; table.innerHTML = html; const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`; const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}.xls`; a.click(); }
-        window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
