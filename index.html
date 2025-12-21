@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Green School - A2K41 Official</title>
+    
+    <meta name="description" content="Trang web chính thức của lớp A2K41 - Green School. Nơi chia sẻ khoảnh khắc, hoạt động bảo vệ môi trường và thi đua của tập thể A2K41.">
+    <meta name="keywords" content="A2K41, Green School, Lớp A2K41, Web lớp, Trường THPT, Bảo vệ môi trường, Góc xanh, Thi đua">
+    <meta name="author" content="Admin A2K41">
+    
+    <meta property="og:title" content="A2K41 - Ngôi Nhà Chung Green School">
+    <meta property="og:description" content="Tham gia ngay mạng xã hội riêng của lớp A2K41. Cùng nhau phủ xanh lớp học!">
+    <meta property="og:image" content="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg">
+    <meta property="og:url" content="https://a2k41nvc.netlify.app">
+    <meta property="og:type" content="website">
+
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -50,7 +61,6 @@
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-sm { padding: 6px 14px; font-size: 0.85rem; border-radius: 6px; }
         
-        /* Nút Xóa tài khoản (Chìm) */
         .btn-ghost-danger { background: transparent; color: #999; border: 1px solid #eee; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
         .btn-ghost-danger:hover { background: #ffebee; color: var(--danger); border-color: var(--danger); }
 
@@ -65,6 +75,7 @@
         .music-fab:active { transform: scale(0.95); }
         .music-icon { font-size: 35px; color: #333; transition: 0.5s; }
         .music-icon.playing { animation: spin 3s linear infinite; color: var(--primary); }
+        .music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         #home-login-area { margin-top: 20px; text-align: center; }
@@ -83,6 +94,8 @@
         .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; align-items: center; }
         .post-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; margin-right: 6px; vertical-align: middle; }
         .grid-actions { display:flex; gap:10px; margin-top:5px; padding-top:5px; border-top:1px solid #f0f0f0; font-size:0.8rem; color:#555; }
+        .grid-act-btn { cursor:pointer; background:none; border:none; color:#555; transition:0.2s; }
+        .grid-act-btn:hover { color:var(--primary); }
         .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; }
         .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 
@@ -90,6 +103,7 @@
         .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 20px; font-weight: 800; border-bottom-right-radius: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         .featured-img { width: 160px; height: 160px; object-fit: cover; border-radius: 15px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .featured-content h3 { font-size: 1.5rem; margin: 0 0 10px 0; color: var(--primary-dark); }
+        .featured-content p { font-size: 1.1rem; color: #555; font-style: italic; }
 
         /* --- 7. RANKING & ARCHIVE --- */
         .ranking-wrapper { display: flex; gap: 25px; flex-wrap: wrap; margin-top: 30px; }
@@ -99,6 +113,8 @@
         .rank-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
         .rank-table td { padding: 12px 15px; border-bottom: 1px solid #f5f5f5; }
         .rank-top-1 { background: #fffde7; font-weight: bold; color: #f9a825; }
+        .rank-num { display: inline-flex; width: 26px; height: 26px; background: #eee; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: #555; margin-right: 8px; }
+        .rank-top-1 .rank-num { background: #fbc02d; color: white; }
         .archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; overflow-x: auto; }
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
@@ -572,6 +588,7 @@
         }
         window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); const inp = document.getElementById('lb-input-area'); wrap.classList.toggle('show'); inp.classList.toggle('show'); }
         window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
+        
         window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
         
@@ -581,7 +598,7 @@
             arr.forEach(c=>{ 
                 // Colorify @mentions and simple indentation
                 let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>');
-                let isReply = text.includes('@');
+                let isReply = c.text.includes('@');
                 let replyClass = isReply ? 'is-reply' : '';
                 l.innerHTML+=`<div class="lb-comment-item ${replyClass}">
                     <img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar">
