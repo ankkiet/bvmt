@@ -105,7 +105,8 @@
         .grid-act-btn { cursor:pointer; background:none; border:none; color:#555; transition:0.2s; }
         .grid-act-btn:hover { color:var(--primary); }
         .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; }
-        .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .ctrl-btn { background: rgba(255,255,255,0.95); border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3); color: var(--primary); transition: 0.2s; }
+        .ctrl-btn:hover { transform: scale(1.1); }
 
         .featured-section { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 2px solid var(--primary); border-radius: 20px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: center; position: relative; overflow: hidden; }
         .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 20px; font-weight: 800; border-bottom-right-radius: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
@@ -126,14 +127,16 @@
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- 8. LIGHTBOX & COMMENTS --- */
-        .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); overflow-y: auto; padding: 20px 0; }
-        .lb-container { margin: 20px auto; width: 95%; max-width: 900px; background: white; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; max-height: 90vh; }
-        .lb-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; z-index: 100; font-weight: bold; }
-        .lb-image-area { background: #000; display: flex; justify-content: center; align-items: center; height: 60vh; overflow: hidden; position: relative; cursor: zoom-in; }
+        /* --- 8. LIGHTBOX & REACTIONS --- */
+        .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.98); overflow-y: auto; padding: 0; }
+        .lb-container { margin: 0 auto; width: 100%; height: 100%; max-width: 100%; background: white; display: flex; flex-direction: column; position: relative; }
+        .lb-close-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 100; font-weight: bold; font-size: 1.2rem; }
+        
+        .lb-image-area { background: #000; flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; cursor: zoom-in; width: 100%; }
         .lb-image-area img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease; transform-origin: center center; }
         .lb-image-area.zoomed img { transform: scale(2.5); cursor: grab; }
-        .lb-details { padding: 20px; display: flex; flex-direction: column; height: 30vh; background: #fff; }
+        
+        .lb-details { padding: 15px; display: flex; flex-direction: column; background: #fff; max-height: 45vh; border-top-left-radius: 20px; border-top-right-radius: 20px; margin-top: -15px; position: relative; z-index: 10; }
         .lb-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; flex-shrink: 0; }
         .lb-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
         .lb-actions { margin-top: 10px; display: flex; gap: 20px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -141,19 +144,16 @@
         .lb-action-item:hover { color: var(--primary); }
         .lb-action-item.liked { color: #e53935; }
         
-        .lb-comments-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; padding-right: 5px; display: none; }
+        .lb-comments-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; padding-right: 5px; display: none; padding-bottom: 10px;}
         .lb-comments-wrapper.show { display: block; }
         .lb-comment-item { margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
         .lb-comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .lb-comment-bubble { background: var(--fb-bg); padding: 8px 12px; border-radius: 18px; position: relative; }
         .lb-comment-user { font-weight: bold; font-size: 0.85rem; color: #050505; display: block; margin-bottom: 2px; }
-        .mention-tag { color: var(--info); font-weight: bold; background: rgba(2, 136, 209, 0.1); padding: 0 4px; border-radius: 4px; }
-        .lb-comment-actions { margin-left: 12px; font-size: 0.75rem; color: #65676b; margin-top: 2px; }
-        .lb-reply-btn { cursor: pointer; font-weight: bold; }
-        .lb-reply-btn:hover { text-decoration: underline; }
-        .lb-input-area { display: none; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; flex-shrink: 0; }
-        .lb-input-area.show { display: flex; }
-        .lb-input-area input { border-radius: 20px; padding: 8px 15px; background: var(--fb-bg); border: none; }
+        .lb-reaction-area { display: none; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; flex-shrink: 0; overflow-x: auto; padding-bottom: 5px; }
+        .lb-reaction-area.show { display: flex; }
+        .reaction-chip { background: #e8f5e9; border: 1px solid var(--primary); color: var(--primary-dark); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+        .reaction-chip:hover { background: var(--primary); color: white; }
 
         /* --- 9. ADMIN & MOBILE --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
@@ -176,14 +176,21 @@
             nav.mobile-nav { display: block; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .featured-section { flex-direction: column; text-align: center; }
-            .modal { padding: 0; width: 100%; height: 100%; background: black; }
-            .lb-container { margin: 0; width: 100%; height: 100%; max-width: none; border-radius: 0; box-shadow: none; max-height: 100vh; }
-            .lb-image-area { height: 50vh; background: black; }
-            .lb-details { height: 50vh; border-radius: 20px 20px 0 0; margin-top: -20px; z-index: 10; padding: 15px; }
+            .lb-container { max-width: 100%; height: 100%; border-radius: 0; }
+            .lb-image-area { height: 60vh; }
+            .lb-details { height: 40vh; border-radius: 20px 20px 0 0; }
             .music-fab { bottom: 80px; right: 15px; width: 50px; height: 50px; }
             .ai-fab { bottom: 140px; right: 15px; width: 50px; height: 50px; }
             .ai-chat-window { width: 90%; right: 5%; bottom: 200px; height: 400px; }
             h1 { font-size: 1.6rem; }
+        }
+        
+        /* Desktop Lightbox optimization */
+        @media (min-width: 769px) {
+            .lb-container { flex-direction: row; max-width: 90%; height: 90vh; border-radius: 10px; overflow: hidden; margin: 30px auto; }
+            .lb-image-area { width: 70%; height: 100%; }
+            .lb-details { width: 30%; height: 100%; margin: 0; border-radius: 0; max-height: none; }
+            .lb-close-btn { top: 10px; left: 10px; right: auto; }
         }
     </style>
 </head>
@@ -198,7 +205,7 @@
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Web Aware)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
             <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của NVC Green. Tớ biết mọi thứ về trang web này, cứ hỏi nhé!</div>
         </div>
@@ -326,7 +333,7 @@
 
         <div id="profile" class="page-section">
             <h1>👤 Hồ Sơ Của Tôi</h1>
-            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
+            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button id="profile-login-btn" class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
             <div id="profile-in" style="display: none;">
                 <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>
                 <div class="card">
@@ -429,7 +436,7 @@
 
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container">
-            <button class="lb-close-btn" onclick="closeLightbox()">X</button>
+            <button class="lb-close-btn" onclick="closeLightbox()" title="Đóng">✕</button>
             <div class="lb-image-area" id="lb-zoom-area" ondblclick="toggleZoom(event)"><img id="lb-img"></div>
             <div class="lb-details">
                 <div class="lb-header">
@@ -443,14 +450,13 @@
                 </div>
                 <div class="lb-actions">
                     <button id="lb-like" class="lb-action-item" onclick="handleLike()"><i class="fas fa-heart"></i> <span id="lb-like-count">0</span></button>
-                    <button class="lb-action-item" onclick="toggleComments()"><i class="fas fa-comment"></i> Bình luận</button>
+                    <button class="lb-action-item" onclick="toggleComments()"><i class="fas fa-comment"></i> Cảm xúc</button>
                     <button class="lb-action-item" onclick="window.open(document.getElementById('lb-img').src)"><i class="fas fa-download"></i> Tải</button>
                 </div>
                 <div class="lb-comments-wrapper" id="lb-comments-wrapper"><div id="lb-cmt-list"></div></div>
-                <form onsubmit="postComment(event)" class="lb-input-area" id="lb-input-area">
-                    <input id="lb-cmt-input" required placeholder="Viết bình luận..." style="flex:1">
-                    <button class="btn btn-sm" style="border-radius:20px;">Gửi</button>
-                </form>
+                <div class="lb-reaction-area" id="lb-reaction-area">
+                    <!-- Preset Reactions inserted by JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -476,8 +482,13 @@
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI (V41.0 - WEB CONTEXT AWARE) ---
-        // Thêm dữ liệu trang web vào ngữ cảnh cho AI
+        // --- PRESET REACTIONS ---
+        const REACTIONS = [
+            "Tuyệt vời! 😍", "Cố lên nhé! 💪", "Sáng tạo quá! 🌟", "Đẹp lắm! 📸", 
+            "Cần cố gắng hơn 🛠️", "Xanh - Sạch - Đẹp 🌱", "10 điểm! 💯", "Ý nghĩa lắm! ❤️"
+        ];
+
+        // --- GEMINI AI (V45.0 - Enhanced Vision Prompt) ---
         const WEB_CONTEXT = `
         THÔNG TIN VỀ WEBSITE NVC GREEN A2K41:
         1. Mục đích: Website quản lý hoạt động lớp, phong trào "Green School", và bảo vệ môi trường.
@@ -501,7 +512,7 @@
             const requestBody = {
                 contents: [{ parts: [{ text: prompt }] }],
                 system_instruction: {
-                    parts: [{ text: `Bạn là trợ lý ảo AI của lớp Green School - A2K41 (App tên là NVC Green). Hãy trả lời thân thiện, ngắn gọn, dùng emoji. Dưới đây là thông tin về website để bạn trả lời câu hỏi của người dùng:\n${WEB_CONTEXT}` }]
+                    parts: [{ text: `Bạn là trợ lý ảo AI của lớp Green School - A2K41. Trả lời thân thiện, ngắn gọn. Context:\n${WEB_CONTEXT}` }]
                 },
                 safetySettings: [
                     { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
@@ -523,26 +534,29 @@
                 body: JSON.stringify(requestBody)
             });
 
+            if (response.status === 429 || response.status === 503) {
+                throw new Error(`Model ${modelName} Busy/Quota Exceeded`);
+            }
+
             if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`Model ${modelName} Error ${response.status}: ${errText}`);
+                throw new Error(`Model ${modelName} Error ${response.status}`);
             }
 
             const data = await response.json();
             if (data.candidates && data.candidates[0] && data.candidates[0].content) {
                 return data.candidates[0].content.parts[0].text;
             }
-            return "Xin lỗi, tớ chưa hiểu ý cậu (Empty response).";
+            return "Xin lỗi, tớ chưa hiểu ý cậu.";
         }
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
-            const models = ["gemini-2.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+            const models = ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-pro"];
             for (const model of models) {
                 try {
                     return await tryGeminiModel(model, prompt, imageBase64);
                 } catch (e) {
-                    console.warn(`AI Warning: Model ${model} failed. Trying next...`, e);
-                    if (model === models[models.length - 1]) throw new Error("Tất cả AI models đều bận hoặc lỗi. Vui lòng thử lại sau!");
+                    console.warn(`Model ${model} failed. Switching...`);
+                    if (model === models[models.length - 1]) return "Hệ thống AI đang bận. Vui lòng thử lại sau!";
                 }
             }
         }
@@ -552,11 +566,10 @@
             const originalText = btn.innerText;
             btn.innerText = "Đang test...";
             try {
-                const result = await callGeminiAPI("Chào Green Bot, giới thiệu về web này xem?");
-                alert("✅ Kết nối AI thành công!\nTrả lời: " + result);
+                const result = await callGeminiAPI("Chào Green Bot!");
+                alert("✅ AI Hoạt động tốt!\nTrả lời: " + result);
             } catch(e) {
-                console.error(e);
-                alert("❌ Lỗi: " + e.message + "\n\nKiểm tra lại API Key trong Admin Panel.");
+                alert("❌ Lỗi: " + e.message);
             }
             btn.innerText = originalText;
         }
@@ -655,7 +668,7 @@
         window.executeUpload = async (i) => { 
             const f = i.files[0]; if(!f) return; 
             
-            document.getElementById('upload-overlay').style.display='none'; // Hide default loading
+            document.getElementById('upload-overlay').style.display='none'; 
             const d = prompt("Nhập mô tả cho ảnh:"); 
             if(d === null) return; 
             
@@ -667,18 +680,19 @@
                 const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
                 const j = await r.json(); 
                 if(j.secure_url) { 
-                    // Call AI Vision (Fixed V40.2)
+                    // Call AI Vision (V45.0 - Enhanced Prompt)
                     const useAI = confirm("🤖 Dùng AI viết mô tả ảnh không?");
                     if(useAI) {
                         try {
                             document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh...";
                             const base64Img = await fileToBase64(f);
-                            const aiDesc = await callGeminiAPI("Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:", base64Img);
+                            // New prompt for better Green School context
+                            const aiDesc = await callGeminiAPI("Hãy mô tả bức ảnh này một cách ngắn gọn, tập trung vào các hành động bảo vệ môi trường, phân loại rác, hoặc hoạt động trường lớp nếu có:", base64Img);
                             await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: aiDesc, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
                             alert("Đăng ảnh thành công với mô tả AI!");
                             document.getElementById('upload-overlay').style.display='none'; i.value=""; 
                             return; 
-                        } catch(err) { console.error(err); alert("AI lỗi: " + err.message + ". Dùng mô tả gốc."); }
+                        } catch(err) { console.error(err); alert("AI lỗi hoặc quá tải: " + err.message + ". Dùng mô tả gốc."); }
                     }
 
                     await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
@@ -704,7 +718,11 @@
 
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
-                    let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; }
+                    // V45.0: Admin Power - Show controls if current user is owner OR Admin
+                    let ctrls=""; 
+                    if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))){ 
+                        ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
+                    }
                     g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
                 });
                 renderRank(uR.id, uS); renderRank(cR.id, cS);
@@ -713,7 +731,7 @@
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
-        // --- LIGHTBOX ZOOM & COMMENTS ---
+        // --- LIGHTBOX ZOOM & REACTIONS (V45.0) ---
         window.openLightbox = async (c, i) => { 
             currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
             const s=await getDoc(doc(db,c,i)); const d=s.data(); 
@@ -724,26 +742,46 @@
             document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
             document.getElementById('lb-desc').innerText=d.desc; 
             document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
-            const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
+            
+            const btn = document.getElementById('lb-like'); 
+            if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } 
+            else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
+            
             document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; 
-            document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show');
+            
+            // Reaction UI Setup
+            document.getElementById('lb-comments-wrapper').classList.remove('show'); 
+            document.getElementById('lb-reaction-area').classList.remove('show');
+            const rArea = document.getElementById('lb-reaction-area');
+            rArea.innerHTML = "";
+            REACTIONS.forEach(txt => {
+                rArea.innerHTML += `<div class="reaction-chip" onclick="postReaction('${txt}')">${txt}</div>`;
+            });
+
             renderComments(d.comments||[]); 
         }
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         window.toggleZoom = (e) => { const area = document.getElementById('lb-zoom-area'); const img = document.getElementById('lb-img'); if (area.classList.contains('zoomed')) { area.classList.remove('zoomed'); img.style.transform = "scale(1)"; } else { area.classList.add('zoomed'); const rect = area.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; img.style.transformOrigin = `${x}px ${y}px`; img.style.transform = "scale(2.5)"; } }
-        window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); const inp = document.getElementById('lb-input-area'); wrap.classList.toggle('show'); inp.classList.toggle('show'); }
-        window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
-        window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
+        window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); const inp = document.getElementById('lb-reaction-area'); wrap.classList.toggle('show'); inp.classList.toggle('show'); }
         
-        window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
+        window.handleLike = async () => { 
+            if(!currentUser) return alert("Vui lòng đăng nhập để thả tim!"); // V45.0 Check Login
+            const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; 
+            if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } 
+            else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } 
+        }
+        
+        // V45.0: Post Reaction (Replaces PostComment)
+        window.postReaction = async (text) => { 
+            if(!currentUser) return alert("Vui lòng đăng nhập để tương tác!"); 
+            await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:text})}); 
+            const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); 
+        }
         
         function renderComments(arr) { 
             const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
             arr.forEach(c=>{ 
-                let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>');
-                let isReply = c.text.includes('@');
-                let replyClass = isReply ? 'is-reply' : '';
-                l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; 
+                l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text" style="font-weight:bold; color:var(--primary)">${c.text}</span></div></div></div>`; 
             }); 
         }
 
@@ -754,12 +792,23 @@
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
         window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
         window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
+        
+        // V45.0: Enhanced Archive Grid - Admin can delete/edit here too
         window.loadArchiveGrid = async () => { 
             const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
             const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; 
             let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l));
             const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; }
-            s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); 
+            s.forEach(d=>{ 
+                const da=d.data(); 
+                if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; 
+                // Admin Controls in Archive
+                let ctrls=""; 
+                if(currentUser && (isAdmin(currentUser.email))){ 
+                    ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${activeArchiveTab}','${d.id}','${da.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${activeArchiveTab}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
+                }
+                g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; 
+            }); 
         }
         window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
         window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
@@ -767,24 +816,23 @@
         window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); b.innerHTML=""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; b.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`}); }
         window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
         window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
-        window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
+        window.editPost = async (c, i, o) => { const n = prompt("Sửa mô tả:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
         window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
         window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
         async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
         window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
         
         window.showPage = (id) => { 
-            // V42.0: Sử dụng sessionStorage để chỉ nhớ trong phiên làm việc
             document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); 
             const target = document.getElementById(id);
             if(target) target.classList.add('active'); 
-            else document.getElementById('home').classList.add('active'); // Fallback
+            else document.getElementById('home').classList.add('active'); 
 
             document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
             if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); 
             if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); 
             
-            sessionStorage.setItem('page', id); // Changed from localStorage
+            sessionStorage.setItem('page', id); 
             if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } 
         }
 
@@ -792,30 +840,31 @@
         window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
         document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
         
-        // V42.0: Fix nút đăng nhập bằng Event Listener
         const mainLoginBtn = document.getElementById('main-login-btn');
         if(mainLoginBtn) {
             mainLoginBtn.addEventListener('click', () => {
-                console.log("Login clicked");
                 signInWithPopup(auth, provider);
             });
         }
         
-        // V42.0: Logic load trang đầu tiên
-        // Nếu không có trong sessionStorage -> Mặc định Home
+        // V45.0: Profile Login Button Fix
+        const profileLoginBtn = document.getElementById('profile-login-btn');
+        if(profileLoginBtn) {
+            profileLoginBtn.addEventListener('click', () => {
+                signInWithPopup(auth, provider);
+            });
+        }
+        
         const savedPage = sessionStorage.getItem('page') || 'home';
         showPage(savedPage);
 
-        // --- PWA INSTALLATION LOGIC (V42.0) ---
+        // --- PWA INSTALLATION LOGIC ---
         let deferredPrompt;
-        
-        // Tạo nút Cài đặt cho PC
         const pcMenu = document.querySelector('nav.pc-nav ul');
         const installLi = document.createElement('li');
         installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>';
         pcMenu.appendChild(installLi);
 
-        // Tạo nút Cài đặt cho Mobile
         const mobNav = document.querySelector('.mobile-nav-inner');
         const installMob = document.createElement('a');
         installMob.className = 'nav-item';
