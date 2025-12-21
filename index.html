@@ -193,9 +193,9 @@
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot (Gemini Flash)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
-            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ có thể giúp gì cho cậu về môi trường hoặc trường lớp không?</div>
+            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ sử dụng model Gemini Flash siêu tốc để hỗ trợ cậu.</div>
         </div>
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
             <input id="ai-input" required placeholder="Hỏi gì đó..." style="flex:1">
@@ -353,7 +353,7 @@
             <h1>🛠 Quản Trị Hệ Thống</h1>
             
             <div class="card" style="border-left: 5px solid #6200ea;">
-                <h3>🤖 Cấu Hình AI (Gemini)</h3>
+                <h3>🤖 Cấu Hình AI (Gemini Flash)</h3>
                 <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
                 <div style="display:flex; gap:10px;">
                     <input type="password" id="cfg-ai-key" placeholder="Key đã tích hợp" style="flex:1" disabled>
@@ -471,14 +471,35 @@
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI (REST API FIX - V40.0) ---
-        // Using gemini-1.5-flash which is standard and has good free tier limits
+        // --- GEMINI AI (1.5 FLASH OPTIMIZED - V40.1) ---
+        // Đã tối ưu cho gemini-1.5-flash và cấu trúc request chuẩn
         async function callGeminiAPI(prompt, imageBase64 = null) {
+            // URL chuẩn cho model flash
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
             
-            let parts = [{ text: prompt }];
+            // Cấu trúc payload chuẩn
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: prompt }
+                    ]
+                }],
+                // Chỉ dẫn hệ thống (System Instruction) giúp AI đóng vai tốt hơn
+                system_instruction: {
+                    parts: [{ text: "Bạn là trợ lý ảo AI của lớp Green School - A2K41. Hãy trả lời thân thiện, ngắn gọn, dùng emoji, và tập trung vào chủ đề môi trường, học tập và đoàn kết." }]
+                },
+                // Cấu hình an toàn để tránh block nhầm
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+                ]
+            };
+
+            // Nếu có ảnh (Vision)
             if (imageBase64) {
-                parts.push({
+                requestBody.contents[0].parts.push({
                     inline_data: {
                         mime_type: "image/jpeg",
                         data: imageBase64
@@ -489,27 +510,39 @@
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: parts }] })
+                body: JSON.stringify(requestBody)
             });
 
             if (response.status === 429) {
-                throw new Error("Hệ thống đang quá tải (429). Vui lòng thử lại sau 1 phút.");
+                throw new Error("Hệ thống AI đang quá tải (429). Vui lòng thử lại sau 1 phút.");
             }
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
+                const errText = await response.text();
+                throw new Error(`API Error ${response.status}: ${errText}`);
             }
 
             const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
+            
+            // Kiểm tra xem có câu trả lời không (đôi khi bị finishReason: OTHER)
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                return "Xin lỗi, tớ chưa hiểu ý cậu hoặc hệ thống đang bận. Thử lại nhé!";
+            }
         }
 
         window.testAIConnection = async () => {
+            const btn = document.querySelector('.btn-ai');
+            const originalText = btn.innerText;
+            btn.innerText = "Đang test...";
             try {
-                const result = await callGeminiAPI("Chào bạn, bạn có khỏe không?");
-                alert("✅ Kết nối AI thành công!\nTrả lời: " + result);
+                const result = await callGeminiAPI("Chào Green Bot, cậu có khỏe không?");
+                alert("✅ Kết nối AI thành công (Gemini 1.5 Flash)!\nTrả lời: " + result);
             } catch(e) {
-                alert("❌ Lỗi: " + e.message);
+                console.error(e);
+                alert("❌ Lỗi: " + e.message + "\n\nKiểm tra lại API Key trong Admin Panel.");
             }
+            btn.innerText = originalText;
         }
 
         // 1. AI CHATBOT
@@ -520,12 +553,17 @@
             const msgList = document.getElementById('ai-messages');
             msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
             
+            // Hiển thị trạng thái đang soạn tin
+            const loadingId = "ai-loading-" + Date.now();
+            msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`;
+            msgList.scrollTop = msgList.scrollHeight;
+
             try {
                 const responseText = await callGeminiAPI(msg);
-                msgList.innerHTML += `<div class="ai-msg bot">${responseText}</div>`;
+                document.getElementById(loadingId).innerText = responseText;
             } catch(err) {
                 console.error(err);
-                msgList.innerHTML += `<div class="ai-msg bot" style="color:red">${err.message}</div>`;
+                document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`;
             }
             msgList.scrollTop = msgList.scrollHeight;
         }
@@ -542,7 +580,7 @@
 
         // --- YOUTUBE ID & MUSIC ---
         function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
-        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; 
+        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         let player; 
         window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
