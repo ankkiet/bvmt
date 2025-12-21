@@ -193,9 +193,9 @@
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Gemini 2.0)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
-            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI siêu cấp của A2K41. Tớ dùng model mới nhất, hỏi gì tớ cũng biết!</div>
+            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ có thể giúp gì cho cậu về môi trường hoặc trường lớp không?</div>
         </div>
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
             <input id="ai-input" required placeholder="Hỏi gì đó..." style="flex:1">
@@ -355,7 +355,10 @@
             <div class="card" style="border-left: 5px solid #6200ea;">
                 <h3>🤖 Cấu Hình AI (Gemini)</h3>
                 <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
-                <p style="color:green; font-weight:bold;">✅ API Key đã được tích hợp sẵn!</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="password" id="cfg-ai-key" placeholder="Key đã tích hợp" style="flex:1" disabled>
+                    <button class="btn btn-sm btn-ai" onclick="testAIConnection()">Kiểm tra kết nối AI</button>
+                </div>
             </div>
 
             <div class="card" style="border-left: 5px solid #9c27b0;">
@@ -468,9 +471,10 @@
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI (REST API FIX) ---
+        // --- GEMINI AI (REST API FIX - V40.0) ---
+        // Using gemini-1.5-flash which is standard and has good free tier limits
         async function callGeminiAPI(prompt, imageBase64 = null) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
             
             let parts = [{ text: prompt }];
             if (imageBase64) {
@@ -488,12 +492,24 @@
                 body: JSON.stringify({ contents: [{ parts: parts }] })
             });
 
+            if (response.status === 429) {
+                throw new Error("Hệ thống đang quá tải (429). Vui lòng thử lại sau 1 phút.");
+            }
             if (!response.ok) {
                 throw new Error(`API Error: ${response.status}`);
             }
 
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
+        }
+
+        window.testAIConnection = async () => {
+            try {
+                const result = await callGeminiAPI("Chào bạn, bạn có khỏe không?");
+                alert("✅ Kết nối AI thành công!\nTrả lời: " + result);
+            } catch(e) {
+                alert("❌ Lỗi: " + e.message);
+            }
         }
 
         // 1. AI CHATBOT
@@ -509,7 +525,7 @@
                 msgList.innerHTML += `<div class="ai-msg bot">${responseText}</div>`;
             } catch(err) {
                 console.error(err);
-                msgList.innerHTML += `<div class="ai-msg bot">Lỗi kết nối AI: ${err.message}</div>`;
+                msgList.innerHTML += `<div class="ai-msg bot" style="color:red">${err.message}</div>`;
             }
             msgList.scrollTop = msgList.scrollHeight;
         }
@@ -554,6 +570,7 @@
                     document.getElementById('cfg-maintenance').checked=cfg.maintenance;
                     document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
                     document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
+                    if(cfg.geminiKey) { geminiKey = cfg.geminiKey; document.getElementById('cfg-ai-key').value = cfg.geminiKey; }
                 }
             }
         });
@@ -604,13 +621,11 @@
                             document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh...";
                             const base64Img = await fileToBase64(f);
                             const aiDesc = await callGeminiAPI("Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:", base64Img);
-                            // Lưu luôn mô tả AI, bỏ qua prompt người dùng nếu AI thành công (hoặc gộp cả 2)
-                            // Ở đây ta ưu tiên AI nếu chọn dùng AI
                             await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: aiDesc, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
                             alert("Đăng ảnh thành công với mô tả AI!");
                             document.getElementById('upload-overlay').style.display='none'; i.value=""; 
                             return; 
-                        } catch(err) { console.error(err); alert("AI lỗi, dùng mô tả gốc."); }
+                        } catch(err) { console.error(err); alert("AI lỗi: " + err.message + ". Dùng mô tả gốc."); }
                     }
 
                     await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
@@ -680,6 +695,7 @@
         }
 
         window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; const table = document.getElementById('export-table'); table.innerHTML = ""; let html = ""; if(type === 'users') { html += `<thead><tr><th>Tên</th><th>ID</th><th>Email</th><th>Lớp</th><th>Trạng thái</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u=d.data(); html += `<tr><td>${u.displayName}</td><td>${u.customID||''}</td><td>${u.email}</td><td>${u.class||''}</td><td>${u.banned?'Bị khóa':u.status}</td></tr>`; }); } else { html += `<thead><tr><th>Người đăng</th><th>ID</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p=d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleString('vi-VN') : ''; html += `<tr><td>${p.authorName}</td><td>${p.authorID||''}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; }); } html += "</tbody>"; table.innerHTML = html; const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`; const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}.xls`; a.click(); }
+        window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
