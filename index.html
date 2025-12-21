@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Green School - A2K41 Official</title>
     
-    <meta name="description" content="Trang web chính thức của lớp A2K41 - Green School. Nơi chia sẻ khoảnh khắc, hoạt động bảo vệ môi trường và thi đua của tập thể A2K41.">
-    <meta name="keywords" content="A2K41, Green School, Lớp A2K41, Web lớp, Trường THPT, Bảo vệ môi trường, Góc xanh, Thi đua">
-    <meta name="author" content="Admin A2K41">
-    
-    <meta property="og:title" content="A2K41 - Ngôi Nhà Chung Green School">
-    <meta property="og:description" content="Tham gia ngay mạng xã hội riêng của lớp A2K41. Cùng nhau phủ xanh lớp học!">
+    <meta name="description" content="Web lớp A2K41 - Green School.">
+    <meta property="og:title" content="A2K41 - Green School">
     <meta property="og:image" content="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg">
-    <meta property="og:url" content="https://a2k41nvc.netlify.app">
-    <meta property="og:type" content="website">
-
+    
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+
     <style>
         /* --- 1. CORE STYLES --- */
         :root { 
@@ -25,8 +27,8 @@
             --accent: #ffca28; --danger: #d32f2f; --info: #0288d1;
             --bg: #f8f9fa; --text: #333; --white: #ffffff;
             --admin-color: #c62828; --archive-color: #4e342e;
-            --fb-bg: #f0f2f5; --fb-blue: #1877f2;
-            --nav-height: 65px;
+            --fb-bg: #f0f2f5; --nav-height: 65px;
+            --ai-color: #6200ea; /* Màu tím cho AI */
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
@@ -60,14 +62,15 @@
         .btn-danger { background: var(--danger); } 
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-sm { padding: 6px 14px; font-size: 0.85rem; border-radius: 6px; }
-        
         .btn-ghost-danger { background: transparent; color: #999; border: 1px solid #eee; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
         .btn-ghost-danger:hover { background: #ffebee; color: var(--danger); border-color: var(--danger); }
+        .btn-ai { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; border: none; box-shadow: 0 4px 10px rgba(98, 0, 234, 0.3); }
+        .btn-ai:hover { transform: scale(1.05); }
 
         input, textarea, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; font-size: 1rem; transition: 0.3s; background: #fafafa; }
         input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
 
-        /* --- 5. EXTRAS --- */
+        /* --- 5. EXTRAS & MUSIC --- */
         .countdown-container { background: linear-gradient(135deg, #d32f2f, #c62828); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(211, 47, 47, 0.3); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
         .timer-display { font-size: 2rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; margin-top: 5px; }
 
@@ -78,11 +81,19 @@
         .music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        #home-login-area { margin-top: 20px; text-align: center; }
-        .home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 30px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .home-login-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+        /* --- 6. AI CHATBOT UI --- */
+        .ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; }
+        .ai-fab:hover { transform: scale(1.1); }
+        .ai-chat-window { position: fixed; bottom: 230px; right: 25px; width: 350px; height: 450px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2001; display: none; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
+        .ai-header { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
+        .ai-msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 0.9rem; line-height: 1.4; }
+        .ai-msg.bot { background: white; border: 1px solid #eee; align-self: flex-start; color: #333; }
+        .ai-msg.user { background: #6200ea; color: white; align-self: flex-end; }
+        .ai-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: white; }
+        .ai-input-area input { margin: 0; padding: 8px; font-size: 0.9rem; }
 
-        /* --- 6. GALLERY & GRID --- */
+        /* --- 7. GALLERY & RANKING --- */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #fff; border: 1px solid #eee; transition: 0.3s; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
@@ -103,9 +114,7 @@
         .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 20px; font-weight: 800; border-bottom-right-radius: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         .featured-img { width: 160px; height: 160px; object-fit: cover; border-radius: 15px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .featured-content h3 { font-size: 1.5rem; margin: 0 0 10px 0; color: var(--primary-dark); }
-        .featured-content p { font-size: 1.1rem; color: #555; font-style: italic; }
 
-        /* --- 7. RANKING & ARCHIVE --- */
         .ranking-wrapper { display: flex; gap: 25px; flex-wrap: wrap; margin-top: 30px; }
         .ranking-card { flex: 1; min-width: 320px; background: #fff; border-radius: 12px; border: 1px solid #eee; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
         .ranking-header { background: var(--primary); color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; }
@@ -115,20 +124,18 @@
         .rank-top-1 { background: #fffde7; font-weight: bold; color: #f9a825; }
         .rank-num { display: inline-flex; width: 26px; height: 26px; background: #eee; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: #555; margin-right: 8px; }
         .rank-top-1 .rank-num { background: #fbc02d; color: white; }
+        
         .archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; overflow-x: auto; }
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- 8. LIGHTBOX & COMMENTS (FACEBOOK STYLE) --- */
+        /* --- 8. LIGHTBOX & COMMENTS --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); overflow-y: auto; padding: 20px 0; }
         .lb-container { margin: 20px auto; width: 95%; max-width: 900px; background: white; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; max-height: 90vh; }
         .lb-close-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; z-index: 100; font-weight: bold; }
-        
         .lb-image-area { background: #000; display: flex; justify-content: center; align-items: center; height: 60vh; overflow: hidden; position: relative; cursor: zoom-in; }
         .lb-image-area img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease; transform-origin: center center; }
-        .lb-image-area.zoomed { cursor: grab; }
         .lb-image-area.zoomed img { transform: scale(2.5); cursor: grab; }
-        
         .lb-details { padding: 20px; display: flex; flex-direction: column; height: 30vh; background: #fff; }
         .lb-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; flex-shrink: 0; }
         .lb-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
@@ -136,36 +143,22 @@
         .lb-action-item { cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #555; background: none; border: none; }
         .lb-action-item:hover { color: var(--primary); }
         .lb-action-item.liked { color: #e53935; }
-        .lb-action-item.liked i { font-weight: 900; }
-
-        /* Comments Wrapper */
+        
         .lb-comments-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; padding-right: 5px; display: none; }
         .lb-comments-wrapper.show { display: block; }
-        
-        /* Comment Item Structure */
         .lb-comment-item { margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
         .lb-comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .lb-comment-content { display: flex; flex-direction: column; max-width: 85%; }
         .lb-comment-bubble { background: var(--fb-bg); padding: 8px 12px; border-radius: 18px; position: relative; }
         .lb-comment-user { font-weight: bold; font-size: 0.85rem; color: #050505; display: block; margin-bottom: 2px; }
-        .lb-comment-text { font-size: 0.9rem; color: #050505; line-height: 1.4; word-wrap: break-word; }
-        
-        /* Tag Styling */
         .mention-tag { color: var(--info); font-weight: bold; background: rgba(2, 136, 209, 0.1); padding: 0 4px; border-radius: 4px; }
-        
-        /* Reply Button & Nested Look */
         .lb-comment-actions { margin-left: 12px; font-size: 0.75rem; color: #65676b; margin-top: 2px; }
         .lb-reply-btn { cursor: pointer; font-weight: bold; }
         .lb-reply-btn:hover { text-decoration: underline; }
-        
-        /* Reply Indentation (Visual only since flat data) */
-        .lb-comment-item.is-reply { margin-left: 42px; transform: scale(0.95); transform-origin: top left; }
-
         .lb-input-area { display: none; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; flex-shrink: 0; }
         .lb-input-area.show { display: flex; }
         .lb-input-area input { border-radius: 20px; padding: 8px 15px; background: var(--fb-bg); border: none; }
 
-        /* --- 9. ADMIN --- */
+        /* --- 9. ADMIN & MOBILE --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
         .admin-table th { text-align: left; padding: 12px; background: #f1f1f1; color: #555; }
         .admin-table td { padding: 12px; border-bottom: 1px solid #eee; }
@@ -176,16 +169,22 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); }
 
+        #home-login-area { margin-top: 20px; text-align: center; }
+        .home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 30px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .home-login-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+
         @media (max-width: 768px) {
             .container { margin: 0; border-radius: 0; padding: 20px 15px 100px 15px; box-shadow: none; width: 100%; }
             nav.pc-nav { display: none; }
             nav.mobile-nav { display: block; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .featured-section { flex-direction: column; text-align: center; }
             .modal { padding: 0; width: 100%; height: 100%; background: black; }
             .lb-container { margin: 0; width: 100%; height: 100%; max-width: none; border-radius: 0; box-shadow: none; max-height: 100vh; }
             .lb-image-area { height: 50vh; background: black; }
             .lb-details { height: 50vh; border-radius: 20px 20px 0 0; margin-top: -20px; z-index: 10; padding: 15px; }
+            .music-fab { bottom: 80px; right: 15px; width: 50px; height: 50px; }
+            .ai-fab { bottom: 140px; right: 15px; width: 50px; height: 50px; }
+            .ai-chat-window { width: 90%; right: 5%; bottom: 200px; height: 400px; }
             h1 { font-size: 1.6rem; }
         }
     </style>
@@ -197,6 +196,18 @@
         <h1>Hệ Thống Đang Bảo Trì</h1>
         <p>Admin đang nâng cấp tính năng mới. Vui lòng quay lại sau!</p>
         <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
+    </div>
+
+    <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
+    <div class="ai-chat-window" id="ai-window">
+        <div class="ai-header"><span>🤖 Green Bot (Gemini AI)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-body" id="ai-messages">
+            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của A2K41. Tớ có thể giúp gì cho cậu về môi trường hoặc trường lớp không?</div>
+        </div>
+        <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
+            <input id="ai-input" required placeholder="Hỏi gì đó..." style="flex:1">
+            <button class="btn btn-sm btn-ai">Gửi</button>
+        </form>
     </div>
 
     <div class="music-fab" onclick="toggleMusic()" title="Bật/Tắt Nhạc">
@@ -289,14 +300,10 @@
                         <div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div>
                         <div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div>
                     </div>
-                    
                     <div style="margin-bottom:15px; display:flex; gap:10px;">
-                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên, Nội dung (Gõ để lọc...)" style="flex:1;" onkeyup="loadArchiveGrid()">
+                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên, Nội dung..." style="flex:1;" onkeyup="loadArchiveGrid()">
                     </div>
-
-                    <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%">
-                        <option value="ALL">📂 Tất cả ảnh lưu trữ</option>
-                    </select>
+                    <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%"><option value="ALL">📂 Tất cả ảnh lưu trữ</option></select>
                     <div id="archive-grid" class="gallery-grid"></div>
                 </div>
             </div>
@@ -321,33 +328,30 @@
 
         <div id="profile" class="page-section">
             <h1>👤 Hồ Sơ Của Tôi</h1>
-            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập để sử dụng tính năng.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
+            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
             <div id="profile-in" style="display: none;">
                 <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>
                 <div class="card">
                     <div style="text-align:center; margin-bottom:20px">
                         <div style="position:relative; display:inline-block">
                             <img id="p-avatar" src="" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border:4px solid var(--primary);">
-                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.2)"><i class="fas fa-camera" style="color:white"></i></button>
+                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fas fa-camera" style="color:white"></i></button>
                         </div>
                         <h2 id="p-name" style="margin:10px 0 5px 0">User Name</h2>
-                        <div id="p-custom-id" style="color:var(--primary); font-weight:bold; font-size:0.9rem;">@id_ca_nhan</div>
+                        <div id="p-custom-id" style="color:var(--primary); font-weight:bold; font-size:0.9rem;">@id</div>
                         <p id="p-email" style="color:#666">user@email.com</p>
                     </div>
                     <form onsubmit="updateProfile(event)">
                         <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
                         <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
-                        <label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option><option>12A4</option><option>12A5</option><option>12A6</option><option>12A7</option><option>12A8</option><option>12A9</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option><option>11A4</option><option>11A5</option><option>11A6</option><option>11A7</option><option>11A8</option><option>11A9</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option><option>10A4</option><option>10A5</option><option>10A6</option><option>10A7</option><option>10A8</option><option>10A9</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select>
+                        <label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select>
                         <label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea>
-                        
                         <div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">
                             <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
                             <button type="button" class="btn" style="background:var(--primary-dark); color:white;" onclick="handleLogout()">🚪 ĐĂNG XUẤT</button>
                         </div>
                     </form>
-                    <div style="margin-top:20px; text-align:center;">
-                        <button class="btn-ghost-danger" onclick="requestDeleteAccount()"><i class="fas fa-trash"></i> Xóa tài khoản vĩnh viễn</button>
-                    </div>
+                    <div style="margin-top:20px; text-align:center;"><button class="btn-ghost-danger" onclick="requestDeleteAccount()"><i class="fas fa-trash"></i> Xóa tài khoản vĩnh viễn</button></div>
                 </div>
             </div>
         </div>
@@ -355,8 +359,17 @@
         <div id="admin" class="page-section">
             <h1>🛠 Quản Trị Hệ Thống</h1>
             
+            <div class="card" style="border-left: 5px solid #6200ea;">
+                <h3>🤖 Cấu Hình AI (Gemini)</h3>
+                <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="password" id="cfg-ai-key" placeholder="Dán Google Gemini API Key vào đây..." style="flex:1">
+                    <button class="btn btn-sm btn-ai" onclick="updateAIConfig()">Lưu Key</button>
+                </div>
+            </div>
+
             <div class="card" style="border-left: 5px solid #9c27b0;">
-                <h3>🎵 Quản Lý Nhạc (Playlist)</h3>
+                <h3>🎵 Quản Lý Nhạc</h3>
                 <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
                     <input type="text" id="new-song-name" placeholder="Tên bài hát" style="flex:1">
                     <input type="text" id="new-song-url" placeholder="Dán Link YouTube..." style="flex:1">
@@ -419,11 +432,7 @@
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container">
             <button class="lb-close-btn" onclick="closeLightbox()">X</button>
-            
-            <div class="lb-image-area" id="lb-zoom-area" ondblclick="toggleZoom(event)">
-                <img id="lb-img">
-            </div>
-            
+            <div class="lb-image-area" id="lb-zoom-area" ondblclick="toggleZoom(event)"><img id="lb-img"></div>
             <div class="lb-details">
                 <div class="lb-header">
                     <img id="lb-author-avatar" class="lb-avatar">
@@ -434,23 +443,12 @@
                     </div>
                     <button id="lb-admin-pin" style="background:none; border:none; color:gold; font-size:1.5rem; cursor:pointer" title="Ghim"><i class="fas fa-star"></i></button>
                 </div>
-                
                 <div class="lb-actions">
-                    <button id="lb-like" class="lb-action-item" onclick="handleLike()">
-                        <i class="fas fa-heart"></i> <span id="lb-like-count">0</span>
-                    </button>
-                    <button class="lb-action-item" onclick="toggleComments()">
-                        <i class="fas fa-comment"></i> Bình luận
-                    </button>
-                    <button class="lb-action-item" onclick="window.open(document.getElementById('lb-img').src)">
-                        <i class="fas fa-download"></i> Tải
-                    </button>
+                    <button id="lb-like" class="lb-action-item" onclick="handleLike()"><i class="fas fa-heart"></i> <span id="lb-like-count">0</span></button>
+                    <button class="lb-action-item" onclick="toggleComments()"><i class="fas fa-comment"></i> Bình luận</button>
+                    <button class="lb-action-item" onclick="window.open(document.getElementById('lb-img').src)"><i class="fas fa-download"></i> Tải</button>
                 </div>
-
-                <div class="lb-comments-wrapper" id="lb-comments-wrapper">
-                    <div id="lb-cmt-list"></div>
-                </div>
-                
+                <div class="lb-comments-wrapper" id="lb-comments-wrapper"><div id="lb-cmt-list"></div></div>
                 <form onsubmit="postComment(event)" class="lb-input-area" id="lb-input-area">
                     <input id="lb-cmt-input" required placeholder="Viết bình luận..." style="flex:1">
                     <button class="btn btn-sm" style="border-radius:20px;">Gửi</button>
@@ -462,14 +460,15 @@
     <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
     <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="changeAvatar(this)">
     <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
-        <i class="fas fa-cloud-upload-alt fa-bounce" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-        <h2 style="color:var(--primary)">Đang tải ảnh lên...</h2>
+        <i class="fas fa-robot fa-bounce" style="font-size: 3rem; color: var(--ai-color); margin-bottom: 20px;"></i>
+        <h2 style="color:var(--ai-color)" id="upload-loading-text">AI Đang Xử Lý...</h2>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { GoogleGenerativeAI } from "@google/generative-ai";
 
         // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
@@ -477,7 +476,61 @@
         const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
+        let geminiKey = null; let genAI = null; let model = null;
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
+
+        // --- GEMINI AI SETUP ---
+        function setupGemini() {
+            if(geminiKey) {
+                genAI = new GoogleGenerativeAI(geminiKey);
+                model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+            }
+        }
+
+        // 1. AI CHATBOT
+        window.toggleAIChat = () => {
+            const w = document.getElementById('ai-window');
+            w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
+        }
+        window.sendMessageToAI = async (e) => {
+            e.preventDefault();
+            if(!model) return alert("Admin chưa nhập API Key cho AI!");
+            const input = document.getElementById('ai-input');
+            const msg = input.value;
+            if(!msg) return;
+            
+            const msgList = document.getElementById('ai-messages');
+            msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`;
+            input.value = ""; msgList.scrollTop = msgList.scrollHeight;
+
+            try {
+                const result = await model.generateContent(msg);
+                const response = result.response.text();
+                msgList.innerHTML += `<div class="ai-msg bot">${response}</div>`;
+                msgList.scrollTop = msgList.scrollHeight;
+            } catch(err) {
+                msgList.innerHTML += `<div class="ai-msg bot">Lỗi kết nối AI!</div>`;
+            }
+        }
+
+        // 2. AI VISION (IMAGE ANALYSIS)
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+            return {
+                inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+            };
+        }
+
+        // 3. AI FILTER (SIMPLE KEYWORD + OPTIONAL AI)
+        const BAD_WORDS = ["chửi", "tục", "bậy", "ngu", "chó", "chết", "dm", "vl", "cc"]; // Demo list
+        function checkToxic(text) {
+            const lower = text.toLowerCase();
+            return BAD_WORDS.some(w => lower.includes(w));
+        }
 
         // --- YOUTUBE ID & MUSIC ---
         function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
@@ -499,6 +552,10 @@
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if(docSnap.exists()) {
                 const cfg = docSnap.data();
+                
+                // AI Key
+                if(cfg.geminiKey) { geminiKey = cfg.geminiKey; setupGemini(); }
+
                 if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
                 const plDiv = document.getElementById('music-playlist-container');
                 if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:#e8f5e9; border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
@@ -509,6 +566,7 @@
                     document.getElementById('cfg-maintenance').checked=cfg.maintenance;
                     document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
                     document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
+                    if(cfg.geminiKey) document.getElementById('cfg-ai-key').value = cfg.geminiKey;
                 }
             }
         });
@@ -516,7 +574,6 @@
         function applyLock(s,l){const o=document.getElementById(`locked-${s}`), c=document.getElementById(`content-${s}`); if(l&&(!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';}}
         let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const d=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${d}d ${h}h ${m}p`;}},1000);}
 
-        // --- AUTH ---
         window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
         window.checkAdminLogin=()=>signInWithPopup(auth,provider);
         onAuthStateChanged(auth, async(u)=>{
@@ -533,18 +590,59 @@
             }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
         });
 
-        // --- UPLOAD ---
         window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
         window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } currentCollection = c; document.getElementById('file-input').click(); }
-        window.executeUpload = async (i) => { const f = i.files[0]; if(!f) return; const d = prompt("Nhập mô tả cho ảnh:"); if(d === null) return; const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); document.getElementById('upload-overlay').style.display='flex'; try { const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); if(j.secure_url) { await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); alert("Đăng ảnh thành công!"); } } catch(e) { alert("Lỗi tải ảnh!"); } document.getElementById('upload-overlay').style.display='none'; i.value=""; }
+        
+        // --- UPLOAD WITH AI VISION ---
+        window.executeUpload = async (i) => { 
+            const f = i.files[0]; if(!f) return; 
+            
+            // AI Vision Prompt
+            let d = "";
+            const useAI = confirm("🤖 Bạn có muốn AI tự động viết mô tả cho ảnh này không?");
+            
+            document.getElementById('upload-loading-text').innerText = "Đang tải ảnh...";
+            document.getElementById('upload-overlay').style.display='flex'; 
+            
+            try { 
+                // Upload Cloudinary
+                const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
+                const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
+                const j = await r.json(); 
+                
+                if(j.secure_url) { 
+                    // Call AI if requested
+                    if(useAI && model) {
+                        document.getElementById('upload-loading-text').innerText = "AI đang nhìn ảnh...";
+                        try {
+                            const imagePart = await fileToGenerativePart(f);
+                            const result = await model.generateContent(["Mô tả ngắn gọn bức ảnh này bằng tiếng Việt, tập trung vào hành động bảo vệ môi trường hoặc khung cảnh lớp học:", imagePart]);
+                            d = result.response.text();
+                        } catch(err) {
+                            console.error("AI Error:", err);
+                            d = prompt("AI bị lỗi, mời bạn tự nhập mô tả:");
+                        }
+                    } else {
+                        // Hide overlay temporarily to prompt user
+                        document.getElementById('upload-overlay').style.display='none';
+                        d = prompt("Nhập mô tả cho ảnh:");
+                        document.getElementById('upload-overlay').style.display='flex';
+                    }
 
-        // --- RENDER ---
+                    if(d === null) { document.getElementById('upload-overlay').style.display='none'; return; } // Cancelled
+
+                    await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
+                    alert("Đăng ảnh thành công!"); 
+                } 
+            } catch(e) { alert("Lỗi tải ảnh!"); } 
+            document.getElementById('upload-overlay').style.display='none'; i.value=""; 
+        }
+
         function renderGrid(col, elId, uR, cR) {
             onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
                 const g = document.getElementById(elId); g.innerHTML = ""; let uS={}, cS={}, docs=[];
                 snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
                 
-                // Auto Top 1
                 if(col === 'gallery' && docs.length > 0) {
                     const topPost = [...docs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
                     if(topPost) {
@@ -564,7 +662,6 @@
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
-        // --- LIGHTBOX ZOOM & COMMENTS ---
         window.openLightbox = async (c, i) => { 
             currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
             const s=await getDoc(doc(db,c,i)); const d=s.data(); 
@@ -588,29 +685,31 @@
         }
         window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); const inp = document.getElementById('lb-input-area'); wrap.classList.toggle('show'); inp.classList.toggle('show'); }
         window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
-        
         window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
-        window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
         
-        // --- NEW COMMENT STYLE (NESTED LOOK) ---
+        // --- POST COMMENT (WITH MODERATION) ---
+        window.postComment = async (e) => { 
+            e.preventDefault(); if(!currentUser)return; 
+            const t=document.getElementById('lb-cmt-input').value; 
+            
+            // Check Toxic
+            if(checkToxic(t)) return alert("⚠️ Cảnh báo: Bình luận của bạn chứa từ ngữ không phù hợp!");
+
+            await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); 
+            document.getElementById('lb-cmt-input').value=""; 
+            const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); 
+        }
+        
         function renderComments(arr) { 
             const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
             arr.forEach(c=>{ 
-                // Colorify @mentions and simple indentation
                 let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>');
                 let isReply = c.text.includes('@');
                 let replyClass = isReply ? 'is-reply' : '';
-                l.innerHTML+=`<div class="lb-comment-item ${replyClass}">
-                    <img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar">
-                    <div class="lb-comment-content">
-                        <div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div>
-                        <div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div>
-                    </div>
-                </div>`; 
+                l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; 
             }); 
         }
 
-        // --- UTILS & ADMIN ---
         window.exportExcel = async (type) => {
             if(!currentUser || !isAdmin(currentUser.email)) return;
             const table = document.getElementById('export-table'); table.innerHTML = ""; let html = "";
@@ -620,36 +719,20 @@
             const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`;
             const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}.xls`; a.click();
         }
+        
+        window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key!"); location.reload(); }
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
         window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
         window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option>Loading...</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
-        
-        // --- FIXED ARCHIVE SEARCH ---
         window.loadArchiveGrid = async () => { 
             const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
             const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; 
-            
-            let q;
-            if(l === 'ALL') {
-                // If ALL is selected, just get archived items.
-                q = query(collection(db,activeArchiveTab),where("archived","==",true));
-            } else {
-                // Specific season
-                q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l));
-            }
-            
-            const s=await getDocs(q); g.innerHTML=""; 
-            if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; }
-
-            s.forEach(d=>{
-                const da=d.data();
-                if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return;
-                g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`;
-            }); 
+            let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l));
+            const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; }
+            s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); 
         }
-        
         window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); }
         window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
         
@@ -659,25 +742,9 @@
         window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
         window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
         window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
-        
         async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
-        window.updateProfile = async (e) => { 
-            e.preventDefault(); 
-            const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value;
-            const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; 
-            if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); }
-            const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; 
-            await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); 
-        }
-
-        window.showPage = (id) => { 
-            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); 
-            document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
-            if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu');
-            if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu');
-            localStorage.setItem('page', id); if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); }
-        }
-        
+        window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
+        window.showPage = (id) => { document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); localStorage.setItem('page', id); if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } }
         const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
         window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
         document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
