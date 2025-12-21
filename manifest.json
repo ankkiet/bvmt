@@ -1,12 +1,12 @@
 {
   "name": "NVC Green",
   "short_name": "NVC Green",
-  "start_url": "./index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2e7d32",
   "orientation": "portrait",
-  "description": "Ứng dụng Lớp học xanh A2K41 - Green School",
+  "description": "Ứng dụng Lớp học xanh A2K41",
   "icons": [
     {
       "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Recycle_symbol_%28green%29.svg/512px-Recycle_symbol_%28green%29.svg.png",
