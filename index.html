@@ -5,230 +5,438 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Green School - A2K41 Official</title>
     
+    <!-- PWA Config -->
     <meta name="theme-color" content="#2e7d32">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green">
+    
+    <meta name="description" content="Web lớp A2K41 - Green School.">
+    <meta property="og:title" content="A2K41 - Green School">
+    <meta property="og:image" content="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg">
     
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- CORE STYLES --- */
-        :root { --primary: #2e7d32; --primary-dark: #1b5e20; --accent: #ffca28; --danger: #d32f2f; --bg: #f8f9fa; --text: #333; }
+        /* --- 1. CORE STYLES --- */
+        :root { 
+            --primary: #2e7d32; --primary-dark: #1b5e20;
+            --accent: #ffca28; --danger: #d32f2f; --info: #0288d1;
+            --bg: #f8f9fa; --text: #333; --white: #ffffff;
+            --admin-color: #c62828; --archive-color: #4e342e;
+            --fb-bg: #f0f2f5; --nav-height: 65px;
+            --ai-color: #6200ea;
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); padding-bottom: 90px; }
+        body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
 
-        /* --- NAVIGATION --- */
-        nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        /* --- 2. NAVIGATION --- */
+        nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; }
         nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 10px; }
-        nav.pc-nav ul li a { color: white; font-weight: 700; text-transform: uppercase; padding: 10px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; }
-        nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background: rgba(255,255,255,0.2); color: var(--accent); }
-        nav.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid #eee; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .mobile-nav-inner { display: flex; height: 65px; justify-content: space-around; align-items: center; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #999; cursor: pointer; }
-        .nav-item.active-menu { color: var(--primary); font-weight: 800; }
+        nav.pc-nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 10px 20px; font-size: 0.9rem; border-radius: 30px; transition: 0.3s; cursor: pointer; }
+        nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); transform: translateY(-2px); }
+
+        nav.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid #eee; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
+        .mobile-nav-inner { display: flex; justify-content: space-around; align-items: center; height: var(--nav-height); }
+        .nav-item { flex: 1; text-align: center; color: #999; text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; cursor: pointer; }
         .nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
+        .nav-item.active-menu { color: var(--primary); font-weight: 800; }
+        .nav-item.active-menu i { color: var(--primary); transform: translateY(-3px); }
 
-        /* --- LAYOUT --- */
-        .container { max-width: 1200px; width: 95%; margin: 25px auto; background: white; padding: 30px; border-radius: 20px; min-height: 80vh; }
-        .page-section { display: none; animation: fadeIn 0.4s; }
+        /* --- 3. LAYOUT --- */
+        .container { max-width: 1200px; width: 95%; margin: 25px auto; background: var(--white); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); min-height: 80vh; }
+        .page-section { display: none; animation: fadeIn 0.4s ease-out; }
         .page-section.active { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 4px solid var(--accent); display: inline-block; position: relative; left: 50%; transform: translateX(-50%); margin-bottom: 30px; }
-        .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; }
-        .btn:hover { background: var(--primary-dark); }
-        .btn-danger { background: var(--danger); }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .locked-overlay { text-align: center; padding: 60px 20px; background: #fffde7; border: 2px dashed #fbc02d; border-radius: 15px; color: #f57f17; margin-bottom: 30px; }
+        h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 4px solid var(--accent); display: inline-block; padding-bottom: 8px; margin-bottom: 35px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 2rem; }
+        h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.4rem; border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; }
+        .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; }
 
-        /* --- GALLERY & ADMIN CONTROLS --- */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .gallery-item { position: relative; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: 0.3s; }
-        .gallery-item:hover { transform: translateY(-3px); }
-        .gallery-img-container { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: #eee; }
-        .gallery-img { width: 100%; height: 100%; object-fit: cover; }
-        .gallery-info { padding: 10px; }
-        .gallery-title { font-size: 0.9rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* --- 4. BUTTONS & INPUTS --- */
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); } 
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-sm { padding: 6px 14px; font-size: 0.85rem; border-radius: 6px; }
+        .btn-ghost-danger { background: transparent; color: #999; border: 1px solid #eee; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
+        .btn-ghost-danger:hover { background: #ffebee; color: var(--danger); border-color: var(--danger); }
+        .btn-ai { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; border: none; box-shadow: 0 4px 10px rgba(98, 0, 234, 0.3); }
+        .btn-ai:hover { transform: scale(1.05); }
+
+        input, textarea, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; font-size: 1rem; transition: 0.3s; background: #fafafa; }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
+
+        /* --- 5. EXTRAS & MUSIC --- */
+        .countdown-container { background: linear-gradient(135deg, #d32f2f, #c62828); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(211, 47, 47, 0.3); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
+        .timer-display { font-size: 2rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; margin-top: 5px; }
+
+        .music-fab { position: fixed; bottom: 90px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: #fff; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 3px solid var(--primary); transition: 0.3s; }
+        .music-fab:active { transform: scale(0.95); }
+        .music-icon { font-size: 35px; color: #333; transition: 0.5s; }
+        .music-icon.playing { animation: spin 3s linear infinite; color: var(--primary); }
+        .music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- 6. AI CHATBOT UI --- */
+        .ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; }
+        .ai-fab:hover { transform: scale(1.1); }
+        .ai-chat-window { position: fixed; bottom: 230px; right: 25px; width: 350px; height: 450px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2001; display: none; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
+        .ai-header { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
+        .ai-msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 0.9rem; line-height: 1.4; }
+        .ai-msg.bot { background: white; border: 1px solid #eee; align-self: flex-start; color: #333; }
+        .ai-msg.user { background: #6200ea; color: white; align-self: flex-end; }
+        .ai-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: white; }
+        .ai-input-area input { margin: 0; padding: 8px; font-size: 0.9rem; }
+
+        /* --- 7. GALLERY & RANKING --- */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #fff; border: 1px solid #eee; transition: 0.3s; }
+        .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+        .gallery-img-container { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: #f0f0f0; }
+        .gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .gallery-item:hover .gallery-img { transform: scale(1.1); }
+        .gallery-info { padding: 12px; background: white; }
+        .gallery-title { font-weight: bold; font-size: 0.95rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
+        .gallery-meta { font-size: 0.8rem; color: #666; display: flex; justify-content: space-between; align-items: center; }
+        .post-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; margin-right: 6px; vertical-align: middle; }
+        .grid-actions { display:flex; gap:10px; margin-top:5px; padding-top:5px; border-top:1px solid #f0f0f0; font-size:0.8rem; color:#555; }
+        .grid-act-btn { cursor:pointer; background:none; border:none; color:#555; transition:0.2s; }
+        .grid-act-btn:hover { color:var(--primary); }
         
-        /* ADMIN POWER BUTTONS */
-        .owner-controls { position: absolute; top: 5px; right: 5px; display: flex; gap: 5px; z-index: 5; }
-        .ctrl-btn { width: 30px; height: 30px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        /* ADMIN CONTROLS */
+        .owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; }
+        .ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
         .ctrl-btn.edit { color: #1976d2; }
         .ctrl-btn.del { color: #d32f2f; }
 
-        /* --- LIGHTBOX (FULL SCREEN & REACTIONS) --- */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; }
-        .lb-container { display: flex; flex-direction: column; height: 100%; width: 100%; max-width: 600px; margin: 0 auto; background: white; position: relative; }
+        .featured-section { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 2px solid var(--primary); border-radius: 20px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: center; position: relative; overflow: hidden; }
+        .featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 20px; font-weight: 800; border-bottom-right-radius: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .featured-img { width: 160px; height: 160px; object-fit: cover; border-radius: 15px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .featured-content h3 { font-size: 1.5rem; margin: 0 0 10px 0; color: var(--primary-dark); }
+
+        .ranking-wrapper { display: flex; gap: 25px; flex-wrap: wrap; margin-top: 30px; }
+        .ranking-card { flex: 1; min-width: 320px; background: #fff; border-radius: 12px; border: 1px solid #eee; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .ranking-header { background: var(--primary); color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; }
+        .ranking-header.class-rank { background: var(--info); }
+        .rank-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .rank-table td { padding: 12px 15px; border-bottom: 1px solid #f5f5f5; }
+        .rank-top-1 { background: #fffde7; font-weight: bold; color: #f9a825; }
+        .rank-num { display: inline-flex; width: 26px; height: 26px; background: #eee; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: #555; margin-right: 8px; }
+        .rank-top-1 .rank-num { background: #fbc02d; color: white; }
         
-        /* IMMERSIVE MODE STYLES */
+        .archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 10px; overflow-x: auto; }
+        .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
+        .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        /* --- 8. LIGHTBOX & REACTIONS --- */
+        .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); overflow-y: auto; padding: 0; }
+        .lb-container { margin: 0 auto; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; position: relative; }
+        
+        /* Immersive Mode */
         .lb-container.immersive .lb-details, 
         .lb-container.immersive .lb-close-btn { display: none !important; }
         .lb-container.immersive .lb-image-area { height: 100vh; background: black; }
         .lb-container.immersive .lb-image-area img { object-fit: contain; }
 
-        .lb-image-area { flex: 1; background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
-        .lb-image-area img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s; }
-        .lb-close-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); color: white; width: 35px; height: 35px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.2rem; z-index: 100; }
+        .lb-close-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; z-index: 100; font-weight: bold; }
         
-        .lb-details { background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 15px; max-height: 50vh; display: flex; flex-direction: column; transition: 0.3s; }
-        .lb-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .lb-actions { display: flex; gap: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-        .lb-action-item { background: none; border: none; cursor: pointer; font-size: 0.9rem; color: #555; display: flex; gap: 5px; align-items: center; }
+        .lb-image-area { background: #000; flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; cursor: zoom-in; }
+        .lb-image-area img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease; transform-origin: center center; }
+        .lb-image-area.zoomed img { transform: scale(2.5); cursor: grab; }
+        
+        .lb-details { padding: 15px; display: flex; flex-direction: column; height: 40vh; background: #fff; border-top-left-radius: 20px; border-top-right-radius: 20px; margin-top: -15px; z-index: 10; }
+        .lb-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; flex-shrink: 0; }
+        .lb-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .lb-actions { margin-top: 10px; display: flex; gap: 20px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .lb-action-item { cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; color: #555; background: none; border: none; }
+        .lb-action-item:hover { color: var(--primary); }
         .lb-action-item.liked { color: #e53935; }
-
-        /* REACTIONS REPLACING COMMENTS */
-        .lb-reaction-list { flex: 1; overflow-y: auto; margin-bottom: 10px; }
-        .lb-reaction-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .lb-reaction-bubble { background: #f0f2f5; padding: 6px 12px; border-radius: 15px; font-size: 0.9rem; }
         
-        .lb-reaction-presets { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; }
-        .preset-chip { padding: 8px 15px; background: #e8f5e9; color: var(--primary); border: 1px solid var(--primary); border-radius: 20px; font-size: 0.85rem; white-space: nowrap; cursor: pointer; font-weight: bold; }
-        .preset-chip:active { transform: scale(0.95); background: var(--primary); color: white; }
+        .lb-comments-wrapper { flex: 1; overflow-y: auto; margin-top: 10px; padding-right: 5px; display: none; }
+        .lb-comments-wrapper.show { display: block; }
+        .lb-comment-item { margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
+        .lb-comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .lb-comment-bubble { background: var(--fb-bg); padding: 8px 12px; border-radius: 18px; position: relative; }
+        .lb-comment-user { font-weight: bold; font-size: 0.85rem; color: #050505; display: block; margin-bottom: 2px; }
+        
+        /* Reaction Area */
+        .lb-reaction-presets { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; border-top: 1px solid #eee; margin-top: auto; }
+        .reaction-chip { padding: 8px 15px; background: #e8f5e9; color: var(--primary-dark); border: 1px solid var(--primary); border-radius: 20px; font-size: 0.85rem; white-space: nowrap; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .reaction-chip:active { transform: scale(0.95); background: var(--primary); color: white; }
 
-        /* --- EXTRAS --- */
-        .ai-fab, .music-fab { position: fixed; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2000; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .music-fab { bottom: 85px; right: 15px; background: white; border: 2px solid var(--primary); }
-        .ai-fab { bottom: 145px; right: 15px; background: linear-gradient(135deg, #6200ea, #b388ff); color: white; }
-        .ai-chat-window { position: fixed; bottom: 200px; right: 15px; width: 300px; height: 400px; background: white; border-radius: 15px; display: none; flex-direction: column; z-index: 2001; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-        .ai-body { flex: 1; overflow-y: auto; padding: 10px; background: #f5f5f5; }
-        .ai-msg { padding: 8px 12px; border-radius: 10px; margin-bottom: 5px; font-size: 0.9rem; width: fit-content; max-width: 80%; }
-        .ai-msg.bot { background: white; border: 1px solid #ddd; }
-        .ai-msg.user { background: #6200ea; color: white; align-self: flex-end; }
+        /* --- 9. ADMIN & MOBILE --- */
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
+        .admin-table th { text-align: left; padding: 12px; background: #f1f1f1; color: #555; }
+        .admin-table td { padding: 12px; border-bottom: 1px solid #eee; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; vertical-align: middle; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        @media (min-width: 768px) {
-            .container { padding: 40px; }
-            nav.pc-nav { display: block; }
-            nav.mobile-nav { display: none; }
-            .lb-container { max-width: 900px; height: 85vh; border-radius: 10px; flex-direction: row; margin: 40px auto; overflow: hidden; }
-            .lb-image-area { width: 65%; }
-            .lb-details { width: 35%; max-height: none; margin: 0; border-radius: 0; }
-            .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-        }
-        @media (max-width: 767px) {
+        #home-login-area { margin-top: 20px; text-align: center; }
+        .home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 12px 35px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); font-size: 1.1rem; z-index: 100; position: relative; }
+        .home-login-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+
+        @media (max-width: 768px) {
+            .container { margin: 0; border-radius: 0; padding: 20px 15px 100px 15px; box-shadow: none; width: 100%; }
             nav.pc-nav { display: none; }
             nav.mobile-nav { display: block; }
-            .container { padding: 20px 15px 100px; margin: 0; width: 100%; border-radius: 0; box-shadow: none; }
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .featured-section { flex-direction: column; text-align: center; }
+            .lb-container { width: 100%; height: 100%; max-width: none; border-radius: 0; }
+            .lb-image-area { height: 60vh; background: black; }
+            .lb-details { height: 40vh; }
+            .music-fab { bottom: 80px; right: 15px; width: 50px; height: 50px; }
+            .ai-fab { bottom: 140px; right: 15px; width: 50px; height: 50px; }
+            .ai-chat-window { width: 90%; right: 5%; bottom: 200px; height: 400px; }
+            h1 { font-size: 1.6rem; }
+        }
+        
+        @media (min-width: 769px) {
+            .lb-container { max-width: 900px; height: 85vh; border-radius: 10px; flex-direction: row; margin: 40px auto; overflow: hidden; }
+            .lb-image-area { width: 65%; height: 100%; }
+            .lb-details { width: 35%; height: 100%; margin: 0; border-radius: 0; }
+            .lb-close-btn { top: 10px; left: 10px; right: auto; }
         }
     </style>
 </head>
 <body>
 
-    <!-- OVERLAY BẢO TRÌ -->
-    <div id="maintenance-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:99999; flex-direction:column; justify-content:center; align-items:center;">
-        <h1>⚠️ Bảo Trì</h1>
-        <button class="btn" onclick="checkAdminLogin()">Admin Login</button>
+    <div id="maintenance-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:99999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;">
+        <i class="fas fa-hammer" style="font-size: 5rem; color: #ffb300; margin-bottom: 20px;"></i>
+        <h1>Hệ Thống Đang Bảo Trì</h1>
+        <p>Admin đang nâng cấp tính năng mới. Vui lòng quay lại sau!</p>
+        <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
     </div>
 
-    <!-- AI & MUSIC -->
-    <div class="ai-fab" onclick="toggleAIChat()"><i class="fas fa-robot"></i></div>
+    <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
     <div class="ai-chat-window" id="ai-window">
-        <div style="background:#6200ea; color:white; padding:10px; font-weight:bold; display:flex; justify-content:space-between;">
-            <span>Green Bot (AI 2.0)</span> <span onclick="toggleAIChat()" style="cursor:pointer">✕</span>
+        <div class="ai-header"><span>🤖 Green Bot (Web Aware)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-body" id="ai-messages">
+            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của NVC Green. Tớ biết mọi thứ về trang web này, cứ hỏi nhé!</div>
         </div>
-        <div class="ai-body" id="ai-messages"><div class="ai-msg bot">Chào bạn! Tớ có thể giúp gì về web NVC Green không?</div></div>
-        <form onsubmit="sendMessageToAI(event)" style="padding:10px; display:flex; gap:5px; background:white;">
-            <input id="ai-input" required placeholder="Nhập tin nhắn...">
-            <button class="btn btn-sm">Gửi</button>
+        <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
+            <input id="ai-input" required placeholder="Hỏi gì đó..." style="flex:1">
+            <button class="btn btn-sm btn-ai">Gửi</button>
         </form>
     </div>
 
-    <div class="music-fab" onclick="toggleMusic()"><i class="fas fa-compact-disc" id="music-icon"></i></div>
+    <div class="music-fab" onclick="toggleMusic()" title="Bật/Tắt Nhạc">
+        <i class="fas fa-compact-disc music-icon" id="music-icon-display"></i>
+        <div class="music-note-badge">🎵</div>
+    </div>
     <div id="player" style="display:none;"></div>
 
-    <!-- NAV PC -->
     <nav class="pc-nav">
         <ul>
             <li><a onclick="showPage('home')" id="menu-pc-home">Trang Chủ</a></li>
             <li><a onclick="showPage('greenclass')" id="menu-pc-greenclass">Góc Xanh</a></li>
             <li><a onclick="showPage('contest')" id="menu-pc-contest">Thi Đua</a></li>
             <li><a onclick="showPage('archive')" id="menu-pc-archive">Lưu Trữ</a></li>
+            <li><a onclick="showPage('activities')" id="menu-pc-activities">Hoạt Động</a></li>
+            <li><a onclick="showPage('guide')" id="menu-pc-guide">Tra Cứu</a></li>
             <li><a onclick="showPage('profile')" id="menu-pc-profile">Tài Khoản</a></li>
-            <li><a onclick="showPage('admin')" id="menu-pc-admin" style="display:none; color:#ff8a80">ADMIN</a></li>
+            <li><a onclick="showPage('admin')" id="menu-pc-admin" style="display:none">Admin</a></li>
         </ul>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <div class="container">
-        
-        <!-- HOME SECTION -->
         <div id="home" class="page-section">
-            <div style="text-align: center;">
-                <img src="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" style="width:100%; border-radius:15px; margin-bottom:20px;">
-                <h1>A2K41 - Green School</h1>
-                <!-- Nút đăng nhập trang chủ (Fixed) -->
-                <div id="home-login-area" style="text-align:center; margin-top:20px;">
-                    <button class="btn" style="border-radius:50px; padding:15px 40px; font-size:1.2rem;" onclick="signInWithPopup(auth, provider)">
-                        <i class="fas fa-sign-in-alt"></i> Đăng Nhập Ngay
-                    </button>
+            <div id="locked-home" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-home">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                    <h1 style="border:none; margin-top: 20px;">A2K41 - Green School</h1>
+                    <div id="home-login-area" style="display:none;">
+                        <!-- Fix nút login -->
+                        <button class="home-login-btn" onclick="signInWithPopup(auth, provider)"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
+                    </div>
                 </div>
+                <div id="featured-post" class="featured-section" style="display: none;">
+                    <div class="featured-badge">🌟 TOP 1 ĐƯỢC YÊU THÍCH</div>
+                    <img id="feat-img" src="" class="featured-img">
+                    <div class="featured-content">
+                        <h3 id="feat-title">Khoảnh Khắc Ấn Tượng</h3>
+                        <p id="feat-desc">...</p>
+                        <p id="feat-author" style="margin-top: 10px;">— Tác giả: ...</p>
+                    </div>
+                </div>
+                <div class="card" style="border-left: 5px solid var(--accent);"><h3>💡 Thông điệp hôm nay</h3><p id="daily-tip">Loading...</p></div>
             </div>
         </div>
 
-        <!-- GREEN CLASS (GÓC XANH) -->
         <div id="greenclass" class="page-section">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>🌿 Góc Xanh</h2>
-                <button class="btn" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh</button>
-            </div>
-            <div id="gallery-grid" class="gallery-grid"></div>
-        </div>
-
-        <!-- CONTEST (THI ĐUA) -->
-        <div id="contest" class="page-section">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>🏆 Thi Đua</h2>
-                <button class="btn" onclick="checkLoginAndUpload('contest')"><i class="fas fa-upload"></i> Báo Cáo</button>
-            </div>
-            <div id="contest-grid" class="gallery-grid"></div>
-        </div>
-
-        <!-- ARCHIVE (LƯU TRỮ) -->
-        <div id="archive" class="page-section">
-            <h2>🗄️ Kho Lưu Trữ</h2>
-            <div class="archive-controls">
-                <div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div>
-                <div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div>
-            </div>
-            <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:15px"><option value="ALL">Tất cả đợt</option></select>
-            <div id="archive-grid" class="gallery-grid"></div>
-        </div>
-
-        <!-- PROFILE -->
-        <div id="profile" class="page-section">
-            <h1>👤 Hồ Sơ</h1>
-            <div id="profile-out" style="text-align:center; padding:40px;">
-                <p>Bạn chưa đăng nhập.</p>
-                <!-- Nút đăng nhập profile (Fixed) -->
-                <button class="btn" onclick="signInWithPopup(auth, provider)"><i class="fab fa-google"></i> Đăng nhập Google</button>
-            </div>
-            <div id="profile-in" style="display:none;">
-                <div class="card" style="text-align:center;">
-                    <img id="p-avatar" src="" style="width:100px; height:100px; border-radius:50%; margin-bottom:10px;">
-                    <h3 id="p-name">Tên User</h3>
-                    <p id="p-email">email@gmail.com</p>
-                    <button class="btn btn-danger" onclick="handleLogout()" style="margin-top:20px;">Đăng Xuất</button>
+            <div id="locked-greenclass" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-greenclass">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
+                    <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
+                </div>
+                <div class="countdown-container" id="cd-gallery">
+                    <div class="countdown-header"><i class="fas fa-clock"></i> <span>Thời gian nộp bài còn lại</span></div>
+                    <div id="timer-gallery" class="timer-display">Loading...</div>
+                </div>
+                <div id="gallery-grid" class="gallery-grid"></div>
+                <div class="ranking-wrapper">
+                    <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-gallery-user"></tbody></table></div>
+                    <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-gallery-class"></tbody></table></div>
                 </div>
             </div>
         </div>
 
-        <!-- ADMIN PANEL -->
-        <div id="admin" class="page-section">
-            <h1>🛠 Admin Panel</h1>
-            <div class="card">
-                <h3>Quản lý hệ thống</h3>
-                <label><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"> Bảo trì toàn trang</label>
+        <div id="contest" class="page-section">
+            <div id="locked-contest" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-contest">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="margin:0">🏆 Phong Trào Thi Đua</h2>
+                    <button class="btn btn-upload" onclick="checkLoginAndUpload('contest')"><i class="fas fa-upload"></i> Báo Cáo Hoạt Động</button>
+                </div>
+                <div class="countdown-container" id="cd-contest" style="background: linear-gradient(135deg, #0288d1, #01579b);">
+                    <div class="countdown-header"><i class="fas fa-calendar-alt"></i> <span>Hạn chót báo cáo</span></div>
+                    <div id="timer-contest" class="timer-display">Loading...</div>
+                </div>
+                <div id="contest-grid" class="gallery-grid"></div>
+                <div class="ranking-wrapper">
+                    <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-contest-user"></tbody></table></div>
+                    <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-contest-class"></tbody></table></div>
+                </div>
             </div>
+        </div>
+
+        <div id="archive" class="page-section">
+            <div id="locked-archive" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Kho lưu trữ đang đóng</h2></div>
+            <div id="content-archive">
+                <h1>🗄️ Kho Lưu Trữ</h1>
+                <div class="card">
+                    <div class="archive-controls">
+                        <div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div>
+                        <div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div>
+                    </div>
+                    <div style="margin-bottom:15px; display:flex; gap:10px;">
+                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên, Nội dung..." style="flex:1;" onkeyup="loadArchiveGrid()">
+                    </div>
+                    <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%"><option value="ALL">📂 Tất cả ảnh lưu trữ</option></select>
+                    <div id="archive-grid" class="gallery-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="activities" class="page-section">
+            <div id="locked-activities" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-activities">
+                <h1>📅 Hoạt Động & Tin Tức</h1>
+                <div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div>
+                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#" style="text-decoration:none; color:var(--primary)">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
+            </div>
+        </div>
+        <div id="guide" class="page-section">
+            <div id="locked-guide" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-guide">
+                <h1>🔍 Tra Cứu Phân Loại Rác</h1>
+                <div style="max-width:500px; margin:0 auto 20px;"><input type="text" id="trashSearchInput" placeholder="Nhập tên rác (vỏ sữa, pin...)" onkeyup="filterTrash()"></div>
+                <div id="trashContainer" class="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div>
+            </div>
+        </div>
+
+        <div id="profile" class="page-section">
+            <h1>👤 Hồ Sơ Của Tôi</h1>
+            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p>
+                <!-- Fix nút login profile -->
+                <button class="btn btn-google btn-login" onclick="signInWithPopup(auth, provider)"><i class="fab fa-google"></i> Đăng nhập bằng Google</button>
+            </div>
+            <div id="profile-in" style="display: none;">
+                <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>
+                <div class="card">
+                    <div style="text-align:center; margin-bottom:20px">
+                        <div style="position:relative; display:inline-block">
+                            <img id="p-avatar" src="" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border:4px solid var(--primary);">
+                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fas fa-camera" style="color:white"></i></button>
+                        </div>
+                        <h2 id="p-name" style="margin:10px 0 5px 0">User Name</h2>
+                        <div id="p-custom-id" style="color:var(--primary); font-weight:bold; font-size:0.9rem;">@id</div>
+                        <p id="p-email" style="color:#666">user@email.com</p>
+                    </div>
+                    <form onsubmit="updateProfile(event)">
+                        <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
+                        <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
+                        <label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select>
+                        <label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea>
+                        <div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">
+                            <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
+                            <button type="button" class="btn" style="background:var(--primary-dark); color:white;" onclick="handleLogout()">🚪 ĐĂNG XUẤT</button>
+                        </div>
+                    </form>
+                    <div style="margin-top:20px; text-align:center;"><button class="btn-ghost-danger" onclick="requestDeleteAccount()"><i class="fas fa-trash"></i> Xóa tài khoản vĩnh viễn</button></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="admin" class="page-section">
+            <h1>🛠 Quản Trị Hệ Thống</h1>
+            
+            <div class="card" style="border-left: 5px solid #6200ea;">
+                <h3>🤖 Cấu Hình AI (Gemini Flash)</h3>
+                <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="password" id="cfg-ai-key" placeholder="Key đã tích hợp" style="flex:1" disabled>
+                    <button class="btn btn-sm btn-ai" onclick="testAIConnection()">Kiểm tra kết nối AI</button>
+                </div>
+            </div>
+
+            <div class="card" style="border-left: 5px solid #9c27b0;">
+                <h3>🎵 Quản Lý Nhạc</h3>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                    <input type="text" id="new-song-name" placeholder="Tên bài hát" style="flex:1">
+                    <input type="text" id="new-song-url" placeholder="Dán Link YouTube..." style="flex:1">
+                    <button class="btn btn-sm" onclick="addNewSong()">➕ Thêm</button>
+                </div>
+                <div id="music-playlist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius:8px;"></div>
+            </div>
+
+            <div class="card" style="border-left: 5px solid var(--admin-color);">
+                <h3>⚙️ Cấu hình Hệ thống</h3>
+                <div style="padding:15px; background:#ffebee; margin-bottom:20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:bold; color:red"><i class="fas fa-tools"></i> BẢO TRÌ TOÀN TRANG:</span>
+                    <label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label>
+                </div>
+                <h4>🔒 Khóa từng mục</h4>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:15px; margin-bottom:25px;">
+                    <label>🏠 Home <input type="checkbox" id="lock-home" onchange="updateLocks()"></label>
+                    <label>🌿 Góc Xanh <input type="checkbox" id="lock-greenclass" onchange="updateLocks()"></label>
+                    <label>🏆 Thi Đua <input type="checkbox" id="lock-contest" onchange="updateLocks()"></label>
+                    <label>📅 Hoạt Động <input type="checkbox" id="lock-activities" onchange="updateLocks()"></label>
+                    <label>🗄️ Lưu Trữ <input type="checkbox" id="lock-archive" onchange="updateLocks()"></label>
+                    <label>🔍 Tra Cứu <input type="checkbox" id="lock-guide" onchange="updateLocks()"></label>
+                </div>
+                <h4>⏳ Deadline & Lưu trữ</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div><label>Góc Xanh:</label><input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('gallery')">📦 Lưu trữ</button></div>
+                    <div><label>Thi Đua:</label><input type="datetime-local" id="time-contest" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('contest')">📦 Lưu trữ</button></div>
+                </div>
+            </div>
+
+            <div class="card" style="border-left: 5px solid #0288d1;">
+                <h3>📊 Xuất Dữ Liệu Excel</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('users')">DS Thành viên</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')">Góc Xanh</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('contest')">Thi Đua</button>
+                </div>
+                <table id="export-table" style="display:none"></table>
+            </div>
+
             <div class="card">
                 <h3>Danh sách thành viên</h3>
-                <div style="overflow-x:auto"><table class="admin-table"><tbody id="user-table-body"></tbody></table></div>
-                <button class="btn btn-sm" onclick="loadAdminData()">Làm mới</button>
+                <div style="overflow-x:auto;"><table class="admin-table"><tbody id="user-table-body"></tbody></table></div>
+                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px">Làm mới</button>
             </div>
         </div>
-
     </div>
 
-    <!-- MOBILE NAV -->
     <nav class="mobile-nav">
         <div class="mobile-nav-inner">
             <a onclick="showPage('home')" id="mob-home" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
@@ -240,10 +448,10 @@
         </div>
     </nav>
 
-    <!-- LIGHTBOX VỚI "CẢM XÚC NHANH" -->
+    <!-- LIGHTBOX VỚI "CẢM XÚC NHANH" & IMMERSIVE -->
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container" id="lb-main-container">
-            <button class="lb-close-btn" onclick="closeLightbox()">✕</button>
+            <button class="lb-close-btn" onclick="closeLightbox()" title="Đóng">✕</button>
             
             <!-- Ảnh (Bấm vào để Full Screen) -->
             <div class="lb-image-area" onclick="toggleImmersiveMode()">
@@ -262,7 +470,8 @@
 
                 <div class="lb-actions">
                     <button id="lb-like" class="lb-action-item" onclick="handleLike()"><i class="fas fa-heart"></i> <span id="lb-like-count">0</span></button>
-                    <button class="lb-action-item"><i class="fas fa-download"></i></button>
+                    <button class="lb-action-item" onclick="toggleComments()"><i class="fas fa-comment"></i> Cảm xúc</button>
+                    <button class="lb-action-item" onclick="window.open(document.getElementById('lb-img').src)"><i class="fas fa-download"></i> Tải</button>
                 </div>
 
                 <!-- Khu vực hiển thị cảm xúc đã thả -->
@@ -270,361 +479,427 @@
 
                 <!-- Khu vực CHỌN CẢM XÚC (Không có ô nhập) -->
                 <div class="lb-reaction-presets">
-                    <div class="preset-chip" onclick="postReaction('Tuyệt vời 😍')">Tuyệt vời 😍</div>
-                    <div class="preset-chip" onclick="postReaction('Cố lên nhé 💪')">Cố lên nhé 💪</div>
-                    <div class="preset-chip" onclick="postReaction('Sáng tạo 🌟')">Sáng tạo 🌟</div>
-                    <div class="preset-chip" onclick="postReaction('Đẹp lắm 📸')">Đẹp lắm 📸</div>
-                    <div class="preset-chip" onclick="postReaction('Cần cố gắng 🛠️')">Cần cố gắng 🛠️</div>
-                    <div class="preset-chip" onclick="postReaction('Xanh sạch đẹp 🌱')">Xanh sạch đẹp 🌱</div>
+                    <div class="reaction-chip" onclick="postReaction('Tuyệt vời 😍')">Tuyệt vời 😍</div>
+                    <div class="reaction-chip" onclick="postReaction('Cố lên nhé 💪')">Cố lên nhé 💪</div>
+                    <div class="reaction-chip" onclick="postReaction('Sáng tạo 🌟')">Sáng tạo 🌟</div>
+                    <div class="reaction-chip" onclick="postReaction('Đẹp lắm 📸')">Đẹp lắm 📸</div>
+                    <div class="reaction-chip" onclick="postReaction('Cần cố gắng 🛠️')">Cần cố gắng 🛠️</div>
+                    <div class="reaction-chip" onclick="postReaction('Xanh sạch đẹp 🌱')">Xanh sạch đẹp 🌱</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- LOGIC JS -->
+    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
+    <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="changeAvatar(this)">
+    <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
+        <i class="fas fa-cloud-upload-alt fa-bounce" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
+        <h2 style="color:var(--primary)" id="upload-loading-text">Đang tải ảnh lên...</h2>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 1. CONFIG
+        // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        
-        // ADMIN EMAILS
-        const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
-        const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload";
-        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc";
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
+        const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
-        let currentUser = null, currentCollection = 'gallery', currentImgId = null, activeArchiveTab = 'gallery';
-        const isAdmin = (email) => ADMIN_EMAILS.includes(email);
+        let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
+        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
+        const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- EXPOSE TO WINDOW ---
+        // --- GEMINI AI (V45.1 - Environment Focus) ---
+        const WEB_CONTEXT = `
+        THÔNG TIN VỀ WEBSITE NVC GREEN A2K41:
+        1. Mục đích: Website quản lý hoạt động lớp, phong trào "Green School", và bảo vệ môi trường.
+        2. Admin chính: kiet0905478167@gmail.com.
+        `;
+
+        async function tryGeminiModel(modelName, prompt, imageBase64 = null) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
+            
+            const requestBody = {
+                contents: [{ parts: [{ text: prompt }] }],
+                system_instruction: {
+                    parts: [{ text: `Bạn là trợ lý ảo AI của lớp Green School - A2K41. Trả lời thân thiện, ngắn gọn.` }]
+                },
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+                ]
+            };
+
+            if (imageBase64) {
+                requestBody.contents[0].parts.push({
+                    inline_data: { mime_type: "image/jpeg", data: imageBase64 }
+                });
+            }
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (response.status === 429 || response.status === 503) {
+                throw new Error(`Model ${modelName} Busy/Quota Exceeded`);
+            }
+
+            if (!response.ok) {
+                throw new Error(`Model ${modelName} Error ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                return data.candidates[0].content.parts[0].text;
+            }
+            return "Xin lỗi, tớ chưa hiểu ý cậu.";
+        }
+
+        async function callGeminiAPI(prompt, imageBase64 = null) {
+            const models = ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-pro"];
+            for (const model of models) {
+                try {
+                    return await tryGeminiModel(model, prompt, imageBase64);
+                } catch (e) {
+                    console.warn(`Model ${model} failed. Switching...`);
+                    if (model === models[models.length - 1]) return "Hệ thống AI đang bận. Vui lòng thử lại sau!";
+                }
+            }
+        }
+
+        // --- GLOBAL JS ---
         window.signInWithPopup = signInWithPopup;
         window.auth = auth;
         window.provider = provider;
 
-        // 2. AUTHENTICATION
-        onAuthStateChanged(auth, async(u) => {
-            if (u) {
-                currentUser = { uid: u.uid, email: u.email, displayName: u.displayName, photoURL: u.photoURL };
-                document.getElementById('profile-in').style.display = 'block';
-                document.getElementById('profile-out').style.display = 'none';
-                document.getElementById('home-login-area').style.display = 'none'; // Ẩn nút login ở Home
-                document.getElementById('p-avatar').src = u.photoURL;
-                document.getElementById('p-name').innerText = u.displayName;
-                document.getElementById('p-email').innerText = u.email;
-                if(isAdmin(u.email)) {
-                    document.getElementById('menu-pc-admin').style.display = 'block';
-                    document.getElementById('mob-admin').style.display = 'flex';
+        window.testAIConnection = async () => {
+            const btn = document.querySelector('.btn-ai');
+            const originalText = btn.innerText;
+            btn.innerText = "Đang test...";
+            try {
+                const result = await callGeminiAPI("Chào Green Bot!");
+                alert("✅ AI Hoạt động tốt!\nTrả lời: " + result);
+            } catch(e) {
+                alert("❌ Lỗi: " + e.message);
+            }
+            btn.innerText = originalText;
+        }
+
+        // 1. AI CHATBOT
+        window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
+        window.sendMessageToAI = async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
+            const msgList = document.getElementById('ai-messages');
+            msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
+            
+            const loadingId = "ai-loading-" + Date.now();
+            msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`;
+            msgList.scrollTop = msgList.scrollHeight;
+
+            try {
+                const responseText = await callGeminiAPI(msg);
+                document.getElementById(loadingId).innerText = responseText;
+            } catch(err) {
+                console.error(err);
+                document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`;
+            }
+            msgList.scrollTop = msgList.scrollHeight;
+        }
+
+        // 2. AI VISION HELPER
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // --- YOUTUBE ID & MUSIC ---
+        function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
+        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        let player; 
+        window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
+        function onPlayerStateChange(event) { 
+            const icon = document.getElementById('music-icon-display');
+            if(event.data == YT.PlayerState.PLAYING) { icon.classList.add('playing'); icon.style.color = 'var(--primary)'; } 
+            else { icon.classList.remove('playing'); icon.style.color = '#333'; }
+        }
+        window.toggleMusic = () => { try { if(player && player.getPlayerState() == YT.PlayerState.PLAYING) player.pauseVideo(); else if(player) player.playVideo(); } catch(e){} }
+        window.addNewSong = async () => { const name = document.getElementById('new-song-name').value; let url = document.getElementById('new-song-url').value; if(!name || !url) return alert("Nhập đủ tên và link!"); const id = getYoutubeID(url); await updateDoc(doc(db, "settings", "config"), { playlist: arrayUnion({name, id}) }); alert("Đã thêm bài hát!"); }
+        window.playSong = async (id) => { await updateDoc(doc(db, "settings", "config"), { musicId: id }); alert("Đã phát bài này!"); }
+        window.deleteSong = async (name, id) => { if(confirm("Xóa bài này?")) await updateDoc(doc(db, "settings", "config"), { playlist: arrayRemove({name, id}) }); }
+
+        // --- GLOBAL LISTENER ---
+        onSnapshot(doc(db, "settings", "config"), (docSnap) => {
+            if(docSnap.exists()) {
+                const cfg = docSnap.data();
+                if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
+                const plDiv = document.getElementById('music-playlist-container');
+                if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:#e8f5e9; border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
+                const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
+                applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities); applyLock('guide',cfg.locks?.guide); applyLock('archive',cfg.locks?.archive);
+                handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
+                if(currentUser && isAdmin(currentUser.email)) {
+                    document.getElementById('cfg-maintenance').checked=cfg.maintenance;
+                    document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
+                    document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
+                    if(cfg.geminiKey) { geminiKey = cfg.geminiKey; document.getElementById('cfg-ai-key').value = cfg.geminiKey; }
                 }
-            } else {
-                currentUser = null;
-                document.getElementById('profile-in').style.display = 'none';
-                document.getElementById('profile-out').style.display = 'block';
-                document.getElementById('home-login-area').style.display = 'block';
-                document.getElementById('menu-pc-admin').style.display = 'none';
-                document.getElementById('mob-admin').style.display = 'none';
             }
         });
 
-        window.handleLogout = () => signOut(auth).then(() => location.reload());
+        function applyLock(s,l){const o=document.getElementById(`locked-${s}`), c=document.getElementById(`content-${s}`); if(l&&(!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';}}
+        let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const d=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${d}d ${h}h ${m}p`;}},1000);}
 
-        // 3. ADMIN POWER: RENDER GRID
-        // Hàm này dùng chung cho Góc Xanh, Thi Đua và Lưu Trữ
-        // Đã thêm Logic: Nếu là Admin -> Hiện nút Sửa/Xóa cho MỌI BÀI
-        function renderGrid(col, elId) {
+        // --- AUTH ---
+        window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
+        window.checkAdminLogin=()=>signInWithPopup(auth,provider);
+        onAuthStateChanged(auth, async(u)=>{
+            if(u){
+                const r=doc(db,"users",u.uid), s=await getDoc(r);
+                if(s.exists()){const d=s.data();if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;}currentUser=d;}
+                else{currentUser={uid:u.uid,email:u.email,displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,photoURL:u.photoURL,role:isAdmin(u.email)?'admin':'member',status:'active',class:"",customID:"@"+u.uid.slice(0,5)};await setDoc(r,currentUser);}
+                document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
+                document.getElementById('home-login-area').style.display='none';
+                document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
+                document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id";
+                document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
+                if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
+            }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
+        });
+
+        // --- UPLOAD ---
+        window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
+        window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } currentCollection = c; document.getElementById('file-input').click(); }
+        
+        window.executeUpload = async (i) => { 
+            const f = i.files[0]; if(!f) return; 
+            
+            document.getElementById('upload-overlay').style.display='none'; 
+            const d = prompt("Nhập mô tả cho ảnh:"); 
+            if(d === null) return; 
+            
+            document.getElementById('upload-loading-text').innerText = "Đang tải...";
+            document.getElementById('upload-overlay').style.display='flex'; 
+            
+            try { 
+                const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
+                const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
+                const j = await r.json(); 
+                if(j.secure_url) { 
+                    // Call AI Vision (V45.1)
+                    const useAI = confirm("🤖 Dùng AI viết mô tả ảnh không?");
+                    if(useAI) {
+                        try {
+                            document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh...";
+                            const base64Img = await fileToBase64(f);
+                            const aiDesc = await callGeminiAPI("Mô tả bức ảnh này, chỉ ra hành động bảo vệ môi trường, phân loại rác (nếu có) và chấm điểm ý thức (thang 10):", base64Img);
+                            await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: aiDesc, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
+                            alert("Đăng ảnh thành công với mô tả AI!");
+                            document.getElementById('upload-overlay').style.display='none'; i.value=""; 
+                            return; 
+                        } catch(err) { console.error(err); alert("AI lỗi hoặc quá tải: " + err.message + ". Dùng mô tả gốc."); }
+                    }
+
+                    await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
+                    alert("Đăng ảnh thành công!"); 
+                } 
+            } catch(e) { alert("Lỗi tải ảnh!"); } 
+            document.getElementById('upload-overlay').style.display='none'; i.value=""; 
+        }
+
+        // --- RENDER (ADMIN POWER CHECK V45.1) ---
+        function renderGrid(col, elId, uR, cR) {
             onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
-                const g = document.getElementById(elId);
-                g.innerHTML = "";
-                const docs = [];
-                snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
-                docs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+                const g = document.getElementById(elId); g.innerHTML = ""; let uS={}, cS={}, docs=[];
+                snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+                
+                if(col === 'gallery' && docs.length > 0) {
+                    const topPost = [...docs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
+                    if(topPost) {
+                        const feat = document.getElementById('featured-post'); feat.style.display = 'flex';
+                        document.getElementById('feat-img').src = topPost.url; document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH"; document.getElementById('feat-desc').innerText = topPost.desc; document.getElementById('feat-author').innerText = "— " + topPost.authorName;
+                    }
+                }
 
                 docs.forEach(d => {
-                    let ctrls = "";
-                    // SUPER ADMIN CHECK: Cho phép sửa/xóa nếu là chủ bài HOẶC là Admin
-                    if (currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
-                        ctrls = `
-                        <div class="owner-controls">
-                            <button class="ctrl-btn edit" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button>
-                            <button class="ctrl-btn del" onclick="event.stopPropagation();deletePost('${col}','${d.id}')"><i class="fas fa-trash"></i></button>
-                        </div>`;
+                    const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
+                    
+                    // ADMIN CONTROLS (V45.1)
+                    let ctrls=""; 
+                    if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ 
+                        ctrls=`<div class="owner-controls"><button class="ctrl-btn edit" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn del" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
                     }
-                    g.innerHTML += `
-                    <div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">
-                        ${ctrls}
-                        <div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div>
-                        <div class="gallery-info">
-                            <div class="gallery-title">${d.desc}</div>
-                            <div style="font-size:0.8rem; color:#666; display:flex; justify-content:space-between">
-                                <span>${d.authorName}</span>
-                                <span><i class="fas fa-heart"></i> ${d.likes?d.likes.length:0}</span>
-                            </div>
-                        </div>
-                    </div>`;
+                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
                 });
+                renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
         }
+        function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
+        renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
-        // Render ban đầu
-        renderGrid('gallery', 'gallery-grid');
-        renderGrid('contest', 'contest-grid');
+        // --- LIGHTBOX ZOOM & COMMENTS ---
+        window.openLightbox = async (c, i) => { 
+            currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
+            document.getElementById('lb-main-container').classList.remove('immersive'); // Reset view mode
 
-        // 4. ARCHIVE GRID (Cũng áp dụng quyền Admin)
-        window.loadArchiveGrid = async () => {
-            const label = document.getElementById('archive-season-select').value;
-            const g = document.getElementById('archive-grid');
-            g.innerHTML = "Loading...";
+            const s=await getDoc(doc(db,c,i)); const d=s.data(); 
+            const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)";
+            document.getElementById('lb-img').src=d.url; 
+            document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; 
+            document.getElementById('lb-author-name').innerHTML=d.authorName;
+            document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
+            document.getElementById('lb-desc').innerText=d.desc; 
+            document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
+            const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
+            document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; 
+            document.getElementById('lb-comments-wrapper').classList.remove('show'); 
             
-            let q;
-            if(label === 'ALL') q = query(collection(db, activeArchiveTab), where("archived", "==", true));
-            else q = query(collection(db, activeArchiveTab), where("archived", "==", true), where("archiveLabel", "==", label));
-            
-            const s = await getDocs(q);
-            g.innerHTML = "";
-            s.forEach(d => {
-                const da = d.data();
-                let ctrls = "";
-                // ADMIN CÓ QUYỀN SỬA CẢ TRONG KHO LƯU TRỮ
-                if (currentUser && (currentUser.uid === da.uid || isAdmin(currentUser.email))) {
-                    ctrls = `
-                    <div class="owner-controls">
-                        <button class="ctrl-btn edit" onclick="event.stopPropagation();editPost('${activeArchiveTab}','${d.id}','${da.desc}')"><i class="fas fa-pen"></i></button>
-                        <button class="ctrl-btn del" onclick="event.stopPropagation();deletePost('${activeArchiveTab}','${d.id}')"><i class="fas fa-trash"></i></button>
-                    </div>`;
-                }
-                g.innerHTML += `
-                <div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')">
-                    ${ctrls}
-                    <div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div>
-                    <div class="gallery-info"><div class="gallery-title">${da.desc}</div></div>
-                </div>`;
-            });
+            // Reaction UI (No input text)
+            renderComments(d.comments||[]); 
         }
-
-        // 5. LIGHTBOX & FULL SCREEN LOGIC
-        window.openLightbox = async (c, i) => {
-            currentImgId = i; currentCollection = c;
-            document.getElementById('lightbox').style.display = 'block';
-            document.getElementById('lb-main-container').classList.remove('immersive'); // Reset mode
-            
-            const s = await getDoc(doc(db, c, i));
-            const d = s.data();
-            
-            document.getElementById('lb-img').src = d.url;
-            document.getElementById('lb-author-avatar').src = d.authorAvatar || 'https://placehold.co/50';
-            document.getElementById('lb-author-name').innerText = d.authorName;
-            document.getElementById('lb-desc').innerText = d.desc;
-            document.getElementById('lb-like-count').innerText = d.likes ? d.likes.length : 0;
-            
-            const btn = document.getElementById('lb-like');
-            if(currentUser && d.likes?.includes(currentUser.uid)) {
-                btn.classList.add('liked'); btn.style.color='red';
-            } else {
-                btn.classList.remove('liked'); btn.style.color='#555';
-            }
-
-            renderComments(d.comments || []);
-        }
-
-        window.closeLightbox = () => document.getElementById('lightbox').style.display = 'none';
-
-        // CHẾ ĐỘ IMMERSIVE (FULL SCREEN ẢNH)
+        window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
+        
+        // IMMERSIVE MODE TOGGLE
         window.toggleImmersiveMode = () => {
-            const container = document.getElementById('lb-main-container');
-            container.classList.toggle('immersive');
+            document.getElementById('lb-main-container').classList.toggle('immersive');
         }
 
-        // THẢ TIM (BẮT BUỘC LOGIN)
-        window.handleLike = async () => {
-            if(!currentUser) return alert("Bạn cần đăng nhập để thả tim! ❤️");
-            const ref = doc(db, currentCollection, currentImgId);
-            const s = await getDoc(ref);
-            const likes = s.data().likes || [];
-            if(likes.includes(currentUser.uid)) {
-                await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
-                document.getElementById('lb-like').style.color='#555';
-                document.getElementById('lb-like-count').innerText = likes.length - 1;
-            } else {
-                await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
-                document.getElementById('lb-like').style.color='red';
-                document.getElementById('lb-like-count').innerText = likes.length + 1;
-            }
-        }
-
-        // THẢ CẢM XÚC (REACTION)
-        window.postReaction = async (text) => {
-            if(!currentUser) return alert("Bạn cần đăng nhập để tương tác! 💬");
-            await updateDoc(doc(db, currentCollection, currentImgId), {
-                comments: arrayUnion({
-                    uid: currentUser.uid,
-                    name: currentUser.displayName,
-                    avatar: currentUser.photoURL,
-                    text: text,
-                    time: Date.now()
-                })
-            });
-            const s = await getDoc(doc(db, currentCollection, currentImgId));
-            renderComments(s.data().comments);
-        }
-
-        function renderComments(arr) {
-            const list = document.getElementById('lb-cmt-list');
-            list.innerHTML = "";
-            if(!arr || arr.length === 0) {
-                list.innerHTML = "<div style='text-align:center; color:#999; font-size:0.8rem;'>Chưa có cảm xúc nào.</div>";
-                return;
-            }
-            arr.forEach(c => {
-                list.innerHTML += `
-                <div class="lb-reaction-item">
-                    <img src="${c.avatar}" style="width:25px; height:25px; border-radius:50%;">
-                    <div class="lb-reaction-bubble">
-                        <strong>${c.name}</strong>: <span style="color:var(--primary); font-weight:bold;">${c.text}</span>
-                    </div>
-                </div>`;
-            });
-        }
-
-        // 6. ADMIN ACTIONS
-        window.deletePost = async (c, i) => {
-            if(confirm("Admin: Bạn chắc chắn muốn xóa bài này vĩnh viễn?")) {
-                await deleteDoc(doc(db, c, i));
-                alert("Đã xóa!");
-                if(document.getElementById('lightbox').style.display === 'block') closeLightbox();
-                if(c === activeArchiveTab) loadArchiveGrid(); // Reload archive if needed
-            }
-        }
-
-        window.editPost = async (c, i, oldDesc) => {
-            const newDesc = prompt("Admin Edit: Nhập mô tả mới:", oldDesc);
-            if(newDesc) {
-                await updateDoc(doc(db, c, i), { desc: newDesc });
-                alert("Đã cập nhật!");
-                if(document.getElementById('lightbox').style.display === 'block') {
-                    document.getElementById('lb-desc').innerText = newDesc;
-                }
-                if(c === activeArchiveTab) loadArchiveGrid();
-            }
-        }
-
-        // 7. NAVIGATION & UTILS
-        window.showPage = (id) => {
-            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            sessionStorage.setItem('page', id);
-            
-            // Menu highlight logic
-            document.querySelectorAll('nav.pc-nav a, .nav-item').forEach(a => a.classList.remove('active-menu'));
-            if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu');
-            if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu');
-
-            if(id === 'archive') { loadArchiveSeasons(); window.loadArchiveGrid(); }
+        window.toggleZoom = (e) => { const area = document.getElementById('lb-zoom-area'); const img = document.getElementById('lb-img'); if (area.classList.contains('zoomed')) { area.classList.remove('zoomed'); img.style.transform = "scale(1)"; } else { area.classList.add('zoomed'); const rect = area.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; img.style.transformOrigin = `${x}px ${y}px`; img.style.transform = "scale(2.5)"; } }
+        window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); wrap.classList.toggle('show'); }
+        
+        window.handleLike = async () => { 
+            if(!currentUser)return alert("Vui lòng đăng nhập để thả tim!"); 
+            const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } 
         }
         
-        // Load page from session
-        showPage(sessionStorage.getItem('page') || 'home');
-
-        window.switchArchiveTab = (t) => {
-            activeArchiveTab = t;
-            document.querySelectorAll('.archive-tab').forEach(e => e.classList.remove('active'));
-            document.getElementById('tab-ar-'+t).classList.add('active');
-            loadArchiveSeasons();
-            loadArchiveGrid();
+        // POST REACTION (REPLACES TEXT COMMENT)
+        window.postReaction = async (text) => { 
+            if(!currentUser) return alert("Vui lòng đăng nhập để tương tác!"); 
+            await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:text})}); 
+            const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); 
+        }
+        
+        function renderComments(arr) { 
+            const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
+            if(!arr || arr.length === 0) { l.innerHTML = "<div style='text-align:center; color:#999; margin-top:20px'>Chưa có cảm xúc nào.</div>"; return; }
+            arr.forEach(c=>{ 
+                l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text" style="color:var(--primary); font-weight:bold">${c.text}</span></div></div></div>`; 
+            }); 
         }
 
-        window.loadArchiveSeasons = async () => {
-            const s = document.getElementById('archive-season-select');
-            s.innerHTML = '<option value="ALL">📂 Tất cả ảnh lưu trữ</option>';
-            const q = query(collection(db, "archives_meta"), where("collection", "==", activeArchiveTab), orderBy("archivedAt", "desc"));
-            const sn = await getDocs(q);
-            sn.forEach(d => s.innerHTML += `<option value="${d.data().label}">${d.data().label}</option>`);
-        }
-
-        // UPLOAD & AI VISION
-        window.checkLoginAndUpload = (c) => {
-            if(!currentUser) return alert("Vui lòng đăng nhập!");
-            currentCollection = c;
-            document.getElementById('file-input').click();
-        }
-
-        window.executeUpload = async (input) => {
-            const file = input.files[0];
-            if(!file) return;
-            
-            // AI PROMPT UPGRADED
-            const useAI = confirm("🤖 Dùng AI phân tích ảnh môi trường không?");
-            let desc = "";
-            
-            if(useAI) {
-                document.getElementById('upload-loading-text').innerText = "AI đang soi ảnh...";
-                document.getElementById('upload-overlay').style.display = 'flex';
-                try {
-                    const b64 = await new Promise((r) => {
-                        const reader = new FileReader();
-                        reader.onload = () => r(reader.result.split(',')[1]);
-                        reader.readAsDataURL(file);
-                    });
-                    
-                    // Gọi AI với Prompt chuyên sâu
-                    desc = await callGeminiAPI("Hãy đóng vai giám khảo cuộc thi Green School. Mô tả bức ảnh này, chỉ ra hành động bảo vệ môi trường, chấm điểm ý thức (trên thang 10) và đưa ra lời khen ngợi ngắn gọn:", b64);
-                } catch(e) {
-                    alert("AI quá tải, vui lòng tự nhập mô tả.");
-                    desc = prompt("Nhập mô tả ảnh:");
-                }
-            } else {
-                desc = prompt("Nhập mô tả ảnh:");
-            }
-
-            if(!desc) { document.getElementById('upload-overlay').style.display='none'; return; }
-
-            // Upload Cloudinary
-            document.getElementById('upload-loading-text').innerText = "Đang tải ảnh lên...";
-            document.getElementById('upload-overlay').style.display = 'flex';
-            
-            const fd = new FormData();
-            fd.append('file', file);
-            fd.append('upload_preset', UPLOAD_PRESET);
-            
-            try {
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method:'POST', body:fd });
-                const data = await res.json();
+        window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; const table = document.getElementById('export-table'); table.innerHTML = ""; let html = ""; if(type === 'users') { html += `<thead><tr><th>Tên</th><th>ID</th><th>Email</th><th>Lớp</th><th>Trạng thái</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u=d.data(); html += `<tr><td>${u.displayName}</td><td>${u.customID||''}</td><td>${u.email}</td><td>${u.class||''}</td><td>${u.banned?'Bị khóa':u.status}</td></tr>`; }); } else { html += `<thead><tr><th>Người đăng</th><th>ID</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p=d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleString('vi-VN') : ''; html += `<tr><td>${p.authorName}</td><td>${p.authorID||''}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; }); } html += "</tbody>"; table.innerHTML = html; const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`; const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}.xls`; a.click(); }
+        window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
+        window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
+        window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
+        window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
+        window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
+        window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
+        
+        // ADMIN POWER IN ARCHIVE GRID
+        window.loadArchiveGrid = async () => { 
+            const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
+            const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; 
+            let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l));
+            const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; }
+            s.forEach(d=>{ 
+                const da=d.data(); 
+                if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; 
                 
-                await addDoc(collection(db, currentCollection), {
-                    url: data.secure_url,
-                    desc: desc,
-                    uid: currentUser.uid,
-                    authorName: currentUser.displayName,
-                    authorAvatar: currentUser.photoURL,
-                    createdAt: serverTimestamp(),
-                    likes: [],
-                    comments: []
-                });
-                alert("Đăng thành công!");
-            } catch(e) {
-                alert("Lỗi: " + e.message);
-            }
-            document.getElementById('upload-overlay').style.display = 'none';
-            input.value = "";
+                // ADMIN CONTROLS (ARCHIVE)
+                let ctrls=""; 
+                if(currentUser&&(isAdmin(currentUser.email))){ 
+                    ctrls=`<div class="owner-controls"><button class="ctrl-btn edit" onclick="event.stopPropagation();editPost('${activeArchiveTab}','${d.id}','${da.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn del" onclick="event.stopPropagation();deletePost('${activeArchiveTab}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
+                }
+                g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; 
+            }); 
         }
+        window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
+        window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
+        
+        window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); b.innerHTML=""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; b.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`}); }
+        window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
+        window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
+        window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
+        window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
+        window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
+        async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
+        window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
+        window.showPage = (id) => { 
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); 
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active'); 
+            else document.getElementById('home').classList.add('active'); // Fallback
 
-        // GEMINI API FUNCTION (REUSED V43)
-        async function callGeminiAPI(prompt, imageBase64) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
-            const body = {
-                contents: [{ parts: [{ text: prompt }] }]
-            };
-            if(imageBase64) body.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 }});
+            document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
+            if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); 
+            if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); 
             
-            const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-            const data = await res.json();
-            return data.candidates[0].content.parts[0].text;
+            sessionStorage.setItem('page', id); // Changed from localStorage
+            if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } 
         }
 
+        const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
+        window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
+        document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
+        
+        const savedPage = sessionStorage.getItem('page') || 'home';
+        showPage(savedPage);
+
+        // --- PWA INSTALLATION LOGIC (V42.0) ---
+        let deferredPrompt;
+        
+        // Tạo nút Cài đặt cho PC
+        const pcMenu = document.querySelector('nav.pc-nav ul');
+        const installLi = document.createElement('li');
+        installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>';
+        pcMenu.appendChild(installLi);
+
+        // Tạo nút Cài đặt cho Mobile
+        const mobNav = document.querySelector('.mobile-nav-inner');
+        const installMob = document.createElement('a');
+        installMob.className = 'nav-item';
+        installMob.id = 'btn-install-mob';
+        installMob.style.display = 'none';
+        installMob.innerHTML = '<i class="fas fa-download"></i><span>TảiApp</span>';
+        mobNav.insertBefore(installMob, mobNav.firstChild);
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('btn-install-pc').style.display = 'inline-block';
+            document.getElementById('btn-install-mob').style.display = 'flex';
+        });
+
+        async function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            document.getElementById('btn-install-pc').style.display = 'none';
+            document.getElementById('btn-install-mob').style.display = 'none';
+        }
+
+        document.getElementById('btn-install-pc').addEventListener('click', installPWA);
+        document.getElementById('btn-install-mob').addEventListener('click', installPWA);
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW Registered!', reg))
+                .catch(err => console.log('SW Error:', err));
+            });
+        }
     </script>
-</body>
+<!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "18a4fa3e191846769c91bd8e455fa668"}'></script><!-- Cloudflare Pages Analytics --></body>
 </html>
