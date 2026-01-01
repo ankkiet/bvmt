@@ -204,13 +204,26 @@
         .lb-stat-item { color: #555; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .lb-stat-item.active { color: #e53935; }
 
-        /* Comments List */
+        /* Comments List FIXED */
         .lb-comments-list { 
             flex: 1; overflow-y: auto; margin-bottom: 15px; 
             background: #f9f9f9; padding: 10px; border-radius: 10px; 
         }
-        .lb-comment-item { margin-bottom: 8px; font-size: 0.9rem; }
-        .lb-comment-bubble { background: #fff; padding: 6px 10px; border-radius: 12px; display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .lb-comment-item { margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; }
+        
+        /* FIX: Avatar in comments not stretching */
+        .lb-comment-avatar { 
+            width: 32px; height: 32px; border-radius: 50%; 
+            object-fit: cover; flex-shrink: 0; /* Prevent resizing */
+            border: 1px solid #eee;
+        }
+        
+        .lb-comment-content { flex: 1; }
+        .lb-comment-bubble { 
+            background: #fff; padding: 8px 12px; border-radius: 15px; 
+            display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            font-size: 0.9rem;
+        }
 
         /* Quick Replies Grid */
         .quick-replies-container { 
@@ -967,7 +980,15 @@
         window.quickReply = (text) => {
             if (!currentUser) return alert("Vui lòng đăng nhập!");
             
-            // Add comment directly
+            // UI Optimistic Update (Hiện ngay lập tức)
+            const list = document.getElementById('lb-comments-list');
+            const fakeDiv = document.createElement('div');
+            fakeDiv.className = 'lb-comment-item';
+            fakeDiv.innerHTML = `<img src="${currentUser.photoURL}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${currentUser.displayName}</span><span class="lb-comment-text">${text}</span></div></div>`;
+            list.appendChild(fakeDiv);
+            list.scrollTop = list.scrollHeight;
+
+            // Send to DB
             const c = { 
                 uid: currentUser.uid, 
                 name: currentUser.displayName, 
@@ -978,17 +999,38 @@
             
             updateDoc(doc(db, currentCollection, currentImgId), {
                 comments: arrayUnion(c)
-            }).then(() => {
-                // Refresh comments
-                getDoc(doc(db, currentCollection, currentImgId)).then(s => {
-                    renderComments(s.data().comments);
-                });
             });
         }
 
-        window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
+        window.handleLike = async () => { 
+            if(!currentUser)return alert("Đăng nhập!"); 
+            const likeBtn = document.getElementById('lb-like-btn');
+            const countSpan = document.getElementById('lb-like-count');
+            const currentCount = parseInt(countSpan.innerText);
+            
+            // Optimistic UI (Đổi màu ngay)
+            const isLiked = likeBtn.classList.contains('liked');
+            
+            if(isLiked) {
+                likeBtn.classList.remove('liked');
+                likeBtn.style.color = '#555';
+                countSpan.innerText = currentCount - 1;
+                await updateDoc(doc(db,currentImgCollection,currentImgId),{likes:arrayRemove(currentUser.uid)});
+            } else {
+                likeBtn.classList.add('liked');
+                likeBtn.style.color = '#e53935';
+                countSpan.innerText = currentCount + 1;
+                await updateDoc(doc(db,currentImgCollection,currentImgId),{likes:arrayUnion(currentUser.uid)});
+            }
+        }
         
-        function renderComments(arr) { const l=document.getElementById('lb-comments-list'); l.innerHTML=""; arr.forEach(c=>{ let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>'); l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div></div>`; }); }
+        function renderComments(arr) { 
+            const l=document.getElementById('lb-comments-list'); l.innerHTML=""; 
+            arr.forEach(c=>{ 
+                l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div></div></div>`; 
+            }); 
+            l.scrollTop = l.scrollHeight;
+        }
 
         // --- NEW EXCEL EXPORT (EXCELJS) ---
         window.exportExcel = async (type) => {
