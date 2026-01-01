@@ -497,7 +497,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
@@ -679,8 +679,34 @@
         onAuthStateChanged(auth, async(u)=>{
             if(u){
                 const r=doc(db,"users",u.uid), s=await getDoc(r);
-                if(s.exists()){const d=s.data();if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;}currentUser=d;}
-                else{currentUser={uid:u.uid,email:u.email,displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,photoURL:u.photoURL,role:isAdmin(u.email)?'admin':'member',status:'active',class:"",customID:"@"+u.uid.slice(0,5)};await setDoc(r,currentUser);}
+                if(s.exists()){
+                    // User already exists - update login count and last active
+                    const d=s.data();
+                    if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;}
+                    currentUser=d;
+                    // Update stats for returning user
+                    await updateDoc(r, {
+                        lastActive: serverTimestamp(),
+                        loginCount: increment(1)
+                    });
+                } else {
+                    // New user - create profile with tracking fields
+                    currentUser={
+                        uid:u.uid,
+                        email:u.email,
+                        displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,
+                        photoURL:u.photoURL,
+                        role:isAdmin(u.email)?'admin':'member',
+                        status:'active',
+                        class:"",
+                        customID:"@"+u.uid.slice(0,5),
+                        createdAt: serverTimestamp(),
+                        lastActive: serverTimestamp(),
+                        loginCount: 1
+                    };
+                    await setDoc(r,currentUser);
+                }
+                
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
                 document.getElementById('home-login-area').style.display='none';
                 document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
@@ -828,7 +854,68 @@
             }); 
         }
 
-        window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; const table = document.getElementById('export-table'); table.innerHTML = ""; let html = ""; if(type === 'users') { html += `<thead><tr><th>Tên</th><th>ID</th><th>Email</th><th>Lớp</th><th>Trạng thái</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u=d.data(); html += `<tr><td>${u.displayName}</td><td>${u.customID||''}</td><td>${u.email}</td><td>${u.class||''}</td><td>${u.banned?'Bị khóa':u.status}</td></tr>`; }); } else { html += `<thead><tr><th>Người đăng</th><th>ID</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p=d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds*1000).toLocaleString('vi-VN') : ''; html += `<tr><td>${p.authorName}</td><td>${p.authorID||''}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; }); } html += "</tbody>"; table.innerHTML = html; const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`; const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}.xls`; a.click(); }
+        window.exportExcel = async (type) => { 
+            if(!currentUser || !isAdmin(currentUser.email)) return; 
+            const table = document.getElementById('export-table'); 
+            table.innerHTML = ""; 
+            let html = ""; 
+            
+            if(type === 'users') { 
+                // Header khớp với file CSV bạn gửi
+                html += `<thead><tr>
+                    <th>Tên người dùng</th>
+                    <th>Email</th>
+                    <th>Tên đăng nhập (ID)</th>
+                    <th>Ngày đăng ký</th>
+                    <th>Hoạt động chung (Lớp)</th>
+                    <th>Phiên hoạt động cuối</th>
+                    <th>Số lần đăng nhập</th>
+                    <th>Lịch sử hoạt động cụ thể</th>
+                </tr></thead><tbody>`; 
+                
+                const snap = await getDocs(collection(db, "users")); 
+                snap.forEach(d => { 
+                    const u = d.data(); 
+                    
+                    // Format dates
+                    const regDate = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Không rõ';
+                    const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : 'Chưa hoạt động';
+                    const loginCount = u.loginCount || 1;
+                    const activity = u.class ? `Thành viên lớp ${u.class}` : 'Chưa cập nhật lớp';
+
+                    html += `<tr>
+                        <td>${u.displayName}</td>
+                        <td>${u.email}</td>
+                        <td>${u.customID || ''}</td>
+                        <td>${regDate}</td>
+                        <td>${activity}</td>
+                        <td>${lastActive}</td>
+                        <td>${loginCount}</td>
+                        <td>Đang hoạt động</td>
+                    </tr>`; 
+                }); 
+            } else { 
+                // Export Gallery/Contest (Giữ nguyên logic cũ cho các phần này)
+                html += `<thead><tr><th>Người đăng</th><th>ID</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; 
+                const snap = await getDocs(collection(db, type)); 
+                snap.forEach(d => { 
+                    const p = d.data(); 
+                    const date = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''; 
+                    html += `<tr><td>${p.authorName}</td><td>${p.authorID||''}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; 
+                }); 
+            } 
+            
+            html += "</tbody>"; 
+            table.innerHTML = html; 
+            const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`; 
+            const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); 
+            const url = window.URL.createObjectURL(blob); 
+            const a = document.createElement('a'); 
+            a.href = url; 
+            a.download = `Data_${type}.xls`; 
+            a.click(); 
+        }
+
         window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
