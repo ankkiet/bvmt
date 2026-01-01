@@ -581,7 +581,28 @@
         });
 
         // --- GEMINI AI (MULTI-KEY FAILOVER) ---
-        const WEB_CONTEXT = `...`;
+        const WEB_CONTEXT = `
+        VAI TRÒ: Bạn là Green Bot 🤖, trợ lý AI của Green School A2K41.
+        NHIỆM VỤ:
+        1. Hỗ trợ điều hướng website (Góc Xanh, Thi Đua...).
+        2. Cung cấp kiến thức môi trường chuẩn xác, toàn cầu.
+
+        THÔNG TIN WEBSITE:
+        - Trang chủ: Xem thông báo, đăng nhập.
+        - Góc Xanh: Nơi học sinh đăng ảnh bảo vệ môi trường.
+        - Thi Đua: Báo cáo các hoạt động phong trào.
+        - Admin: Quản lý nhạc, khóa web, xuất Excel.
+
+        KIẾN THỨC MÔI TRƯỜNG:
+        - 🌍 Biến đổi khí hậu: Trái đất nóng lên, băng tan...
+        - ♻️ Rác thải: Phân loại rác (Hữu cơ, Vô cơ, Tái chế)...
+        - 🌱 Sống xanh: Tiết kiệm điện, nước, trồng cây...
+
+        QUY TẮC TRẢ LỜI:
+        - Luôn dùng Emoji/Icon đầu câu (🌿, 🍃, 💡, ♻️...) để làm đẹp.
+        - Trả lời ngắn gọn, thân thiện, mang tính giáo dục.
+        - Hạn chế dùng Markdown đậm/nghiêng (***), thay vào đó hãy dùng Icon để làm nổi bật ý.
+        `;
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
             // Thử từng key trong danh sách
@@ -591,7 +612,10 @@
                 
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-                    const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
+                    const requestBody = { 
+                        contents: [{ parts: [{ text: prompt }] }],
+                        system_instruction: { parts: [{ text: WEB_CONTEXT }] }
+                    };
                     if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
 
                     const response = await fetch(url, {
