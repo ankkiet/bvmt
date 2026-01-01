@@ -29,20 +29,19 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* Cấu hình để hiệu ứng kéo mượt mà hơn */
         body { 
             font-family: 'Nunito', sans-serif; margin: 0; padding: 0; 
             background-color: var(--bg); color: var(--text); padding-bottom: 90px;
-            overscroll-behavior-y: contain; /* Ngăn chặn hiệu ứng kéo mặc định của trình duyệt Chrome/Safari */
+            overscroll-behavior-y: contain; 
         }
 
-        /* --- PULL TO REFRESH UI (Giao diện kéo xuống) --- */
+        /* --- PULL TO REFRESH UI --- */
         #ptr-loader {
             position: fixed; top: -70px; left: 0; width: 100%; height: 70px;
             display: flex; justify-content: center; align-items: flex-end;
             padding-bottom: 15px;
             z-index: 9998; transition: top 0.2s ease-out;
-            pointer-events: none; /* Để không chặn thao tác click */
+            pointer-events: none;
         }
         .ptr-icon {
             font-size: 20px; color: var(--primary);
@@ -212,7 +211,7 @@
 </head>
 <body>
 
-    <!-- Pull to Refresh UI (Ẩn mặc định) -->
+    <!-- Pull to Refresh UI -->
     <div id="ptr-loader">
         <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
     </div>
@@ -398,6 +397,15 @@
                 </div>
             </div>
 
+            <div class="card" style="border-left: 5px solid #2e7d32;">
+                <h3>📊 Đồng Bộ Google Sheet</h3>
+                <p>Dán Link Script (Web App URL) để tự động lưu thông tin thành viên khi họ đăng nhập.</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="cfg-sheet-url" placeholder="https://script.google.com/..." style="flex:1">
+                    <button class="btn btn-sm" onclick="updateSheetConfig()">Lưu Link</button>
+                </div>
+            </div>
+
             <div class="card" style="border-left: 5px solid #9c27b0;">
                 <h3>🎵 Quản Lý Nhạc</h3>
                 <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
@@ -506,6 +514,7 @@
 
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; 
+        let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; // Link Script bạn cung cấp
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
         // --- PULL TO REFRESH LOGIC ---
@@ -651,8 +660,8 @@
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if(docSnap.exists()) {
                 const cfg = docSnap.data();
-                // FIX 1: Update Gemini Key Dynamically for ALL users
                 if(cfg.geminiKey) { geminiKey = cfg.geminiKey; }
+                if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
                 
                 if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
                 const plDiv = document.getElementById('music-playlist-container');
@@ -666,6 +675,7 @@
                     document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
                     document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
                     if(cfg.geminiKey) { document.getElementById('cfg-ai-key').placeholder = "Key đã được lưu (Ẩn)"; }
+                    if(cfg.googleSheetUrl) { document.getElementById('cfg-sheet-url').value = cfg.googleSheetUrl; }
                 }
             }
         });
@@ -676,22 +686,55 @@
         // --- AUTH ---
         window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
         window.checkAdminLogin=()=>signInWithPopup(auth,provider);
+        
+        // SYNC TO GOOGLE SHEET
+        async function syncToGoogleSheet(user) {
+            if (!googleSheetUrl) return; // Nếu chưa cấu hình URL thì bỏ qua
+            
+            try {
+                // Chuẩn bị dữ liệu gửi đi (khớp với cột trong Sheet)
+                const payload = {
+                    displayName: user.displayName || "Chưa đặt tên",
+                    email: user.email,
+                    customID: user.customID || "",
+                    createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'),
+                    classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp",
+                    lastActive: new Date().toLocaleString('vi-VN'),
+                    loginCount: user.loginCount || 1,
+                    uid: user.uid
+                };
+
+                // Gửi request tới Google Script (no-cors để tránh lỗi browser chặn)
+                await fetch(googleSheetUrl, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                console.log("Đã gửi dữ liệu sync lên Google Sheet");
+            } catch (e) {
+                console.error("Lỗi sync Google Sheet:", e);
+            }
+        }
+
         onAuthStateChanged(auth, async(u)=>{
             if(u){
                 const r=doc(db,"users",u.uid), s=await getDoc(r);
+                let userData;
+                
                 if(s.exists()){
-                    // User already exists - update login count and last active
                     const d=s.data();
                     if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;}
-                    currentUser=d;
-                    // Update stats for returning user
+                    userData = {
+                        ...d,
+                        loginCount: (d.loginCount || 0) + 1
+                    };
                     await updateDoc(r, {
                         lastActive: serverTimestamp(),
                         loginCount: increment(1)
                     });
                 } else {
-                    // New user - create profile with tracking fields
-                    currentUser={
+                    userData = {
                         uid:u.uid,
                         email:u.email,
                         displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,
@@ -704,9 +747,13 @@
                         lastActive: serverTimestamp(),
                         loginCount: 1
                     };
-                    await setDoc(r,currentUser);
+                    await setDoc(r,userData);
                 }
+                currentUser=userData;
                 
+                // Gọi hàm Sync sau khi có dữ liệu user
+                syncToGoogleSheet(currentUser);
+
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
                 document.getElementById('home-login-area').style.display='none';
                 document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
@@ -856,22 +903,13 @@
 
         window.exportExcel = async (type) => { 
             if(!currentUser || !isAdmin(currentUser.email)) return; 
-            const table = document.getElementById('export-table'); 
-            table.innerHTML = ""; 
-            let html = ""; 
+            
+            // FIX: Use CSV with BOM for Excel compatibility (No "unsafe" warning)
+            let csvContent = "\uFEFF"; // BOM for UTF-8
             
             if(type === 'users') { 
-                // Header khớp với file CSV bạn gửi
-                html += `<thead><tr>
-                    <th>Tên người dùng</th>
-                    <th>Email</th>
-                    <th>Tên đăng nhập (ID)</th>
-                    <th>Ngày đăng ký</th>
-                    <th>Hoạt động chung (Lớp)</th>
-                    <th>Phiên hoạt động cuối</th>
-                    <th>Số lần đăng nhập</th>
-                    <th>Lịch sử hoạt động cụ thể</th>
-                </tr></thead><tbody>`; 
+                // Header row
+                csvContent += "Tên người dùng,Email,Tên đăng nhập (ID),Ngày đăng ký,Hoạt động chung (Lớp),Phiên hoạt động cuối,Số lần đăng nhập,Lịch sử hoạt động cụ thể\n";
                 
                 const snap = await getDocs(collection(db, "users")); 
                 snap.forEach(d => { 
@@ -882,38 +920,53 @@
                     const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : 'Chưa hoạt động';
                     const loginCount = u.loginCount || 1;
                     const activity = u.class ? `Thành viên lớp ${u.class}` : 'Chưa cập nhật lớp';
-
-                    html += `<tr>
-                        <td>${u.displayName}</td>
-                        <td>${u.email}</td>
-                        <td>${u.customID || ''}</td>
-                        <td>${regDate}</td>
-                        <td>${activity}</td>
-                        <td>${lastActive}</td>
-                        <td>${loginCount}</td>
-                        <td>Đang hoạt động</td>
-                    </tr>`; 
+                    
+                    // Escape commas in fields by wrapping in quotes
+                    const row = [
+                        `"${u.displayName || ''}"`,
+                        `"${u.email || ''}"`,
+                        `"${u.customID || ''}"`,
+                        `"${regDate}"`,
+                        `"${activity}"`,
+                        `"${lastActive}"`,
+                        `${loginCount}`,
+                        `"Đang hoạt động"`
+                    ].join(",");
+                    csvContent += row + "\n";
                 }); 
             } else { 
-                // Export Gallery/Contest (Giữ nguyên logic cũ cho các phần này)
-                html += `<thead><tr><th>Người đăng</th><th>ID</th><th>Lớp</th><th>Mô tả</th><th>Tim</th><th>Link</th><th>Ngày</th></tr></thead><tbody>`; 
+                // Gallery/Contest Export
+                csvContent += "Người đăng,ID,Lớp,Mô tả,Tim,Link ảnh,Ngày đăng\n";
                 const snap = await getDocs(collection(db, type)); 
                 snap.forEach(d => { 
                     const p = d.data(); 
                     const date = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''; 
-                    html += `<tr><td>${p.authorName}</td><td>${p.authorID||''}</td><td>${p.className}</td><td>${p.desc}</td><td>${p.likes?p.likes.length:0}</td><td>${p.url}</td><td>${date}</td></tr>`; 
+                    const row = [
+                        `"${p.authorName || ''}"`,
+                        `"${p.authorID || ''}"`,
+                        `"${p.className || ''}"`,
+                        `"${(p.desc || '').replace(/"/g, '""')}"`, // Escape quotes
+                        `${p.likes?p.likes.length:0}`,
+                        `"${p.url}"`,
+                        `"${date}"`
+                    ].join(",");
+                    csvContent += row + "\n";
                 }); 
             } 
             
-            html += "</tbody>"; 
-            table.innerHTML = html; 
-            const excelFile = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='UTF-8'></head><body>${table.outerHTML}</body></html>`; 
-            const blob = new Blob([excelFile], { type: 'application/vnd.ms-excel' }); 
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
             const url = window.URL.createObjectURL(blob); 
             const a = document.createElement('a'); 
             a.href = url; 
-            a.download = `Data_${type}.xls`; 
+            a.download = `Data_${type}_${new Date().toISOString().slice(0,10)}.csv`; 
             a.click(); 
+        }
+
+        window.updateSheetConfig = async () => { 
+            const url = document.getElementById('cfg-sheet-url').value;
+            await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); 
+            alert("Đã lưu Link Google Sheet!"); 
         }
 
         window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
