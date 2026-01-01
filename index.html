@@ -691,10 +691,6 @@
         }
 
         onAuthStateChanged(auth, async(u)=>{
-            // RELOAD DATA LISTENERS WITH CORRECT AUTH STATE
-            renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
-            renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
-
             if(u){
                 const r=doc(db,"users",u.uid), s=await getDoc(r);
                 let userData;
@@ -710,6 +706,10 @@
                 currentUser=userData;
                 syncToGoogleSheet(currentUser);
 
+                // --- FIX: LOAD DATA ONLY AFTER AUTH IS CONFIRMED ---
+                renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
+                renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
                 document.getElementById('home-login-area').style.display='none';
                 document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
@@ -718,6 +718,10 @@
                 if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
             }else{ 
                 currentUser=null; 
+                // Load public data even if not logged in (but without admin controls)
+                renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
+                renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+
                 document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
             }
         });
@@ -727,8 +731,6 @@
         window.executeUpload = async (i) => { const f = i.files[0]; if(!f) return; const isTrash = (window.uploadMode === 'trash'); let aiPrompt = isTrash ? "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn." : "Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:"; let description = ""; if(!isTrash) { const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI viết):"); if(d === null) return; description = d; } document.getElementById('upload-loading-text').innerText = isTrash ? "AI đang soi rác..." : "Đang tải..."; document.getElementById('upload-overlay').style.display='flex'; try { const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); if(j.secure_url) { if(isTrash || !description) { try { if(!isTrash) document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh..."; const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); if(isTrash) { alert(`🤖 AI Kết luận:\n${aiResult}`); description = aiResult; } else { description = aiResult; } } catch(err) { console.error(err); if(isTrash) alert("AI lỗi, không thể phân loại."); } } await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: description || "Không có mô tả", uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, type: window.uploadMode, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); if(!isTrash) alert("Đăng ảnh thành công!"); } } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } document.getElementById('upload-overlay').style.display='none'; i.value=""; }
 
         function renderGrid(col, elId, uR, cR) {
-            // FIX: Cancel old subscription if exists to prevent duplicates? For simplicity in this structure, we rely on the closure capturing the latest state on re-run.
-            // In a pro app, we would store the unsubscribe function.
             if(State.unsubscribes[col]) State.unsubscribes[col]();
 
             const unsub = onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
@@ -746,7 +748,13 @@
 
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
-                    let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; }
+                    
+                    // FIX: Check Admin permission INSIDE loop to ensure buttons render correctly
+                    let ctrls=""; 
+                    if(currentUser && (currentUser.uid===d.uid || isAdmin(currentUser.email))){ 
+                        ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
+                    }
+                    
                     let badge = "";
                     if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
                     else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
@@ -768,7 +776,47 @@
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
         function renderComments(arr) { const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; arr.forEach(c=>{ let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>'); let isReply = c.text.includes('@'); let replyClass = isReply ? 'is-reply' : ''; l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; }); }
 
-        window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; let csvContent = "\uFEFF"; if(type === 'users') { csvContent += "Tên người dùng,Email,Tên đăng nhập (ID),Ngày đăng ký,Hoạt động chung (Lớp),Phiên hoạt động cuối,Số lần đăng nhập,Lịch sử hoạt động cụ thể\n"; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u = d.data(); const regDate = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Không rõ'; const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : 'Chưa hoạt động'; const loginCount = u.loginCount || 1; const activity = u.class ? `Thành viên lớp ${u.class}` : 'Chưa cập nhật lớp'; const row = [ `"${u.displayName || ''}"`, `"${u.email || ''}"`, `"${u.customID || ''}"`, `"${regDate}"`, `"${activity}"`, `"${lastActive}"`, `${loginCount}`, `"Đang hoạt động"` ].join(","); csvContent += row + "\n"; }); } else { csvContent += "Người đăng,ID,Lớp,Mô tả,Tim,Link ảnh,Ngày đăng\n"; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p = d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''; const row = [ `"${p.authorName || ''}"`, `"${p.authorID || ''}"`, `"${p.className || ''}"`, `"${(p.desc || '').replace(/"/g, '""')}"`, `${p.likes?p.likes.length:0}`, `"${p.url}"`, `"${date}"` ].join(","); csvContent += row + "\n"; }); } const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}_${new Date().toISOString().slice(0,10)}.csv`; a.click(); }
+        // FIX EXCEL FORMAT (UTF-8 BOM + Tab Delimiter)
+        window.exportExcel = async (type) => { 
+            if(!currentUser || !isAdmin(currentUser.email)) return; 
+            
+            // Dùng \t (Tab) thay vì dấu phẩy để Excel tự chia cột đúng
+            let csvContent = "\uFEFF"; 
+            
+            if(type === 'users') { 
+                csvContent += "Tên người dùng\tEmail\tTên đăng nhập (ID)\tNgày đăng ký\tHoạt động chung (Lớp)\tPhiên hoạt động cuối\tSố lần đăng nhập\tLịch sử hoạt động cụ thể\n"; 
+                const snap = await getDocs(collection(db, "users")); 
+                snap.forEach(d => { 
+                    const u = d.data(); 
+                    const regDate = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Không rõ'; 
+                    const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : 'Chưa hoạt động'; 
+                    const loginCount = u.loginCount || 1; 
+                    const activity = u.class ? `Thành viên lớp ${u.class}` : 'Chưa cập nhật lớp'; 
+                    const row = [ 
+                        `"${u.displayName || ''}"`, `"${u.email || ''}"`, `"${u.customID || ''}"`, `"${regDate}"`, `"${activity}"`, `"${lastActive}"`, `${loginCount}`, `"Đang hoạt động"` 
+                    ].join("\t"); 
+                    csvContent += row + "\n"; 
+                }); 
+            } else { 
+                csvContent += "Người đăng\tID\tLớp\tMô tả\tTim\tLink ảnh\tNgày đăng\n"; 
+                const snap = await getDocs(collection(db, type)); 
+                snap.forEach(d => { 
+                    const p = d.data(); 
+                    const date = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''; 
+                    const row = [ 
+                        `"${p.authorName || ''}"`, `"${p.authorID || ''}"`, `"${p.className || ''}"`, `"${(p.desc || '').replace(/"/g, '""')}"`, `${p.likes?p.likes.length:0}`, `"${p.url}"`, `"${date}"` 
+                    ].join("\t"); 
+                    csvContent += row + "\n"; 
+                }); 
+            } 
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
+            const url = window.URL.createObjectURL(blob); 
+            const a = document.createElement('a'); 
+            a.href = url; 
+            a.download = `Data_${type}_${new Date().toISOString().slice(0,10)}.xls`; // Lưu đuôi .xls để lừa Excel mở bằng tab delimiter
+            a.click(); 
+        }
+
         window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
         window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
