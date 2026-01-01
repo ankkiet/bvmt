@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -257,7 +256,11 @@
             <div id="content-greenclass">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
-                    <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
+                    <div>
+                        <!-- Added AI Trash Button here -->
+                        <button class="btn" style="background:#ff9800; color:white; margin-right:5px" onclick="checkLoginAndUpload('trash')"><i class="fas fa-search"></i> AI Soi Rác</button>
+                        <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
+                    </div>
                 </div>
                 <div class="countdown-container" id="cd-gallery">
                     <div class="countdown-header"><i class="fas fa-clock"></i> <span>Thời gian nộp bài còn lại</span></div>
@@ -362,8 +365,9 @@
                 <h3>🤖 Cấu Hình AI (Gemini Flash)</h3>
                 <p>Nhập API Key để kích hoạt Chatbot và Phân tích ảnh.</p>
                 <div style="display:flex; gap:10px;">
-                    <input type="password" id="cfg-ai-key" placeholder="Key đã tích hợp" style="flex:1" disabled>
-                    <button class="btn btn-sm btn-ai" onclick="testAIConnection()">Kiểm tra kết nối AI</button>
+                    <input type="password" id="cfg-ai-key" placeholder="Nhập Key AI (Sẽ được ẩn sau khi lưu)" style="flex:1">
+                    <button class="btn btn-sm btn-ai" onclick="updateAIConfig()">Lưu Key</button>
+                    <button class="btn btn-sm btn-outline" onclick="testAIConnection()">Test</button>
                 </div>
             </div>
 
@@ -474,26 +478,18 @@
         const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
-        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; // KEY TÍCH HỢP SẴN
+        let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; 
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 
-        // --- GEMINI AI (V41.0 - WEB CONTEXT AWARE) ---
-        // Thêm dữ liệu trang web vào ngữ cảnh cho AI
+        // --- GEMINI AI (UPDATED V43.0) ---
         const WEB_CONTEXT = `
         THÔNG TIN VỀ WEBSITE NVC GREEN A2K41:
         1. Mục đích: Website quản lý hoạt động lớp, phong trào "Green School", và bảo vệ môi trường.
         2. Các mục chính:
            - Trang chủ: Xem thông báo, đăng nhập.
-           - Góc Xanh: Nơi học sinh đăng ảnh bảo vệ môi trường (trồng cây, dọn rác...). Có xếp hạng cá nhân và lớp.
-           - Thi Đua: Báo cáo các hoạt động phong trào khác.
-           - Lưu Trữ: Xem lại ảnh của các đợt thi đua trước.
-           - Hoạt động: Lịch đổi giấy lấy cây (Thứ 5 hàng tuần, 15h-17h).
-           - Tra cứu: Tìm cách phân loại rác (vỏ sữa, pin, chai nhựa...).
-           - Admin: Quản lý nhạc, khóa web, xuất Excel. Admin chính: kiet0905478167@gmail.com.
-        3. Tính năng đặc biệt:
-           - Tích hợp AI (Gemini) để chat và nhận diện ảnh khi upload.
-           - Nghe nhạc nền (YouTube).
-           - Tải App (PWA) về điện thoại.
+           - Góc Xanh: Nơi học sinh đăng ảnh bảo vệ môi trường.
+           - Thi Đua: Báo cáo các hoạt động phong trào.
+           - Admin: Quản lý nhạc, khóa web, xuất Excel.
         `;
 
         async function tryGeminiModel(modelName, prompt, imageBase64 = null) {
@@ -502,14 +498,8 @@
             const requestBody = {
                 contents: [{ parts: [{ text: prompt }] }],
                 system_instruction: {
-                    parts: [{ text: `Bạn là trợ lý ảo AI của lớp Green School - A2K41 (App tên là NVC Green). Hãy trả lời thân thiện, ngắn gọn, dùng emoji. Dưới đây là thông tin về website để bạn trả lời câu hỏi của người dùng:\n${WEB_CONTEXT}` }]
-                },
-                safetySettings: [
-                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
-                ]
+                    parts: [{ text: `Bạn là trợ lý ảo AI của lớp Green School - A2K41. Hãy trả lời ngắn gọn.\n${WEB_CONTEXT}` }]
+                }
             };
 
             if (imageBase64) {
@@ -519,46 +509,32 @@
             }
 
             const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
 
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`Model ${modelName} Error ${response.status}: ${errText}`);
-            }
-
+            if (!response.ok) throw new Error(`Model ${modelName} Error ${response.status}`);
             const data = await response.json();
             if (data.candidates && data.candidates[0] && data.candidates[0].content) {
                 return data.candidates[0].content.parts[0].text;
             }
-            return "Xin lỗi, tớ chưa hiểu ý cậu (Empty response).";
+            return "AI không phản hồi.";
         }
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
-            const models = ["gemini-2.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+            const models = ["gemini-2.5-flash", "gemini-1.5-flash-latest"];
             for (const model of models) {
-                try {
-                    return await tryGeminiModel(model, prompt, imageBase64);
-                } catch (e) {
-                    console.warn(`AI Warning: Model ${model} failed. Trying next...`, e);
-                    if (model === models[models.length - 1]) throw new Error("Tất cả AI models đều bận hoặc lỗi. Vui lòng thử lại sau!");
-                }
+                try { return await tryGeminiModel(model, prompt, imageBase64); }
+                catch (e) { console.warn(`AI Warning: Model ${model} failed.`, e); if (model === models[models.length - 1]) throw new Error("AI đang bận."); }
             }
         }
 
         window.testAIConnection = async () => {
-            const btn = document.querySelector('.btn-ai');
-            const originalText = btn.innerText;
-            btn.innerText = "Đang test...";
+            const btn = document.querySelector('.btn-ai'); const originalText = btn.innerText; btn.innerText = "Đang test...";
             try {
-                const result = await callGeminiAPI("Chào Green Bot, giới thiệu về web này xem?");
+                const result = await callGeminiAPI("Chào Green Bot!");
                 alert("✅ Kết nối AI thành công!\nTrả lời: " + result);
-            } catch(e) {
-                console.error(e);
-                alert("❌ Lỗi: " + e.message + "\n\nKiểm tra lại API Key trong Admin Panel.");
-            }
+            } catch(e) { alert("❌ Lỗi: " + e.message); }
             btn.innerText = originalText;
         }
 
@@ -578,19 +554,15 @@
                 const responseText = await callGeminiAPI(msg);
                 document.getElementById(loadingId).innerText = responseText;
             } catch(err) {
-                console.error(err);
                 document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`;
             }
             msgList.scrollTop = msgList.scrollHeight;
         }
 
-        // 2. AI VISION HELPER
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = error => reject(error);
+                const reader = new FileReader(); reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error);
             });
         }
 
@@ -614,17 +586,21 @@
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if(docSnap.exists()) {
                 const cfg = docSnap.data();
+                // FIX 1: Update Gemini Key Dynamically for ALL users
+                if(cfg.geminiKey) { geminiKey = cfg.geminiKey; }
+                
                 if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
                 const plDiv = document.getElementById('music-playlist-container');
                 if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:#e8f5e9; border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
                 const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
                 applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities); applyLock('guide',cfg.locks?.guide); applyLock('archive',cfg.locks?.archive);
                 handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
+                
                 if(currentUser && isAdmin(currentUser.email)) {
                     document.getElementById('cfg-maintenance').checked=cfg.maintenance;
                     document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
                     document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
-                    if(cfg.geminiKey) { geminiKey = cfg.geminiKey; document.getElementById('cfg-ai-key').value = cfg.geminiKey; }
+                    if(cfg.geminiKey) { document.getElementById('cfg-ai-key').placeholder = "Key đã được lưu (Ẩn)"; }
                 }
             }
         });
@@ -651,16 +627,36 @@
 
         // --- UPLOAD ---
         window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
-        window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } currentCollection = c; document.getElementById('file-input').click(); }
+        
+        // FIX 2: Check Login & Handle Trash Mode
+        window.checkLoginAndUpload = (c) => { 
+            if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } 
+            if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } 
+            // Nếu c == 'trash', ta vẫn lưu vào 'gallery' nhưng có cờ xử lý riêng
+            window.uploadMode = c; // 'gallery' | 'contest' | 'trash'
+            currentCollection = (c === 'trash') ? 'gallery' : c; 
+            document.getElementById('file-input').click(); 
+        }
         
         window.executeUpload = async (i) => { 
             const f = i.files[0]; if(!f) return; 
             
-            document.getElementById('upload-overlay').style.display='none'; // Hide default loading
-            const d = prompt("Nhập mô tả cho ảnh:"); 
-            if(d === null) return; 
+            // AI Trash Prompt Logic
+            const isTrash = (window.uploadMode === 'trash');
+            let aiPrompt = isTrash 
+                ? "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn." 
+                : "Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:";
             
-            document.getElementById('upload-loading-text').innerText = "Đang tải...";
+            let description = "";
+            
+            // UI
+            if(!isTrash) {
+                const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI viết):"); 
+                if(d === null) return;
+                description = d;
+            }
+
+            document.getElementById('upload-loading-text').innerText = isTrash ? "AI đang soi rác..." : "Đang tải...";
             document.getElementById('upload-overlay').style.display='flex'; 
             
             try { 
@@ -668,24 +664,37 @@
                 const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
                 const j = await r.json(); 
                 if(j.secure_url) { 
-                    // Call AI Vision (Fixed V40.2)
-                    const useAI = confirm("🤖 Dùng AI viết mô tả ảnh không?");
-                    if(useAI) {
+                    // Call AI if trash mode OR if description is empty
+                    if(isTrash || !description) {
                         try {
-                            document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh...";
+                            if(!isTrash) document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh...";
                             const base64Img = await fileToBase64(f);
-                            const aiDesc = await callGeminiAPI("Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:", base64Img);
-                            await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: aiDesc, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
-                            alert("Đăng ảnh thành công với mô tả AI!");
-                            document.getElementById('upload-overlay').style.display='none'; i.value=""; 
-                            return; 
-                        } catch(err) { console.error(err); alert("AI lỗi: " + err.message + ". Dùng mô tả gốc."); }
+                            const aiResult = await callGeminiAPI(aiPrompt, base64Img);
+                            
+                            if(isTrash) {
+                                alert(`🤖 AI Kết luận:\n${aiResult}`);
+                                description = aiResult; // Save result as desc
+                            } else {
+                                description = aiResult;
+                            }
+                        } catch(err) { console.error(err); if(isTrash) alert("AI lỗi, không thể phân loại."); }
                     }
 
-                    await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: d, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
-                    alert("Đăng ảnh thành công!"); 
+                    await addDoc(collection(db, currentCollection), { 
+                        url: j.secure_url, 
+                        desc: description || "Không có mô tả", 
+                        uid: currentUser.uid, 
+                        authorName: currentUser.displayName, 
+                        authorID: currentUser.customID || "@unknown", 
+                        authorAvatar: currentUser.photoURL, 
+                        className: currentUser.class, 
+                        type: window.uploadMode, // Save type
+                        createdAt: serverTimestamp(), 
+                        likes: [], comments: [], archived: false 
+                    }); 
+                    if(!isTrash) alert("Đăng ảnh thành công!"); 
                 } 
-            } catch(e) { alert("Lỗi tải ảnh!"); } 
+            } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } 
             document.getElementById('upload-overlay').style.display='none'; i.value=""; 
         }
 
@@ -706,7 +715,13 @@
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
                     let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; }
-                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+                    
+                    // Badge for Trash/Contest
+                    let badge = "";
+                    if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
+                    else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
+
+                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
                 });
                 renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
@@ -775,17 +790,16 @@
         window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
         
         window.showPage = (id) => { 
-            // V42.0: Sử dụng sessionStorage để chỉ nhớ trong phiên làm việc
             document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); 
             const target = document.getElementById(id);
             if(target) target.classList.add('active'); 
-            else document.getElementById('home').classList.add('active'); // Fallback
+            else document.getElementById('home').classList.add('active'); 
 
             document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
             if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); 
             if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); 
             
-            sessionStorage.setItem('page', id); // Changed from localStorage
+            sessionStorage.setItem('page', id); 
             if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } 
         }
 
@@ -793,7 +807,6 @@
         window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
         document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
         
-        // V42.0: Fix nút đăng nhập bằng Event Listener
         const mainLoginBtn = document.getElementById('main-login-btn');
         if(mainLoginBtn) {
             mainLoginBtn.addEventListener('click', () => {
@@ -802,21 +815,17 @@
             });
         }
         
-        // V42.0: Logic load trang đầu tiên
-        // Nếu không có trong sessionStorage -> Mặc định Home
         const savedPage = sessionStorage.getItem('page') || 'home';
         showPage(savedPage);
 
         // --- PWA INSTALLATION LOGIC (V42.0) ---
         let deferredPrompt;
         
-        // Tạo nút Cài đặt cho PC
         const pcMenu = document.querySelector('nav.pc-nav ul');
         const installLi = document.createElement('li');
         installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>';
         pcMenu.appendChild(installLi);
 
-        // Tạo nút Cài đặt cho Mobile
         const mobNav = document.querySelector('.mobile-nav-inner');
         const installMob = document.createElement('a');
         installMob.className = 'nav-item';
