@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nvc-green-v44-final';
+const CACHE_NAME = 'nvc-green-v45-final';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
