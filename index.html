@@ -28,7 +28,30 @@
             --ai-color: #6200ea;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
+        
+        /* Cấu hình để hiệu ứng kéo mượt mà hơn */
+        body { 
+            font-family: 'Nunito', sans-serif; margin: 0; padding: 0; 
+            background-color: var(--bg); color: var(--text); padding-bottom: 90px;
+            overscroll-behavior-y: contain; /* Ngăn chặn hiệu ứng kéo mặc định của trình duyệt Chrome/Safari */
+        }
+
+        /* --- PULL TO REFRESH UI (Giao diện kéo xuống) --- */
+        #ptr-loader {
+            position: fixed; top: -70px; left: 0; width: 100%; height: 70px;
+            display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 15px;
+            z-index: 9998; transition: top 0.2s ease-out;
+            pointer-events: none; /* Để không chặn thao tác click */
+        }
+        .ptr-icon {
+            font-size: 20px; color: var(--primary);
+            background: white; width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+            border: 2px solid var(--primary);
+        }
 
         /* --- 2. NAVIGATION --- */
         nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; }
@@ -189,6 +212,11 @@
 </head>
 <body>
 
+    <!-- Pull to Refresh UI (Ẩn mặc định) -->
+    <div id="ptr-loader">
+        <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
+    </div>
+
     <div id="maintenance-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:99999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;">
         <i class="fas fa-hammer" style="font-size: 5rem; color: #ffb300; margin-bottom: 20px;"></i>
         <h1>Hệ Thống Đang Bảo Trì</h1>
@@ -257,7 +285,6 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
                     <div>
-                        <!-- Added AI Trash Button here -->
                         <button class="btn" style="background:#ff9800; color:white; margin-right:5px" onclick="checkLoginAndUpload('trash')"><i class="fas fa-search"></i> AI Soi Rác</button>
                         <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
                     </div>
@@ -480,6 +507,44 @@
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; 
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
+
+        // --- PULL TO REFRESH LOGIC ---
+        let startY = 0;
+        const ptrElement = document.getElementById('ptr-loader');
+        const ptrIcon = ptrElement.querySelector('.ptr-icon');
+
+        window.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                startY = e.touches[0].clientY;
+            }
+        }, {passive: true});
+
+        window.addEventListener('touchmove', (e) => {
+            const y = e.touches[0].clientY;
+            const diff = y - startY;
+            
+            // Nếu đang ở đầu trang và kéo xuống
+            if (window.scrollY === 0 && diff > 0) {
+                // Hiệu ứng kéo có lực cản (chia cho 2.5)
+                if (diff < 250) { 
+                    ptrElement.style.top = (diff / 2.5 - 70) + 'px'; 
+                    ptrIcon.style.transform = `rotate(${diff * 2}deg)`;
+                }
+            }
+        }, {passive: false});
+
+        window.addEventListener('touchend', (e) => {
+            const top = parseInt(ptrElement.style.top || '-70');
+            if (top > 10) { // Nếu kéo đủ sâu
+                ptrElement.style.top = '10px';
+                ptrIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+                setTimeout(() => {
+                    location.reload(); 
+                }, 800);
+            } else {
+                ptrElement.style.top = '-70px'; 
+            }
+        });
 
         // --- GEMINI AI (UPDATED V43.0) ---
         const WEB_CONTEXT = `
@@ -773,13 +838,14 @@
         window.loadArchiveSeasons = async () => { 
             const s=document.getElementById('archive-season-select'); 
             s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; 
-            // NEW: Remove orderBy, sort manually
+            // FIX: Removed orderBy to fix Firestore index error
             const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); 
             const sn=await getDocs(q); 
-            const data = [];
-            sn.forEach(d => data.push(d.data()));
-            data.sort((a, b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0));
-            data.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); 
+            // Sort manually in JS
+            const docs = [];
+            sn.forEach(d => docs.push(d.data()));
+            docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0));
+            docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); 
         }
 
         window.loadArchiveGrid = async () => { 
@@ -802,16 +868,17 @@
         window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
         
         window.showPage = (id) => { 
+            // V42.0: Sử dụng sessionStorage để chỉ nhớ trong phiên làm việc
             document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); 
             const target = document.getElementById(id);
             if(target) target.classList.add('active'); 
-            else document.getElementById('home').classList.add('active'); 
+            else document.getElementById('home').classList.add('active'); // Fallback
 
             document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
             if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); 
             if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); 
             
-            sessionStorage.setItem('page', id); 
+            sessionStorage.setItem('page', id); // Changed from localStorage
             if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } 
         }
 
@@ -819,6 +886,7 @@
         window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
         document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
         
+        // V42.0: Fix nút đăng nhập bằng Event Listener
         const mainLoginBtn = document.getElementById('main-login-btn');
         if(mainLoginBtn) {
             mainLoginBtn.addEventListener('click', () => {
@@ -827,17 +895,21 @@
             });
         }
         
+        // V42.0: Logic load trang đầu tiên
+        // Nếu không có trong sessionStorage -> Mặc định Home
         const savedPage = sessionStorage.getItem('page') || 'home';
         showPage(savedPage);
 
         // --- PWA INSTALLATION LOGIC (V42.0) ---
         let deferredPrompt;
         
+        // Tạo nút Cài đặt cho PC
         const pcMenu = document.querySelector('nav.pc-nav ul');
         const installLi = document.createElement('li');
         installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>';
         pcMenu.appendChild(installLi);
 
+        // Tạo nút Cài đặt cho Mobile
         const mobNav = document.querySelector('.mobile-nav-inner');
         const installMob = document.createElement('a');
         installMob.className = 'nav-item';
