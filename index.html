@@ -17,6 +17,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- EXCEL LIBRARIES (Thêm mới để xuất file đẹp) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <style>
         /* --- 1. CORE STYLES --- */
         :root { 
@@ -519,6 +523,14 @@
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
         const State = { unsubscribes: {} };
 
+        // --- UTILS ---
+        const Utils = {
+            loader: (show, text="Đang xử lý...") => {
+                document.getElementById('upload-overlay').style.display = show ? 'flex' : 'none';
+                document.getElementById('upload-loading-text').innerText = text;
+            }
+        };
+
         // --- PULL TO REFRESH LOGIC ---
         let startY = 0;
         const ptrElement = document.getElementById('ptr-loader');
@@ -691,6 +703,10 @@
         }
 
         onAuthStateChanged(auth, async(u)=>{
+            // RELOAD DATA LISTENERS WITH CORRECT AUTH STATE
+            renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
+            renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+
             if(u){
                 const r=doc(db,"users",u.uid), s=await getDoc(r);
                 let userData;
@@ -706,10 +722,6 @@
                 currentUser=userData;
                 syncToGoogleSheet(currentUser);
 
-                // --- FIX: LOAD DATA ONLY AFTER AUTH IS CONFIRMED ---
-                renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
-                renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
-
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
                 document.getElementById('home-login-area').style.display='none';
                 document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
@@ -718,10 +730,6 @@
                 if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
             }else{ 
                 currentUser=null; 
-                // Load public data even if not logged in (but without admin controls)
-                renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
-                renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
-
                 document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
             }
         });
@@ -749,7 +757,6 @@
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
                     
-                    // FIX: Check Admin permission INSIDE loop to ensure buttons render correctly
                     let ctrls=""; 
                     if(currentUser && (currentUser.uid===d.uid || isAdmin(currentUser.email))){ 
                         ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
@@ -766,7 +773,6 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        // --- LIGHTBOX ZOOM & COMMENTS ---
         window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show'); renderComments(d.comments||[]); }
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         window.toggleZoom = (e) => { const area = document.getElementById('lb-zoom-area'); const img = document.getElementById('lb-img'); if (area.classList.contains('zoomed')) { area.classList.remove('zoomed'); img.style.transform = "scale(1)"; } else { area.classList.add('zoomed'); const rect = area.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; img.style.transformOrigin = `${x}px ${y}px`; img.style.transform = "scale(2.5)"; } }
@@ -776,45 +782,82 @@
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
         function renderComments(arr) { const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; arr.forEach(c=>{ let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>'); let isReply = c.text.includes('@'); let replyClass = isReply ? 'is-reply' : ''; l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; }); }
 
-        // FIX EXCEL FORMAT (UTF-8 BOM + Tab Delimiter)
-        window.exportExcel = async (type) => { 
-            if(!currentUser || !isAdmin(currentUser.email)) return; 
+        window.exportExcel = async (type) => {
+            if(!currentUser || !isAdmin(currentUser.email)) return;
+
+            Utils.loader(true, "Đang tạo file Excel chuẩn...");
+
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet('DuLieu');
+
+            if (type === 'users') {
+                sheet.columns = [
+                    { header: 'Tên người dùng', key: 'name', width: 25 },
+                    { header: 'Email', key: 'email', width: 30 },
+                    { header: 'ID', key: 'id', width: 15 },
+                    { header: 'Ngày đăng ký', key: 'created', width: 20 },
+                    { header: 'Lớp', key: 'class', width: 15 },
+                    { header: 'Hoạt động cuối', key: 'active', width: 20 },
+                    { header: 'Số lần đăng nhập', key: 'count', width: 15 }
+                ];
+                const snap = await getDocs(collection(db, "users"));
+                snap.forEach(d => {
+                    const u = d.data();
+                    sheet.addRow({
+                        name: u.displayName || '',
+                        email: u.email || '',
+                        id: u.customID || '',
+                        created: u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : '',
+                        class: u.class || '',
+                        active: u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : '',
+                        count: u.loginCount || 1
+                    });
+                });
+            } else {
+                sheet.columns = [
+                    { header: 'Người đăng', key: 'author', width: 25 },
+                    { header: 'ID', key: 'uid', width: 15 },
+                    { header: 'Lớp', key: 'class', width: 10 },
+                    { header: 'Mô tả', key: 'desc', width: 40 },
+                    { header: 'Tim', key: 'likes', width: 10 },
+                    { header: 'Link ảnh', key: 'url', width: 40 },
+                    { header: 'Ngày đăng', key: 'date', width: 20 }
+                ];
+                const snap = await getDocs(collection(db, type));
+                snap.forEach(d => {
+                    const p = d.data();
+                    sheet.addRow({
+                        author: p.authorName,
+                        uid: p.authorID || '',
+                        class: p.className || '',
+                        desc: p.desc || '',
+                        likes: p.likes ? p.likes.length : 0,
+                        url: p.url,
+                        date: p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''
+                    });
+                });
+            }
+
+            sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
             
-            // Dùng \t (Tab) thay vì dấu phẩy để Excel tự chia cột đúng
-            let csvContent = "\uFEFF"; 
+            sheet.eachRow((row, rowNumber) => {
+                row.eachCell((cell) => {
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    };
+                    cell.alignment = { vertical: 'middle', wrapText: true };
+                });
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            saveAs(blob, `GreenSchool_${type}_${new Date().toISOString().slice(0,10)}.xlsx`);
             
-            if(type === 'users') { 
-                csvContent += "Tên người dùng\tEmail\tTên đăng nhập (ID)\tNgày đăng ký\tHoạt động chung (Lớp)\tPhiên hoạt động cuối\tSố lần đăng nhập\tLịch sử hoạt động cụ thể\n"; 
-                const snap = await getDocs(collection(db, "users")); 
-                snap.forEach(d => { 
-                    const u = d.data(); 
-                    const regDate = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Không rõ'; 
-                    const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : 'Chưa hoạt động'; 
-                    const loginCount = u.loginCount || 1; 
-                    const activity = u.class ? `Thành viên lớp ${u.class}` : 'Chưa cập nhật lớp'; 
-                    const row = [ 
-                        `"${u.displayName || ''}"`, `"${u.email || ''}"`, `"${u.customID || ''}"`, `"${regDate}"`, `"${activity}"`, `"${lastActive}"`, `${loginCount}`, `"Đang hoạt động"` 
-                    ].join("\t"); 
-                    csvContent += row + "\n"; 
-                }); 
-            } else { 
-                csvContent += "Người đăng\tID\tLớp\tMô tả\tTim\tLink ảnh\tNgày đăng\n"; 
-                const snap = await getDocs(collection(db, type)); 
-                snap.forEach(d => { 
-                    const p = d.data(); 
-                    const date = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''; 
-                    const row = [ 
-                        `"${p.authorName || ''}"`, `"${p.authorID || ''}"`, `"${p.className || ''}"`, `"${(p.desc || '').replace(/"/g, '""')}"`, `${p.likes?p.likes.length:0}`, `"${p.url}"`, `"${date}"` 
-                    ].join("\t"); 
-                    csvContent += row + "\n"; 
-                }); 
-            } 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
-            const url = window.URL.createObjectURL(blob); 
-            const a = document.createElement('a'); 
-            a.href = url; 
-            a.download = `Data_${type}_${new Date().toISOString().slice(0,10)}.xls`; // Lưu đuôi .xls để lừa Excel mở bằng tab delimiter
-            a.click(); 
+            Utils.loader(false);
         }
 
         window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
