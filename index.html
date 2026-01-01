@@ -782,14 +782,18 @@
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
         function renderComments(arr) { const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; arr.forEach(c=>{ let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>'); let isReply = c.text.includes('@'); let replyClass = isReply ? 'is-reply' : ''; l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; }); }
 
+        // --- NEW EXCEL EXPORT (EXCELJS) ---
         window.exportExcel = async (type) => {
             if(!currentUser || !isAdmin(currentUser.email)) return;
 
+            // Show loading overlay
             Utils.loader(true, "Đang tạo file Excel chuẩn...");
 
+            // Initialize Workbook
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet('DuLieu');
 
+            // Define Columns based on Type
             if (type === 'users') {
                 sheet.columns = [
                     { header: 'Tên người dùng', key: 'name', width: 25 },
@@ -800,6 +804,7 @@
                     { header: 'Hoạt động cuối', key: 'active', width: 20 },
                     { header: 'Số lần đăng nhập', key: 'count', width: 15 }
                 ];
+                
                 const snap = await getDocs(collection(db, "users"));
                 snap.forEach(d => {
                     const u = d.data();
@@ -814,6 +819,7 @@
                     });
                 });
             } else {
+                // Gallery or Contest
                 sheet.columns = [
                     { header: 'Người đăng', key: 'author', width: 25 },
                     { header: 'ID', key: 'uid', width: 15 },
@@ -823,6 +829,7 @@
                     { header: 'Link ảnh', key: 'url', width: 40 },
                     { header: 'Ngày đăng', key: 'date', width: 20 }
                 ];
+
                 const snap = await getDocs(collection(db, type));
                 snap.forEach(d => {
                     const p = d.data();
@@ -838,23 +845,38 @@
                 });
             }
 
-            sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
-            
+            // --- STYLING ---
+            // 1. Header Row Styling
+            const headerRow = sheet.getRow(1);
+            headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
+            headerRow.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FF2E7D32' } // Brand Green Color
+            };
+            headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+            headerRow.height = 30;
+
+            // 2. Body Styling (Borders & Alignment)
             sheet.eachRow((row, rowNumber) => {
                 row.eachCell((cell) => {
+                    // Borders
                     cell.border = {
                         top: { style: 'thin' },
                         left: { style: 'thin' },
                         bottom: { style: 'thin' },
                         right: { style: 'thin' }
                     };
+                    // Alignment
                     cell.alignment = { vertical: 'middle', wrapText: true };
                 });
             });
 
+            // 3. Write and Save
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            
+            // FileSaver.js to save file
             saveAs(blob, `GreenSchool_${type}_${new Date().toISOString().slice(0,10)}.xlsx`);
             
             Utils.loader(false);
