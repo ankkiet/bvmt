@@ -12,7 +12,7 @@
     
     <meta name="description" content="Web lớp A2K41 - Green School.">
     <meta property="og:title" content="A2K41 - Green School">
-    <meta property="og:image" content="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg">
+    <meta property="og:image" content="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg">
     
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -259,7 +259,8 @@
             <div id="locked-home" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-home">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                    <!-- IMAGE UPDATED -->
+                    <img src="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg" style="width: 100%; height: 350px; object-fit: cover; object-position: center; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
                     <h1 style="border:none; margin-top: 20px;">A2K41 - Green School</h1>
                     <div id="home-login-area" style="display:none;">
                         <button class="home-login-btn" id="main-login-btn"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
@@ -514,8 +515,9 @@
 
         let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
         let geminiKey = "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"; 
-        let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; // Link Script bạn cung cấp
+        let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
+        const State = { unsubscribes: {} };
 
         // --- PULL TO REFRESH LOGIC ---
         let startY = 0;
@@ -532,9 +534,7 @@
             const y = e.touches[0].clientY;
             const diff = y - startY;
             
-            // Nếu đang ở đầu trang và kéo xuống
             if (window.scrollY === 0 && diff > 0) {
-                // Hiệu ứng kéo có lực cản (chia cho 2.5)
                 if (diff < 250) { 
                     ptrElement.style.top = (diff / 2.5 - 70) + 'px'; 
                     ptrIcon.style.transform = `rotate(${diff * 2}deg)`;
@@ -544,7 +544,7 @@
 
         window.addEventListener('touchend', (e) => {
             const top = parseInt(ptrElement.style.top || '-70');
-            if (top > 10) { // Nếu kéo đủ sâu
+            if (top > 10) { 
                 ptrElement.style.top = '10px';
                 ptrIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
                 setTimeout(() => {
@@ -555,51 +555,29 @@
             }
         });
 
-        // --- GEMINI AI (UPDATED V43.0) ---
-        const WEB_CONTEXT = `
-        THÔNG TIN VỀ WEBSITE NVC GREEN A2K41:
-        1. Mục đích: Website quản lý hoạt động lớp, phong trào "Green School", và bảo vệ môi trường.
-        2. Các mục chính:
-           - Trang chủ: Xem thông báo, đăng nhập.
-           - Góc Xanh: Nơi học sinh đăng ảnh bảo vệ môi trường.
-           - Thi Đua: Báo cáo các hoạt động phong trào.
-           - Admin: Quản lý nhạc, khóa web, xuất Excel.
-        `;
+        // --- GEMINI AI ---
+        const WEB_CONTEXT = `...`;
 
-        async function tryGeminiModel(modelName, prompt, imageBase64 = null) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`;
-            
+        async function callGeminiAPI(prompt, imageBase64 = null) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
             const requestBody = {
                 contents: [{ parts: [{ text: prompt }] }],
-                system_instruction: {
-                    parts: [{ text: `Bạn là trợ lý ảo AI của lớp Green School - A2K41. Hãy trả lời ngắn gọn.\n${WEB_CONTEXT}` }]
-                }
             };
-
             if (imageBase64) {
                 requestBody.contents[0].parts.push({
                     inline_data: { mime_type: "image/jpeg", data: imageBase64 }
                 });
             }
-
-            const response = await fetch(url, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            if (!response.ok) throw new Error(`Model ${modelName} Error ${response.status}`);
-            const data = await response.json();
-            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                return data.candidates[0].content.parts[0].text;
-            }
-            return "AI không phản hồi.";
-        }
-
-        async function callGeminiAPI(prompt, imageBase64 = null) {
-            const models = ["gemini-2.5-flash", "gemini-1.5-flash-latest"];
-            for (const model of models) {
-                try { return await tryGeminiModel(model, prompt, imageBase64); }
-                catch (e) { console.warn(`AI Warning: Model ${model} failed.`, e); if (model === models[models.length - 1]) throw new Error("AI đang bận."); }
+            try {
+                const response = await fetch(url, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
+            } catch (e) {
+                console.error(e);
+                return "Lỗi AI.";
             }
         }
 
@@ -687,12 +665,9 @@
         window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
         window.checkAdminLogin=()=>signInWithPopup(auth,provider);
         
-        // SYNC TO GOOGLE SHEET
         async function syncToGoogleSheet(user) {
-            if (!googleSheetUrl) return; // Nếu chưa cấu hình URL thì bỏ qua
-            
+            if (!googleSheetUrl) return; 
             try {
-                // Chuẩn bị dữ liệu gửi đi (khớp với cột trong Sheet)
                 const payload = {
                     displayName: user.displayName || "Chưa đặt tên",
                     email: user.email,
@@ -703,55 +678,36 @@
                     loginCount: user.loginCount || 1,
                     uid: user.uid
                 };
-
-                // Gửi request tới Google Script (no-cors để tránh lỗi browser chặn)
                 await fetch(googleSheetUrl, {
                     method: 'POST',
                     mode: 'no-cors', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                console.log("Đã gửi dữ liệu sync lên Google Sheet");
+                console.log("Synced to Google Sheet");
             } catch (e) {
-                console.error("Lỗi sync Google Sheet:", e);
+                console.error("Sync Error:", e);
             }
         }
 
         onAuthStateChanged(auth, async(u)=>{
+            // RELOAD DATA LISTENERS WITH CORRECT AUTH STATE
+            renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
+            renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+
             if(u){
                 const r=doc(db,"users",u.uid), s=await getDoc(r);
                 let userData;
-                
                 if(s.exists()){
                     const d=s.data();
                     if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;}
-                    userData = {
-                        ...d,
-                        loginCount: (d.loginCount || 0) + 1
-                    };
-                    await updateDoc(r, {
-                        lastActive: serverTimestamp(),
-                        loginCount: increment(1)
-                    });
+                    userData = { ...d, loginCount: (d.loginCount || 0) + 1 };
+                    await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) });
                 } else {
-                    userData = {
-                        uid:u.uid,
-                        email:u.email,
-                        displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName,
-                        photoURL:u.photoURL,
-                        role:isAdmin(u.email)?'admin':'member',
-                        status:'active',
-                        class:"",
-                        customID:"@"+u.uid.slice(0,5),
-                        createdAt: serverTimestamp(),
-                        lastActive: serverTimestamp(),
-                        loginCount: 1
-                    };
+                    userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 };
                     await setDoc(r,userData);
                 }
                 currentUser=userData;
-                
-                // Gọi hàm Sync sau khi có dữ liệu user
                 syncToGoogleSheet(currentUser);
 
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
@@ -760,92 +716,30 @@
                 document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id";
                 document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
                 if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
-            }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
+            }else{ 
+                currentUser=null; 
+                document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
+            }
         });
 
-        // --- UPLOAD ---
         window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
-        
-        // FIX 2: Check Login & Handle Trash Mode
-        window.checkLoginAndUpload = (c) => { 
-            if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } 
-            if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } 
-            // Nếu c == 'trash', ta vẫn lưu vào 'gallery' nhưng có cờ xử lý riêng
-            window.uploadMode = c; // 'gallery' | 'contest' | 'trash'
-            currentCollection = (c === 'trash') ? 'gallery' : c; 
-            document.getElementById('file-input').click(); 
-        }
-        
-        window.executeUpload = async (i) => { 
-            const f = i.files[0]; if(!f) return; 
-            
-            // AI Trash Prompt Logic
-            const isTrash = (window.uploadMode === 'trash');
-            let aiPrompt = isTrash 
-                ? "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn." 
-                : "Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:";
-            
-            let description = "";
-            
-            // UI
-            if(!isTrash) {
-                const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI viết):"); 
-                if(d === null) return;
-                description = d;
-            }
+        window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash') ? 'gallery' : c; document.getElementById('file-input').click(); }
+        window.executeUpload = async (i) => { const f = i.files[0]; if(!f) return; const isTrash = (window.uploadMode === 'trash'); let aiPrompt = isTrash ? "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn." : "Mô tả ngắn gọn bức ảnh này bằng tiếng Việt:"; let description = ""; if(!isTrash) { const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI viết):"); if(d === null) return; description = d; } document.getElementById('upload-loading-text').innerText = isTrash ? "AI đang soi rác..." : "Đang tải..."; document.getElementById('upload-overlay').style.display='flex'; try { const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); if(j.secure_url) { if(isTrash || !description) { try { if(!isTrash) document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh..."; const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); if(isTrash) { alert(`🤖 AI Kết luận:\n${aiResult}`); description = aiResult; } else { description = aiResult; } } catch(err) { console.error(err); if(isTrash) alert("AI lỗi, không thể phân loại."); } } await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: description || "Không có mô tả", uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, type: window.uploadMode, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); if(!isTrash) alert("Đăng ảnh thành công!"); } } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } document.getElementById('upload-overlay').style.display='none'; i.value=""; }
 
-            document.getElementById('upload-loading-text').innerText = isTrash ? "AI đang soi rác..." : "Đang tải...";
-            document.getElementById('upload-overlay').style.display='flex'; 
-            
-            try { 
-                const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
-                const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); 
-                const j = await r.json(); 
-                if(j.secure_url) { 
-                    // Call AI if trash mode OR if description is empty
-                    if(isTrash || !description) {
-                        try {
-                            if(!isTrash) document.getElementById('upload-loading-text').innerText = "AI đang xem ảnh...";
-                            const base64Img = await fileToBase64(f);
-                            const aiResult = await callGeminiAPI(aiPrompt, base64Img);
-                            
-                            if(isTrash) {
-                                alert(`🤖 AI Kết luận:\n${aiResult}`);
-                                description = aiResult; // Save result as desc
-                            } else {
-                                description = aiResult;
-                            }
-                        } catch(err) { console.error(err); if(isTrash) alert("AI lỗi, không thể phân loại."); }
-                    }
-
-                    await addDoc(collection(db, currentCollection), { 
-                        url: j.secure_url, 
-                        desc: description || "Không có mô tả", 
-                        uid: currentUser.uid, 
-                        authorName: currentUser.displayName, 
-                        authorID: currentUser.customID || "@unknown", 
-                        authorAvatar: currentUser.photoURL, 
-                        className: currentUser.class, 
-                        type: window.uploadMode, // Save type
-                        createdAt: serverTimestamp(), 
-                        likes: [], comments: [], archived: false 
-                    }); 
-                    if(!isTrash) alert("Đăng ảnh thành công!"); 
-                } 
-            } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } 
-            document.getElementById('upload-overlay').style.display='none'; i.value=""; 
-        }
-
-        // --- RENDER ---
         function renderGrid(col, elId, uR, cR) {
-            onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
-                const g = document.getElementById(elId); g.innerHTML = ""; let uS={}, cS={}, docs=[];
+            // FIX: Cancel old subscription if exists to prevent duplicates? For simplicity in this structure, we rely on the closure capturing the latest state on re-run.
+            // In a pro app, we would store the unsubscribe function.
+            if(State.unsubscribes[col]) State.unsubscribes[col]();
+
+            const unsub = onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
+                const g = document.getElementById(elId); if(!g) return;
+                g.innerHTML = ""; let uS={}, cS={}, docs=[];
                 snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
                 
                 if(col === 'gallery' && docs.length > 0) {
                     const topPost = [...docs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
                     if(topPost) {
-                        const feat = document.getElementById('featured-post'); feat.style.display = 'flex';
+                        document.getElementById('featured-post').style.display = 'flex';
                         document.getElementById('feat-img').src = topPost.url; document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH"; document.getElementById('feat-desc').innerText = topPost.desc; document.getElementById('feat-author').innerText = "— " + topPost.authorName;
                     }
                 }
@@ -853,151 +747,38 @@
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
                     let ctrls=""; if(currentUser&&(currentUser.uid===d.uid||isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; }
-                    
-                    // Badge for Trash/Contest
                     let badge = "";
                     if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
                     else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
-
                     g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
                 });
                 renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
+            State.unsubscribes[col] = unsub;
         }
-        function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
-        renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
-
+        function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
+        
         // --- LIGHTBOX ZOOM & COMMENTS ---
-        window.openLightbox = async (c, i) => { 
-            currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
-            const s=await getDoc(doc(db,c,i)); const d=s.data(); 
-            const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)";
-            document.getElementById('lb-img').src=d.url; 
-            document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; 
-            document.getElementById('lb-author-name').innerHTML=d.authorName;
-            document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
-            document.getElementById('lb-desc').innerText=d.desc; 
-            document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
-            const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; }
-            document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; 
-            document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show');
-            renderComments(d.comments||[]); 
-        }
+        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show'); renderComments(d.comments||[]); }
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         window.toggleZoom = (e) => { const area = document.getElementById('lb-zoom-area'); const img = document.getElementById('lb-img'); if (area.classList.contains('zoomed')) { area.classList.remove('zoomed'); img.style.transform = "scale(1)"; } else { area.classList.add('zoomed'); const rect = area.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top; img.style.transformOrigin = `${x}px ${y}px`; img.style.transform = "scale(2.5)"; } }
         window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); const inp = document.getElementById('lb-input-area'); wrap.classList.toggle('show'); inp.classList.toggle('show'); }
         window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
         window.replyTo = (name) => { document.getElementById('lb-cmt-input').value = `@${name} `; document.getElementById('lb-cmt-input').focus(); }
-        
         window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
-        
-        function renderComments(arr) { 
-            const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; 
-            arr.forEach(c=>{ 
-                let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>');
-                let isReply = c.text.includes('@');
-                let replyClass = isReply ? 'is-reply' : '';
-                l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; 
-            }); 
-        }
+        function renderComments(arr) { const l=document.getElementById('lb-cmt-list'); l.innerHTML=""; arr.forEach(c=>{ let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>'); let isReply = c.text.includes('@'); let replyClass = isReply ? 'is-reply' : ''; l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div><div class="lb-comment-actions"><span class="lb-reply-btn" onclick="replyTo('${c.name}')">Trả lời</span></div></div></div>`; }); }
 
-        window.exportExcel = async (type) => { 
-            if(!currentUser || !isAdmin(currentUser.email)) return; 
-            
-            // FIX: Use CSV with BOM for Excel compatibility (No "unsafe" warning)
-            let csvContent = "\uFEFF"; // BOM for UTF-8
-            
-            if(type === 'users') { 
-                // Header row
-                csvContent += "Tên người dùng,Email,Tên đăng nhập (ID),Ngày đăng ký,Hoạt động chung (Lớp),Phiên hoạt động cuối,Số lần đăng nhập,Lịch sử hoạt động cụ thể\n";
-                
-                const snap = await getDocs(collection(db, "users")); 
-                snap.forEach(d => { 
-                    const u = d.data(); 
-                    
-                    // Format dates
-                    const regDate = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Không rõ';
-                    const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : 'Chưa hoạt động';
-                    const loginCount = u.loginCount || 1;
-                    const activity = u.class ? `Thành viên lớp ${u.class}` : 'Chưa cập nhật lớp';
-                    
-                    // Escape commas in fields by wrapping in quotes
-                    const row = [
-                        `"${u.displayName || ''}"`,
-                        `"${u.email || ''}"`,
-                        `"${u.customID || ''}"`,
-                        `"${regDate}"`,
-                        `"${activity}"`,
-                        `"${lastActive}"`,
-                        `${loginCount}`,
-                        `"Đang hoạt động"`
-                    ].join(",");
-                    csvContent += row + "\n";
-                }); 
-            } else { 
-                // Gallery/Contest Export
-                csvContent += "Người đăng,ID,Lớp,Mô tả,Tim,Link ảnh,Ngày đăng\n";
-                const snap = await getDocs(collection(db, type)); 
-                snap.forEach(d => { 
-                    const p = d.data(); 
-                    const date = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''; 
-                    const row = [
-                        `"${p.authorName || ''}"`,
-                        `"${p.authorID || ''}"`,
-                        `"${p.className || ''}"`,
-                        `"${(p.desc || '').replace(/"/g, '""')}"`, // Escape quotes
-                        `${p.likes?p.likes.length:0}`,
-                        `"${p.url}"`,
-                        `"${date}"`
-                    ].join(",");
-                    csvContent += row + "\n";
-                }); 
-            } 
-            
-            // Download CSV
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); 
-            const url = window.URL.createObjectURL(blob); 
-            const a = document.createElement('a'); 
-            a.href = url; 
-            a.download = `Data_${type}_${new Date().toISOString().slice(0,10)}.csv`; 
-            a.click(); 
-        }
-
-        window.updateSheetConfig = async () => { 
-            const url = document.getElementById('cfg-sheet-url').value;
-            await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); 
-            alert("Đã lưu Link Google Sheet!"); 
-        }
-
+        window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; let csvContent = "\uFEFF"; if(type === 'users') { csvContent += "Tên người dùng,Email,Tên đăng nhập (ID),Ngày đăng ký,Hoạt động chung (Lớp),Phiên hoạt động cuối,Số lần đăng nhập,Lịch sử hoạt động cụ thể\n"; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u = d.data(); const regDate = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Không rõ'; const lastActive = u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : 'Chưa hoạt động'; const loginCount = u.loginCount || 1; const activity = u.class ? `Thành viên lớp ${u.class}` : 'Chưa cập nhật lớp'; const row = [ `"${u.displayName || ''}"`, `"${u.email || ''}"`, `"${u.customID || ''}"`, `"${regDate}"`, `"${activity}"`, `"${lastActive}"`, `${loginCount}`, `"Đang hoạt động"` ].join(","); csvContent += row + "\n"; }); } else { csvContent += "Người đăng,ID,Lớp,Mô tả,Tim,Link ảnh,Ngày đăng\n"; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p = d.data(); const date = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''; const row = [ `"${p.authorName || ''}"`, `"${p.authorID || ''}"`, `"${p.className || ''}"`, `"${(p.desc || '').replace(/"/g, '""')}"`, `${p.likes?p.likes.length:0}`, `"${p.url}"`, `"${date}"` ].join(","); csvContent += row + "\n"; }); } const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Data_${type}_${new Date().toISOString().slice(0,10)}.csv`; a.click(); }
+        window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
         window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
         window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
         window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
-        
-        window.loadArchiveSeasons = async () => { 
-            const s=document.getElementById('archive-season-select'); 
-            s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; 
-            // FIX: Removed orderBy to fix Firestore index error
-            const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); 
-            const sn=await getDocs(q); 
-            // Sort manually in JS
-            const docs = [];
-            sn.forEach(d => docs.push(d.data()));
-            docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0));
-            docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); 
-        }
-
-        window.loadArchiveGrid = async () => { 
-            const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
-            const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; 
-            let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l));
-            const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; }
-            s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); 
-        }
+        window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); const sn=await getDocs(q); const docs = []; sn.forEach(d => docs.push(d.data())); docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0)); docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); }
+        window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }
         window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
         window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
-        
         window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); b.innerHTML=""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; b.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`}); }
         window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
         window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
@@ -1006,50 +787,23 @@
         window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
         async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
         window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
-        
-        window.showPage = (id) => { 
-            // V42.0: Sử dụng sessionStorage để chỉ nhớ trong phiên làm việc
-            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); 
-            const target = document.getElementById(id);
-            if(target) target.classList.add('active'); 
-            else document.getElementById('home').classList.add('active'); // Fallback
-
-            document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); 
-            if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); 
-            if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); 
-            
-            sessionStorage.setItem('page', id); // Changed from localStorage
-            if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } 
-        }
+        window.showPage = (id) => { document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); const target = document.getElementById(id); if(target) target.classList.add('active'); else document.getElementById('home').classList.add('active'); document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); sessionStorage.setItem('page', id); if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } }
 
         const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
         window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
         document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
         
-        // V42.0: Fix nút đăng nhập bằng Event Listener
         const mainLoginBtn = document.getElementById('main-login-btn');
-        if(mainLoginBtn) {
-            mainLoginBtn.addEventListener('click', () => {
-                console.log("Login clicked");
-                signInWithPopup(auth, provider);
-            });
-        }
+        if(mainLoginBtn) { mainLoginBtn.addEventListener('click', () => { console.log("Login clicked"); signInWithPopup(auth, provider); }); }
         
-        // V42.0: Logic load trang đầu tiên
-        // Nếu không có trong sessionStorage -> Mặc định Home
         const savedPage = sessionStorage.getItem('page') || 'home';
         showPage(savedPage);
 
-        // --- PWA INSTALLATION LOGIC (V42.0) ---
         let deferredPrompt;
-        
-        // Tạo nút Cài đặt cho PC
         const pcMenu = document.querySelector('nav.pc-nav ul');
         const installLi = document.createElement('li');
         installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>';
         pcMenu.appendChild(installLi);
-
-        // Tạo nút Cài đặt cho Mobile
         const mobNav = document.querySelector('.mobile-nav-inner');
         const installMob = document.createElement('a');
         installMob.className = 'nav-item';
@@ -1057,33 +811,11 @@
         installMob.style.display = 'none';
         installMob.innerHTML = '<i class="fas fa-download"></i><span>TảiApp</span>';
         mobNav.insertBefore(installMob, mobNav.firstChild);
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('btn-install-pc').style.display = 'inline-block';
-            document.getElementById('btn-install-mob').style.display = 'flex';
-        });
-
-        async function installPWA() {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            deferredPrompt = null;
-            document.getElementById('btn-install-pc').style.display = 'none';
-            document.getElementById('btn-install-mob').style.display = 'none';
-        }
-
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('btn-install-pc').style.display = 'inline-block'; document.getElementById('btn-install-mob').style.display = 'flex'; });
+        async function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; document.getElementById('btn-install-pc').style.display = 'none'; document.getElementById('btn-install-mob').style.display = 'none'; }
         document.getElementById('btn-install-pc').addEventListener('click', installPWA);
         document.getElementById('btn-install-mob').addEventListener('click', installPWA);
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('SW Registered!', reg))
-                .catch(err => console.log('SW Error:', err));
-            });
-        }
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered!', reg)).catch(err => console.log('SW Error:', err)); }); }
     </script>
 <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "18a4fa3e191846769c91bd8e455fa668"}'></script><!-- Cloudflare Pages Analytics --></body>
 </html>
