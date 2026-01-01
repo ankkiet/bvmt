@@ -769,7 +769,19 @@
         window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
         window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
         window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
-        window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab),orderBy("archivedAt","desc")); const sn=await getDocs(q); sn.forEach(d=>s.innerHTML+=`<option value="${d.data().label}">${d.data().label}</option>`); }
+        
+        window.loadArchiveSeasons = async () => { 
+            const s=document.getElementById('archive-season-select'); 
+            s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; 
+            // NEW: Remove orderBy, sort manually
+            const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); 
+            const sn=await getDocs(q); 
+            const data = [];
+            sn.forEach(d => data.push(d.data()));
+            data.sort((a, b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0));
+            data.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); 
+        }
+
         window.loadArchiveGrid = async () => { 
             const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase();
             const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; 
