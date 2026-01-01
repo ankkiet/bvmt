@@ -152,10 +152,9 @@
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- 8. LIGHTBOX & COMMENTS (REDESIGNED) --- */
+        /* --- 8. LIGHTBOX & COMMENTS (FIXED & MODERN) --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: #000; overflow: hidden; }
         
-        /* Layout Mobile-First */
         .lb-container { 
             width: 100%; height: 100%; display: flex; flex-direction: column; 
             background: #000; position: relative;
@@ -165,59 +164,68 @@
         .lb-image-area { 
             flex: 1; display: flex; align-items: center; justify-content: center; 
             overflow: hidden; background: #000; position: relative; cursor: grab;
+            padding: 10px;
         }
         .lb-image-area img { 
             max-width: 100%; max-height: 100%; object-fit: contain; 
             transition: transform 0.2s ease-out; transform-origin: center;
         }
-        .lb-image-area img.zoomed { cursor: grab; }
+        .lb-image-area img.zoomed { cursor: grab; transform: scale(2.5); }
 
         /* Controls Overlay (Top) */
         .lb-overlay-top {
             position: absolute; top: 0; left: 0; width: 100%; 
-            padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-            display: flex; justify-content: space-between; align-items: flex-start; z-index: 10;
-            color: white; pointer-events: none; /* Let clicks pass through if needed, but buttons need pointer-events auto */
+            padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+            display: flex; justify-content: flex-end; align-items: center; z-index: 100;
         }
-        .lb-overlay-top * { pointer-events: auto; }
-        .lb-close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .lb-close-btn { 
+            background: rgba(255,255,255,0.2); border: none; color: white; 
+            width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            backdrop-filter: blur(5px);
+        }
 
         /* Details (Bottom Sheet Style) */
         .lb-details { 
             background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; 
-            padding: 15px; display: flex; flex-direction: column; 
-            max-height: 45vh; /* Chiếm tối đa 45% màn hình dưới */
-            min-height: 120px;
-            transition: transform 0.3s;
-            z-index: 20;
+            padding: 20px; display: flex; flex-direction: column; 
+            height: 40vh; /* Fixed height for consistency */
+            z-index: 20; box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
         }
         
-        .lb-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary); }
-        .lb-meta h4 { margin: 0; font-size: 0.95rem; }
-        .lb-meta span { font-size: 0.8rem; color: #666; }
+        .lb-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
+        .lb-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
+        .lb-meta h4 { margin: 0; font-size: 1rem; color: #333; }
+        .lb-meta span { font-size: 0.85rem; color: #666; display:block; }
 
-        .lb-desc { font-size: 0.9rem; margin-bottom: 10px; max-height: 60px; overflow-y: auto; color: #333; }
+        .lb-desc { font-size: 0.95rem; margin-bottom: 15px; max-height: 50px; overflow-y: auto; color: #333; flex-shrink: 0; }
         
-        .lb-stats { display: flex; gap: 20px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .lb-stat-item { color: #555; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .lb-stats { display: flex; gap: 20px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; flex-shrink: 0; }
+        .lb-stat-item { color: #555; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .lb-stat-item.active { color: #e53935; }
+
+        /* Comments List */
+        .lb-comments-list { 
+            flex: 1; overflow-y: auto; margin-bottom: 15px; 
+            background: #f9f9f9; padding: 10px; border-radius: 10px; 
+        }
+        .lb-comment-item { margin-bottom: 8px; font-size: 0.9rem; }
+        .lb-comment-bubble { background: #fff; padding: 6px 10px; border-radius: 12px; display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
         /* Quick Replies Grid */
         .quick-replies-container { 
-            overflow-x: auto; white-space: nowrap; padding-bottom: 5px; margin-bottom: 5px; 
-            display: flex; gap: 8px; 
+            overflow-x: auto; white-space: nowrap; padding-bottom: 5px; 
+            display: flex; gap: 10px; flex-shrink: 0;
+            -ms-overflow-style: none; scrollbar-width: none;
         }
+        .quick-replies-container::-webkit-scrollbar { display: none; }
+        
         .quick-chip { 
-            background: #f1f8e9; color: var(--primary-dark); border: 1px solid #c5e1a5; 
-            padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; 
+            background: #e8f5e9; color: var(--primary-dark); border: 1px solid #c8e6c9; 
+            padding: 10px 18px; border-radius: 25px; font-size: 0.9rem; font-weight: bold; 
             cursor: pointer; transition: 0.2s; 
         }
         .quick-chip:active { background: var(--primary); color: white; transform: scale(0.95); }
-
-        .lb-comments-list { flex: 1; overflow-y: auto; font-size: 0.85rem; margin-bottom: 10px; }
-        .cmt-row { margin-bottom: 6px; }
-        .cmt-name { font-weight: bold; margin-right: 5px; }
 
         /* --- 9. ADMIN & MOBILE --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
@@ -239,11 +247,11 @@
         .key-val { font-size: 0.8rem; color: #666; margin-left: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         @media (min-width: 769px) {
-            .lb-container { flex-direction: row; max-width: 1000px; height: 90vh; border-radius: 10px; margin: 5vh auto; background: black; }
-            .lb-image-area { flex: 2; height: 100%; border-right: 1px solid #333; }
-            .lb-details { flex: 1; max-height: 100%; border-radius: 0 10px 10px 0; }
-            .lb-overlay-top { display: none; } /* Hide mobile overlay on PC */
-            .lb-close-btn { position: absolute; top: 10px; right: 10px; z-index: 100; background: rgba(0,0,0,0.5); }
+            .lb-container { flex-direction: row; max-width: 1100px; height: 90vh; border-radius: 12px; margin: 5vh auto; background: black; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+            .lb-image-area { flex: 2; height: 100%; border-right: 1px solid #333; border-radius: 12px 0 0 12px; }
+            .lb-details { flex: 1; height: 100%; max-height: 100%; border-radius: 0 12px 12px 0; }
+            .lb-overlay-top { display: none; } 
+            .lb-close-btn { position: absolute; top: 15px; right: 15px; z-index: 100; background: rgba(0,0,0,0.6); }
         }
 
         @media (max-width: 768px) {
@@ -329,44 +337,188 @@
             </div>
         </div>
 
-        <!-- Greenclass, Contest, Archive, Activities, Guide, Profile, Admin sections remain the same -->
-        <!-- Just rendering basic structure for brevity, logic handles content -->
-        <div id="greenclass" class="page-section"><div id="content-greenclass">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-                <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
-                <div><button class="btn" style="background:#ff9800; color:white; margin-right:5px" onclick="checkLoginAndUpload('trash')"><i class="fas fa-search"></i> AI Soi Rác</button><button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh</button></div>
+        <div id="greenclass" class="page-section">
+            <div id="locked-greenclass" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-greenclass">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
+                    <div>
+                        <button class="btn" style="background:#ff9800; color:white; margin-right:5px" onclick="checkLoginAndUpload('trash')"><i class="fas fa-search"></i> AI Soi Rác</button>
+                        <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
+                    </div>
+                </div>
+                <div class="countdown-container" id="cd-gallery">
+                    <div class="countdown-header"><i class="fas fa-clock"></i> <span>Thời gian nộp bài còn lại</span></div>
+                    <div id="timer-gallery" class="timer-display">Loading...</div>
+                </div>
+                <div id="gallery-grid" class="gallery-grid"></div>
+                <div class="ranking-wrapper">
+                    <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-gallery-user"></tbody></table></div>
+                    <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-gallery-class"></tbody></table></div>
+                </div>
             </div>
-            <div class="countdown-container" id="cd-gallery"><div class="countdown-header"><i class="fas fa-clock"></i> <span>Hạn nộp</span></div><div id="timer-gallery" class="timer-display">Loading...</div></div>
-            <div id="gallery-grid" class="gallery-grid"></div>
-            <div class="ranking-wrapper">
-                <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-gallery-user"></tbody></table></div>
-                <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-gallery-class"></tbody></table></div>
+        </div>
+
+        <div id="contest" class="page-section">
+            <div id="locked-contest" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-contest">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="margin:0">🏆 Phong Trào Thi Đua</h2>
+                    <button class="btn btn-upload" onclick="checkLoginAndUpload('contest')"><i class="fas fa-upload"></i> Báo Cáo Hoạt Động</button>
+                </div>
+                <div class="countdown-container" id="cd-contest" style="background: linear-gradient(135deg, #0288d1, #01579b);">
+                    <div class="countdown-header"><i class="fas fa-calendar-alt"></i> <span>Hạn chót báo cáo</span></div>
+                    <div id="timer-contest" class="timer-display">Loading...</div>
+                </div>
+                <div id="contest-grid" class="gallery-grid"></div>
+                <div class="ranking-wrapper">
+                    <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-contest-user"></tbody></table></div>
+                    <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-contest-class"></tbody></table></div>
+                </div>
             </div>
-        </div></div>
+        </div>
 
-        <div id="contest" class="page-section"><div id="content-contest">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-                <h2 style="margin:0">🏆 Phong Trào Thi Đua</h2>
-                <button class="btn btn-upload" onclick="checkLoginAndUpload('contest')"><i class="fas fa-upload"></i> Báo Cáo</button>
+        <div id="archive" class="page-section">
+            <div id="locked-archive" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Kho lưu trữ đang đóng</h2></div>
+            <div id="content-archive">
+                <h1>🗄️ Kho Lưu Trữ</h1>
+                <div class="card">
+                    <div class="archive-controls">
+                        <div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div>
+                        <div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div>
+                    </div>
+                    <div style="margin-bottom:15px; display:flex; gap:10px;">
+                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên, Nội dung..." style="flex:1;" onkeyup="loadArchiveGrid()">
+                    </div>
+                    <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%"><option value="ALL">📂 Tất cả ảnh lưu trữ</option></select>
+                    <div id="archive-grid" class="gallery-grid"></div>
+                </div>
             </div>
-            <div class="countdown-container" id="cd-contest" style="background: linear-gradient(135deg, #0288d1, #01579b);"><div class="countdown-header"><i class="fas fa-calendar-alt"></i> <span>Hạn chót</span></div><div id="timer-contest" class="timer-display">Loading...</div></div>
-            <div id="contest-grid" class="gallery-grid"></div>
-            <div class="ranking-wrapper">
-                <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-contest-user"></tbody></table></div>
-                <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-contest-class"></tbody></table></div>
+        </div>
+
+        <div id="activities" class="page-section">
+            <div id="locked-activities" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-activities">
+                <h1>📅 Hoạt Động & Tin Tức</h1>
+                <div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div>
+                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#" style="text-decoration:none; color:var(--primary)">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
             </div>
-        </div></div>
+        </div>
+        <div id="guide" class="page-section">
+            <div id="locked-guide" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="content-guide">
+                <h1>🔍 Tra Cứu Phân Loại Rác</h1>
+                <div style="max-width:500px; margin:0 auto 20px;"><input type="text" id="trashSearchInput" placeholder="Nhập tên rác (vỏ sữa, pin...)" onkeyup="filterTrash()"></div>
+                <div id="trashContainer" class="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div>
+            </div>
+        </div>
 
-        <div id="archive" class="page-section"><div id="content-archive"><h1>🗄️ Kho Lưu Trữ</h1><div class="card"><div class="archive-controls"><div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div><div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div></div><div style="margin-bottom:15px;"><input type="text" id="archive-search" placeholder="🔍 Tìm kiếm..." onkeyup="loadArchiveGrid()"></div><select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%"><option value="ALL">📂 Tất cả</option></select><div id="archive-grid" class="gallery-grid"></div></div></div></div>
-        
-        <div id="activities" class="page-section"><div id="content-activities"><h1>📅 Hoạt Động & Tin Tức</h1><div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div><div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#" style="text-decoration:none; color:var(--primary)">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div></div></div>
-        
-        <div id="guide" class="page-section"><div id="content-guide"><h1>🔍 Tra Cứu Phân Loại Rác</h1><div style="max-width:500px; margin:0 auto 20px;"><input type="text" id="trashSearchInput" placeholder="Nhập tên rác..." onkeyup="filterTrash()"></div><div id="trashContainer" class="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div></div></div>
+        <div id="profile" class="page-section">
+            <h1>👤 Hồ Sơ Của Tôi</h1>
+            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
+            <div id="profile-in" style="display: none;">
+                <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>
+                <div class="card">
+                    <div style="text-align:center; margin-bottom:20px">
+                        <div style="position:relative; display:inline-block">
+                            <img id="p-avatar" src="" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border:4px solid var(--primary);">
+                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fas fa-camera" style="color:white"></i></button>
+                        </div>
+                        <h2 id="p-name" style="margin:10px 0 5px 0">User Name</h2>
+                        <div id="p-custom-id" style="color:var(--primary); font-weight:bold; font-size:0.9rem;">@id</div>
+                        <p id="p-email" style="color:#666">user@email.com</p>
+                    </div>
+                    <form onsubmit="updateProfile(event)">
+                        <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
+                        <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
+                        <label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select>
+                        <label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea>
+                        <div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">
+                            <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
+                            <button type="button" class="btn" style="background:var(--primary-dark); color:white;" onclick="handleLogout()">🚪 ĐĂNG XUẤT</button>
+                        </div>
+                    </form>
+                    <div style="margin-top:20px; text-align:center;"><button class="btn-ghost-danger" onclick="requestDeleteAccount()"><i class="fas fa-trash"></i> Xóa tài khoản vĩnh viễn</button></div>
+                </div>
+            </div>
+        </div>
 
-        <div id="profile" class="page-section"><h1>👤 Hồ Sơ</h1><div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập Google</button></div><div id="profile-in" style="display: none;"><div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; margin-bottom:20px;">⚠️ Tài khoản chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục</button></div><div class="card"><div style="text-align:center; margin-bottom:20px"><img id="p-avatar" style="width: 120px; height: 120px; border-radius: 50%; border:4px solid var(--primary);"><button onclick="document.getElementById('avatar-upload').click()" style="margin-top:-20px; display:block; margin-left:auto; margin-right:auto; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fas fa-camera" style="color:white"></i></button><h2 id="p-name">User</h2><div id="p-custom-id" style="color:var(--primary); font-weight:bold;">@id</div><p id="p-email" style="color:#666">email</p></div><form onsubmit="updateProfile(event)"><label>Tên hiển thị:</label><input type="text" id="edit-name" required><label>ID:</label><input type="text" id="edit-custom-id" required><label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select><label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea><div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;"><button type="submit" class="btn">💾 Lưu</button><button type="button" class="btn" style="background:var(--primary-dark); color:white;" onclick="handleLogout()">🚪 Đăng Xuất</button></div></form><div style="margin-top:20px; text-align:center;"><button class="btn-ghost-danger" onclick="requestDeleteAccount()">Xóa tài khoản</button></div></div></div></div>
+        <div id="admin" class="page-section">
+            <h1>🛠 Quản Trị Hệ Thống</h1>
+            
+            <div class="card" style="border-left: 5px solid #6200ea;">
+                <h3>🤖 Quản Lý API Key (AI Fail-over)</h3>
+                <p>Nhập nhiều Key để hệ thống tự động chuyển đổi khi lỗi.</p>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="new-key-name" placeholder="Tên Key (Vd: Key chính)" style="flex:1">
+                    <input type="password" id="new-key-val" placeholder="Nhập API Key..." style="flex:2">
+                    <button class="btn btn-sm btn-ai" onclick="addAIKey()">➕ Thêm</button>
+                </div>
+                <div id="ai-key-list" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; border-radius:8px; padding:5px;">
+                    <!-- List keys here -->
+                </div>
+                <div style="margin-top:10px;">
+                    <button class="btn btn-sm btn-outline" onclick="testAIConnection()">Kiểm tra kết nối AI</button>
+                </div>
+            </div>
 
-        <div id="admin" class="page-section"><h1>🛠 Quản Trị</h1><div class="card" style="border-left: 5px solid #6200ea;"><h3>🤖 Quản Lý API Key</h3><div style="display:flex; gap:10px; margin-bottom:10px;"><input type="text" id="new-key-name" placeholder="Tên Key" style="flex:1"><input type="password" id="new-key-val" placeholder="Key..." style="flex:2"><button class="btn btn-sm btn-ai" onclick="addAIKey()">➕ Thêm</button></div><div id="ai-key-list" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding:5px;"></div><div style="margin-top:10px;"><button class="btn btn-sm btn-outline" onclick="testAIConnection()">Test AI</button></div></div><div class="card" style="border-left: 5px solid #2e7d32;"><h3>📊 Đồng Bộ Sheet</h3><div style="display:flex; gap:10px;"><input type="text" id="cfg-sheet-url" placeholder="Script URL..." style="flex:1"><button class="btn btn-sm" onclick="updateSheetConfig()">Lưu</button></div></div><div class="card" style="border-left: 5px solid #9c27b0;"><h3>🎵 Nhạc</h3><div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="new-song-name" placeholder="Tên" style="flex:1"><input type="text" id="new-song-url" placeholder="Link YouTube..." style="flex:1"><button class="btn btn-sm" onclick="addNewSong()">➕ Thêm</button></div><div id="music-playlist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee;"></div></div><div class="card" style="border-left: 5px solid var(--admin-color);"><h3>⚙️ Cấu hình</h3><div style="padding:15px; background:#ffebee; display:flex; justify-content:space-between;"><span style="font-weight:bold; color:red">BẢO TRÌ:</span><label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label></div><h4>🔒 Khóa mục</h4><div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap:10px;"><label>Home <input type="checkbox" id="lock-home" onchange="updateLocks()"></label><label>Góc Xanh <input type="checkbox" id="lock-greenclass" onchange="updateLocks()"></label><label>Thi Đua <input type="checkbox" id="lock-contest" onchange="updateLocks()"></label><label>Hoạt Động <input type="checkbox" id="lock-activities" onchange="updateLocks()"></label><label>Lưu Trữ <input type="checkbox" id="lock-archive" onchange="updateLocks()"></label><label>Tra Cứu <input type="checkbox" id="lock-guide" onchange="updateLocks()"></label></div><h4>⏳ Deadline</h4><div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;"><div><label>Góc Xanh:</label><input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('gallery')">Lưu trữ</button></div><div><label>Thi Đua:</label><input type="datetime-local" id="time-contest" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('contest')">Lưu trữ</button></div></div></div><div class="card" style="border-left: 5px solid #0288d1;"><h3>📊 Xuất Excel</h3><div style="display:flex; flex-wrap:wrap; gap:10px;"><button class="btn btn-sm btn-outline" onclick="exportExcel('users')">DS Thành viên</button><button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')">Góc Xanh</button><button class="btn btn-sm btn-outline" onclick="exportExcel('contest')">Thi Đua</button></div></div><div class="card"><h3>Thành viên</h3><div style="overflow-x:auto;"><table class="admin-table"><tbody id="user-table-body"></tbody></table></div><button class="btn btn-sm" onclick="loadAdminData()">Làm mới</button></div></div>
+            <div class="card" style="border-left: 5px solid #2e7d32;">
+                <h3>📊 Đồng Bộ Google Sheet</h3>
+                <p>Dán Link Script (Web App URL) để tự động lưu thông tin thành viên khi họ đăng nhập.</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="cfg-sheet-url" placeholder="https://script.google.com/..." style="flex:1">
+                    <button class="btn btn-sm" onclick="updateSheetConfig()">Lưu Link</button>
+                </div>
+            </div>
 
+            <div class="card" style="border-left: 5px solid #9c27b0;">
+                <h3>🎵 Quản Lý Nhạc</h3>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                    <input type="text" id="new-song-name" placeholder="Tên bài hát" style="flex:1">
+                    <input type="text" id="new-song-url" placeholder="Dán Link YouTube..." style="flex:1">
+                    <button class="btn btn-sm" onclick="addNewSong()">➕ Thêm</button>
+                </div>
+                <div id="music-playlist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius:8px;"></div>
+            </div>
+
+            <div class="card" style="border-left: 5px solid var(--admin-color);">
+                <h3>⚙️ Cấu hình Hệ thống</h3>
+                <div style="padding:15px; background:#ffebee; margin-bottom:20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:bold; color:red"><i class="fas fa-tools"></i> BẢO TRÌ TOÀN TRANG:</span>
+                    <label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label>
+                </div>
+                <h4>🔒 Khóa từng mục</h4>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:15px; margin-bottom:25px;">
+                    <label>🏠 Home <input type="checkbox" id="lock-home" onchange="updateLocks()"></label>
+                    <label>🌿 Góc Xanh <input type="checkbox" id="lock-greenclass" onchange="updateLocks()"></label>
+                    <label>🏆 Thi Đua <input type="checkbox" id="lock-contest" onchange="updateLocks()"></label>
+                    <label>📅 Hoạt Động <input type="checkbox" id="lock-activities" onchange="updateLocks()"></label>
+                    <label>🗄️ Lưu Trữ <input type="checkbox" id="lock-archive" onchange="updateLocks()"></label>
+                    <label>🔍 Tra Cứu <input type="checkbox" id="lock-guide" onchange="updateLocks()"></label>
+                </div>
+                <h4>⏳ Deadline & Lưu trữ</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div><label>Góc Xanh:</label><input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('gallery')">📦 Lưu trữ</button></div>
+                    <div><label>Thi Đua:</label><input type="datetime-local" id="time-contest" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('contest')">📦 Lưu trữ</button></div>
+                </div>
+            </div>
+
+            <div class="card" style="border-left: 5px solid #0288d1;">
+                <h3>📊 Xuất Dữ Liệu Excel (XLSX)</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('users')">DS Thành viên</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')">Góc Xanh</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('contest')">Thi Đua</button>
+                </div>
+                <table id="export-table" style="display:none"></table>
+            </div>
+
+            <div class="card">
+                <h3>Danh sách thành viên</h3>
+                <div style="overflow-x:auto;"><table class="admin-table"><tbody id="user-table-body"></tbody></table></div>
+                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px">Làm mới</button>
+            </div>
+        </div>
     </div>
 
     <nav class="mobile-nav">
@@ -383,15 +535,17 @@
     <!-- NEW LIGHTBOX STRUCTURE -->
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container">
+            <!-- Top Overlay with Close Button -->
             <div class="lb-overlay-top">
-                <div style="flex:1"></div>
-                <button class="lb-close-btn" onclick="closeLightbox()">✕</button>
+                <button class="lb-close-btn" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
             </div>
 
+            <!-- Image Area with Zoom Support -->
             <div class="lb-image-area" id="lb-zoom-area">
                 <img id="lb-img" src="">
             </div>
 
+            <!-- Bottom Details Sheet -->
             <div class="lb-details">
                 <div class="lb-header">
                     <img id="lb-author-avatar" class="lb-avatar">
@@ -407,23 +561,20 @@
                     <div id="lb-like-btn" class="lb-stat-item" onclick="handleLike()">
                         <i class="fas fa-heart"></i> <span id="lb-like-count">0</span>
                     </div>
-                    <div class="lb-stat-item">
-                        <i class="fas fa-comment"></i>
-                    </div>
                     <div class="lb-stat-item" onclick="window.open(document.getElementById('lb-img').src)">
-                        <i class="fas fa-download"></i>
+                        <i class="fas fa-download"></i> Tải ảnh
                     </div>
                 </div>
 
                 <div class="lb-comments-list" id="lb-comments-list"></div>
 
-                <!-- QUICK REPLIES ONLY -->
+                <!-- QUICK REPLIES (Smart Comment) -->
                 <div class="quick-replies-container">
                     <div class="quick-chip" onclick="quickReply('Tuyệt vời! 😍')">Tuyệt vời! 😍</div>
                     <div class="quick-chip" onclick="quickReply('Xanh quá! 🌿')">Xanh quá! 🌿</div>
                     <div class="quick-chip" onclick="quickReply('Cố lên! 💪')">Cố lên! 💪</div>
-                    <div class="quick-chip" onclick="quickReply('Ý nghĩa! ❤️')">Ý nghĩa! ❤️</div>
-                    <div class="quick-chip" onclick="quickReply('Chất lượng! 🔥')">Chất lượng! 🔥</div>
+                    <div class="quick-chip" onclick="quickReply('Ý nghĩa quá! ❤️')">Ý nghĩa quá! ❤️</div>
+                    <div class="quick-chip" onclick="quickReply('Đỉnh! 🔥')">Đỉnh! 🔥</div>
                 </div>
             </div>
         </div>
@@ -500,7 +651,28 @@
         });
 
         // --- GEMINI AI (MULTI-KEY FAILOVER) ---
-        const WEB_CONTEXT = `...`; // (As defined previously)
+        const WEB_CONTEXT = `
+        VAI TRÒ: Bạn là Green Bot 🤖, trợ lý AI của Green School A2K41.
+        NHIỆM VỤ:
+        1. Hỗ trợ điều hướng website (Góc Xanh, Thi Đua...).
+        2. Cung cấp kiến thức môi trường chuẩn xác, toàn cầu.
+
+        THÔNG TIN WEBSITE:
+        - Trang chủ: Xem thông báo, đăng nhập.
+        - Góc Xanh: Nơi học sinh đăng ảnh bảo vệ môi trường.
+        - Thi Đua: Báo cáo các hoạt động phong trào.
+        - Admin: Quản lý nhạc, khóa web, xuất Excel.
+
+        KIẾN THỨC MÔI TRƯỜNG:
+        - 🌍 Biến đổi khí hậu: Trái đất nóng lên, băng tan...
+        - ♻️ Rác thải: Phân loại rác (Hữu cơ, Vô cơ, Tái chế)...
+        - 🌱 Sống xanh: Tiết kiệm điện, nước, trồng cây...
+
+        QUY TẮC TRẢ LỜI:
+        - Luôn dùng Emoji/Icon đầu câu (🌿, 🍃, 💡, ♻️...) để làm đẹp.
+        - Trả lời ngắn gọn, thân thiện, mang tính giáo dục.
+        - Hạn chế dùng Markdown đậm/nghiêng (***), thay vào đó hãy dùng Icon để làm nổi bật ý.
+        `;
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
             // Thử từng key trong danh sách
@@ -510,7 +682,10 @@
                 
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-                    const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
+                    const requestBody = { 
+                        contents: [{ parts: [{ text: prompt }] }],
+                        system_instruction: { parts: [{ text: WEB_CONTEXT }] }
+                    };
                     if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
 
                     const response = await fetch(url, {
@@ -741,7 +916,7 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show'); renderComments(d.comments||[]); }
+        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-comments-wrapper').classList.remove('show'); renderComments(d.comments||[]); }
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         
         // --- ZOOM LOGIC (DOUBLE TAP) ---
@@ -811,11 +986,9 @@
             });
         }
 
-        window.toggleComments = () => { const wrap = document.getElementById('lb-comments-wrapper'); const inp = document.getElementById('lb-input-area'); wrap.classList.toggle('show'); inp.classList.toggle('show'); }
         window.handleLike = async () => { if(!currentUser)return alert("Đăng nhập!"); const r=doc(db,currentImgCollection,currentImgId); const s=await getDoc(r); const l=s.data().likes||[]; if(l.includes(currentUser.uid)){ await updateDoc(r,{likes:arrayRemove(currentUser.uid)}); document.getElementById('lb-like').style.color='#ccc'; document.getElementById('lb-like-count').innerText=l.length-1; } else{ await updateDoc(r,{likes:arrayUnion(currentUser.uid)}); document.getElementById('lb-like').style.color='red'; document.getElementById('lb-like-count').innerText=l.length+1; } }
         
-        window.postComment = async (e) => { e.preventDefault(); if(!currentUser)return; const t=document.getElementById('lb-cmt-input').value; await updateDoc(doc(db,currentImgCollection,currentImgId),{comments:arrayUnion({uid:currentUser.uid,name:currentUser.displayName,avatar:currentUser.photoURL,text:t})}); document.getElementById('lb-cmt-input').value=""; const s=await getDoc(doc(db,currentImgCollection,currentImgId)); renderComments(s.data().comments); }
-        function renderComments(arr) { const l=document.getElementById('lb-comments-list'); l.innerHTML=""; arr.forEach(c=>{ let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>'); let isReply = c.text.includes('@'); let replyClass = isReply ? 'is-reply' : ''; l.innerHTML+=`<div class="lb-comment-item ${replyClass}"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div></div></div>`; }); }
+        function renderComments(arr) { const l=document.getElementById('lb-comments-list'); l.innerHTML=""; arr.forEach(c=>{ let text = c.text.replace(/(@\w+)/g, '<span class="mention-tag">$1</span>'); l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${text}</span></div></div>`; }); }
 
         // --- NEW EXCEL EXPORT (EXCELJS) ---
         window.exportExcel = async (type) => {
