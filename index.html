@@ -606,7 +606,7 @@
 
                 <div class="lb-comments-list" id="lb-comments-list"></div>
 
-                <!-- QUICK REPLIES (Smart Comment) -->
+                <!-- QUICK REPLIES (Smart Comment - No Manual Input) -->
                 <div class="quick-replies-container">
                     <div class="quick-chip" onclick="quickReply('Tuyệt vời! 😍')">Tuyệt vời! 😍</div>
                     <div class="quick-chip" onclick="quickReply('Xanh quá! 🌿')">Xanh quá! 🌿</div>
@@ -954,7 +954,30 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); renderComments(d.comments||[]); }
+        window.openLightbox = async (c, i) => { 
+            currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
+            const s=await getDoc(doc(db,c,i)); const d=s.data(); 
+            const imgArea = document.getElementById('lb-zoom-area'); 
+            imgArea.classList.remove('zoomed'); 
+            const imgEl = document.getElementById('lb-img');
+            imgEl.style.transform = "scale(1)"; 
+            
+            imgEl.src=d.url; 
+            document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; 
+            document.getElementById('lb-author-name').innerHTML=d.authorName; 
+            document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
+            document.getElementById('lb-desc').innerText=d.desc; 
+            document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
+            
+            const btn = document.getElementById('lb-like-btn'); // FIX: Correct ID
+            if(currentUser && d.likes?.includes(currentUser.uid)) { 
+                btn.classList.add('liked'); btn.style.color='#e53935'; 
+            } else { 
+                btn.classList.remove('liked'); btn.style.color='#555'; 
+            } 
+            renderComments(d.comments||[]); 
+        }
+
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         
         // --- ZOOM LOGIC (DOUBLE TAP) ---
@@ -962,7 +985,6 @@
         const imgEl = document.getElementById('lb-img');
         const zoomArea = document.getElementById('lb-zoom-area');
         
-        // Double tap for touch devices
         zoomArea.addEventListener('touchend', (e) => {
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
@@ -973,7 +995,6 @@
             lastTap = currentTime;
         });
         
-        // Double click for PC
         zoomArea.addEventListener('dblclick', toggleZoom);
 
         function toggleZoom(e) {
@@ -982,7 +1003,6 @@
                 imgEl.style.transform = "scale(1)";
             } else {
                 zoomArea.classList.add('zoomed');
-                // Calculate click position to zoom into that area
                 let clientX, clientY;
                 if (e.changedTouches && e.changedTouches.length > 0) {
                     clientX = e.changedTouches[0].clientX;
@@ -991,21 +1011,18 @@
                     clientX = e.clientX;
                     clientY = e.clientY;
                 }
-                
                 const rect = zoomArea.getBoundingClientRect();
                 const x = clientX - rect.left;
                 const y = clientY - rect.top;
-                
                 imgEl.style.transformOrigin = `${x}px ${y}px`;
                 imgEl.style.transform = "scale(2.5)";
             }
         }
         
-        // Quick Reply Logic
         window.quickReply = (text) => {
             if (!currentUser) return alert("Vui lòng đăng nhập!");
             
-            // UI Optimistic Update (Hiện ngay lập tức)
+            // Optimistic UI
             const list = document.getElementById('lb-comments-list');
             const fakeDiv = document.createElement('div');
             fakeDiv.className = 'lb-comment-item';
@@ -1013,39 +1030,33 @@
             list.appendChild(fakeDiv);
             list.scrollTop = list.scrollHeight;
 
-            // Send to DB
-            const c = { 
-                uid: currentUser.uid, 
-                name: currentUser.displayName, 
-                avatar: currentUser.photoURL, 
-                text: text, 
-                time: Date.now() 
-            };
+            const c = { uid: currentUser.uid, name: currentUser.displayName, avatar: currentUser.photoURL, text: text, time: Date.now() };
             
             updateDoc(doc(db, currentCollection, currentImgId), {
                 comments: arrayUnion(c)
             });
         }
 
+        // FIX: handleLike Logic for Optimistic Update
         window.handleLike = async () => { 
-            if(!currentUser)return alert("Đăng nhập!"); 
-            const likeBtn = document.getElementById('lb-like-btn');
+            if(!currentUser) return alert("Vui lòng đăng nhập để thả tim!"); 
+            const btn = document.getElementById('lb-like-btn');
             const countSpan = document.getElementById('lb-like-count');
-            const currentCount = parseInt(countSpan.innerText);
+            let currentCount = parseInt(countSpan.innerText);
             
-            // Optimistic UI (Đổi màu ngay)
-            const isLiked = likeBtn.classList.contains('liked');
+            const isLiked = btn.classList.contains('liked');
             
-            if(isLiked) {
-                likeBtn.classList.remove('liked');
-                likeBtn.style.color = '#555';
-                countSpan.innerText = currentCount - 1;
-                await updateDoc(doc(db,currentImgCollection,currentImgId),{likes:arrayRemove(currentUser.uid)});
+            // Immediate UI Update
+            if (isLiked) {
+                btn.classList.remove('liked');
+                btn.style.color = '#555';
+                countSpan.innerText = Math.max(0, currentCount - 1);
+                await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayRemove(currentUser.uid) });
             } else {
-                likeBtn.classList.add('liked');
-                likeBtn.style.color = '#e53935';
+                btn.classList.add('liked');
+                btn.style.color = '#e53935';
                 countSpan.innerText = currentCount + 1;
-                await updateDoc(doc(db,currentImgCollection,currentImgId),{likes:arrayUnion(currentUser.uid)});
+                await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayUnion(currentUser.uid) });
             }
         }
         
