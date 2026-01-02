@@ -105,8 +105,10 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* --- 6. AI CHATBOT UI --- */
-        .ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; }
+        .ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; overflow: hidden; }
         .ai-fab:hover { transform: scale(1.1); }
+        .ai-fab img { width: 100%; height: 100%; object-fit: cover; }
+        
         .ai-chat-window { position: fixed; bottom: 230px; right: 25px; width: 350px; height: 450px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2001; display: none; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
         .ai-header { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
@@ -294,7 +296,11 @@
         <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
     </div>
 
-    <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot"><i class="fas fa-robot"></i></div>
+    <!-- AI CHAT BUTTON WITH IMAGE ICON -->
+    <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
+        <img src="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg" alt="AI">
+    </div>
+
     <div class="ai-chat-window" id="ai-window">
         <div class="ai-header"><span>🤖 Green Bot (Web Aware)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
@@ -444,7 +450,26 @@
                     <form onsubmit="updateProfile(event)">
                         <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
                         <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
-                        <label>Lớp:</label><select id="edit-class" required><option value="">-- Chọn --</option><optgroup label="Khối 12"><option>12A1</option><option>12A2</option><option>12A3</option></optgroup><optgroup label="Khối 11"><option>11A1</option><option>11A2</option><option>11A3</option></optgroup><optgroup label="Khối 10"><option>10A1</option><option>10A2</option><option>10A3</option></optgroup><option value="GV">Giáo Viên</option><option value="Khac">Khác</option></select>
+                        
+                        <label>Lớp:</label>
+                        <select id="edit-class" required>
+                            <option value="">-- Chọn --</option>
+                            <optgroup label="Khối 10">
+                                <option>10A1</option><option>10A2</option><option>10A3</option><option>10A4</option><option>10A5</option>
+                                <option>10A6</option><option>10A7</option><option>10A8</option><option>10A9</option>
+                            </optgroup>
+                            <optgroup label="Khối 11">
+                                <option>11A1</option><option>11A2</option><option>11A3</option><option>11A4</option><option>11A5</option>
+                                <option>11A6</option><option>11A7</option><option>11A8</option><option>11A9</option>
+                            </optgroup>
+                            <optgroup label="Khối 12">
+                                <option>12A1</option><option>12A2</option><option>12A3</option><option>12A4</option><option>12A5</option>
+                                <option>12A6</option><option>12A7</option><option>12A8</option><option>12A9</option>
+                            </optgroup>
+                            <option value="GV">Giáo Viên</option>
+                            <option value="Khac">Khác</option>
+                        </select>
+
                         <label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea>
                         <div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">
                             <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
@@ -929,7 +954,7 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-comments-wrapper').classList.remove('show'); renderComments(d.comments||[]); }
+        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); renderComments(d.comments||[]); }
         window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         
         // --- ZOOM LOGIC (DOUBLE TAP) ---
