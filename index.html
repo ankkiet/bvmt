@@ -218,6 +218,13 @@
         .lb-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
         .lb-meta h4 { margin: 0; font-size: 1rem; color: #333; }
         .lb-meta span { font-size: 0.85rem; color: #666; display:block; }
+        
+        .lb-controls { display:flex; gap:10px; margin-left:auto; }
+        .lb-btn-icon { background:none; border:none; font-size:1.2rem; cursor:pointer; color:#666; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; }
+        .lb-btn-icon:hover { background:#eee; }
+        .lb-btn-pin { color:#ffa000; }
+        .lb-btn-edit { color:#1976d2; }
+        .lb-btn-delete { color:#d32f2f; }
 
         .lb-desc { font-size: 0.95rem; margin-bottom: 15px; max-height: 60px; overflow-y: auto; color: #333; flex-shrink: 0; }
         
@@ -615,8 +622,13 @@
                         <h4 id="lb-author-name">Name</h4>
                         <span id="lb-custom-id">@id</span>
                     </div>
-                    <!-- ADMIN PIN BUTTON (Inside Header) -->
-                    <button id="lb-admin-pin" style="background:none; border:none; color:gold; font-size:1.5rem; cursor:pointer; margin-left:auto;" title="Ghim" onclick="pinPost()"><i class="fas fa-thumbtack"></i></button>
+                    
+                    <!-- OWNER CONTROLS -->
+                    <div class="lb-controls" id="lb-owner-controls" style="display:none">
+                        <button class="lb-btn-icon lb-btn-pin" onclick="pinPost()" title="Ghim"><i class="fas fa-thumbtack"></i></button>
+                        <button class="lb-btn-icon lb-btn-edit" onclick="editPostFromLB()" title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="lb-btn-icon lb-btn-delete" onclick="deletePostFromLB()" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+                    </div>
                 </div>
                 
                 <div class="lb-desc" id="lb-desc">Description</div>
@@ -725,9 +737,7 @@
                 
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-                    const requestBody = { 
-                        contents: [{ parts: [{ text: prompt }] }],
-                    };
+                    const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
                     if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
 
                     const response = await fetch(url, {
@@ -942,15 +952,10 @@
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
                     
-                    let ctrls=""; 
-                    if(currentUser && (currentUser.uid===d.uid || isAdmin(currentUser.email))){ 
-                        ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
-                    }
-                    
                     let badge = "";
                     if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
                     else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
-                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
                 });
                 renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
@@ -980,12 +985,12 @@
                 btn.classList.remove('liked'); btn.style.color='#555'; 
             } 
             
-            // Check admin pin
-            const pinBtn = document.getElementById('lb-admin-pin');
+            // Check OWNER/ADMIN CONTROLS
+            const controls = document.getElementById('lb-owner-controls');
             if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
-                pinBtn.style.display = 'block';
+                controls.style.display = 'flex';
             } else {
-                pinBtn.style.display = 'none';
+                controls.style.display = 'none';
             }
 
             renderComments(d.comments||[]); 
@@ -1043,6 +1048,7 @@
         window.quickReply = (text) => {
             if (!currentUser) return alert("Vui lòng đăng nhập!");
             
+            // UI Optimistic Update (Hiện ngay lập tức)
             const list = document.getElementById('lb-comments-list');
             const fakeDiv = document.createElement('div');
             fakeDiv.className = 'lb-comment-item';
@@ -1058,9 +1064,24 @@
         }
         
         window.pinPost = async () => {
-            // Logic: Update a 'featured' document or field. Here we use the 'settings/featured' doc.
             await setDoc(doc(db, "settings", "featured"), { col: currentCollection, id: currentImgId });
             alert("Đã ghim bài viết lên trang chủ!");
+        }
+        
+        window.deletePostFromLB = async () => {
+            if(confirm("Bạn chắc chắn muốn xóa bài viết này chứ?")) {
+                await deleteDoc(doc(db, currentCollection, currentImgId));
+                closeLightbox();
+                alert("Đã xóa bài viết!");
+            }
+        }
+        
+        window.editPostFromLB = async () => {
+            const newDesc = prompt("Nhập mô tả mới:");
+            if(newDesc) {
+                await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc });
+                document.getElementById('lb-desc').innerText = newDesc;
+            }
         }
 
         window.handleLike = async () => { 
