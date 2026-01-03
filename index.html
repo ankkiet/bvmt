@@ -322,7 +322,7 @@
 
     <!-- AI CHAT BUTTON WITH IMAGE ICON -->
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
-        <!-- ROBOT ICON -->
+        <!-- NEW ROBOT ICON -->
         <img src="https://png.pngtree.com/png-vector/20250715/ourlarge/pngtree-friendly-ai-assistant-robot-icon-with-blue-antenna-and-headset-png-image_16771243.webp" alt="AI">
     </div>
 
@@ -992,222 +992,45 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show'); renderComments(d.comments||[]); }
-        window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
+        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like-btn'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='#555'; } 
+        // FIX: Show controls in Lightbox for Admin/Owner
+        const controls = document.getElementById('lb-owner-controls');
+        if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
+            controls.style.display = 'flex';
+        } else {
+            controls.style.display = 'none';
+        }
+        document.getElementById('lb-details-sheet').classList.remove('open'); renderComments(d.comments||[]); }
+        window.closeLightbox = () => { document.getElementById('lightbox').style.display='none'; document.getElementById('lb-details-sheet').classList.remove('open'); }
+        window.toggleDetails = () => { document.getElementById('lb-details-sheet').classList.toggle('open'); }
         
-        // --- ZOOM LOGIC (DOUBLE TAP) ---
         let lastTap = 0;
         const imgEl = document.getElementById('lb-img');
         const zoomArea = document.getElementById('lb-zoom-area');
-        
-        // Double tap for touch devices
-        zoomArea.addEventListener('touchend', (e) => {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            if (tapLength < 300 && tapLength > 0) {
-                toggleZoom(e);
-                e.preventDefault();
-            }
-            lastTap = currentTime;
-        });
-        
-        // Double click for PC
+        zoomArea.addEventListener('touchend', (e) => { const currentTime = new Date().getTime(); const tapLength = currentTime - lastTap; if (tapLength < 300 && tapLength > 0) { toggleZoom(e); e.preventDefault(); } lastTap = currentTime; });
         zoomArea.addEventListener('dblclick', toggleZoom);
-
-        function toggleZoom(e) {
-            if (zoomArea.classList.contains('zoomed')) {
-                zoomArea.classList.remove('zoomed');
-                imgEl.style.transform = "scale(1)";
-            } else {
-                zoomArea.classList.add('zoomed');
-                // Calculate click position to zoom into that area
-                let clientX, clientY;
-                if (e.changedTouches && e.changedTouches.length > 0) {
-                    clientX = e.changedTouches[0].clientX;
-                    clientY = e.changedTouches[0].clientY;
-                } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                }
-                
-                const rect = zoomArea.getBoundingClientRect();
-                const x = clientX - rect.left;
-                const y = clientY - rect.top;
-                
-                imgEl.style.transformOrigin = `${x}px ${y}px`;
-                imgEl.style.transform = "scale(2.5)";
-            }
-        }
+        function toggleZoom(e) { if (zoomArea.classList.contains('zoomed')) { zoomArea.classList.remove('zoomed'); imgEl.style.transform = "scale(1)"; } else { zoomArea.classList.add('zoomed'); let clientX, clientY; if (e.changedTouches && e.changedTouches.length > 0) { clientX = e.changedTouches[0].clientX; clientY = e.changedTouches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; } const rect = zoomArea.getBoundingClientRect(); const x = clientX - rect.left; const y = clientY - rect.top; imgEl.style.transformOrigin = `${x}px ${y}px`; imgEl.style.transform = "scale(2.5)"; } }
         
-        // Quick Reply Logic
         window.quickReply = (text) => {
             if (!currentUser) return alert("Vui lòng đăng nhập!");
-            
-            // UI Optimistic Update (Hiện ngay lập tức)
             const list = document.getElementById('lb-comments-list');
             const fakeDiv = document.createElement('div');
             fakeDiv.className = 'lb-comment-item';
             fakeDiv.innerHTML = `<img src="${currentUser.photoURL}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${currentUser.displayName}</span><span class="lb-comment-text">${text}</span></div></div>`;
             list.appendChild(fakeDiv);
             list.scrollTop = list.scrollHeight;
-
             const c = { uid: currentUser.uid, name: currentUser.displayName, avatar: currentUser.photoURL, text: text, time: Date.now() };
-            
-            updateDoc(doc(db, currentCollection, currentImgId), {
-                comments: arrayUnion(c)
-            });
+            updateDoc(doc(db, currentCollection, currentImgId), { comments: arrayUnion(c) });
         }
         
-        window.pinPost = async () => {
-            await setDoc(doc(db, "settings", "featured"), { col: currentCollection, id: currentImgId });
-            alert("Đã ghim bài viết lên trang chủ!");
-        }
-        
-        window.deletePostFromLB = async () => {
-            if(confirm("Bạn chắc chắn muốn xóa bài viết này chứ?")) {
-                await deleteDoc(doc(db, currentCollection, currentImgId));
-                closeLightbox();
-                alert("Đã xóa bài viết!");
-            }
-        }
-        
-        window.editPostFromLB = async () => {
-            const newDesc = prompt("Nhập mô tả mới:");
-            if(newDesc) {
-                await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc });
-                document.getElementById('lb-desc').innerText = newDesc;
-            }
-        }
+        window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentCollection, id: currentImgId }); alert("Đã ghim bài viết lên trang chủ!"); }
+        window.deletePostFromLB = async () => { if(confirm("Bạn chắc chắn muốn xóa bài viết này chứ?")) { await deleteDoc(doc(db, currentCollection, currentImgId)); closeLightbox(); alert("Đã xóa bài viết!"); } }
+        window.editPostFromLB = async () => { const newDesc = prompt("Nhập mô tả mới:"); if(newDesc) { await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc }); document.getElementById('lb-desc').innerText = newDesc; } }
 
-        window.handleLike = async () => { 
-            if(!currentUser) return alert("Vui lòng đăng nhập để thả tim!"); 
-            const btn = document.getElementById('lb-like-btn');
-            const countSpan = document.getElementById('lb-like-count');
-            let currentCount = parseInt(countSpan.innerText);
-            
-            const isLiked = btn.classList.contains('liked');
-            
-            // Immediate UI Update
-            if (isLiked) {
-                btn.classList.remove('liked');
-                btn.style.color = '#555';
-                countSpan.innerText = Math.max(0, currentCount - 1);
-                await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayRemove(currentUser.uid) });
-            } else {
-                btn.classList.add('liked');
-                btn.style.color = '#e53935';
-                countSpan.innerText = currentCount + 1;
-                await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayUnion(currentUser.uid) });
-            }
-        }
-        
-        function renderComments(arr) { 
-            const l=document.getElementById('lb-comments-list'); l.innerHTML=""; 
-            arr.forEach(c=>{ 
-                l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div></div></div>`; 
-            }); 
-            l.scrollTop = l.scrollHeight;
-        }
+        // ... (Keep other functions: exportExcel, loadAdminData, etc.) ...
+        // Re-injecting full functions to be safe
 
-        // --- NEW EXCEL EXPORT (EXCELJS) ---
-        window.exportExcel = async (type) => {
-            if(!currentUser || !isAdmin(currentUser.email)) return;
-
-            // Show loading overlay
-            Utils.loader(true, "Đang tạo file Excel chuẩn...");
-
-            // Initialize Workbook
-            const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet('DuLieu');
-
-            // Define Columns based on Type
-            if (type === 'users') {
-                sheet.columns = [
-                    { header: 'Tên người dùng', key: 'name', width: 25 },
-                    { header: 'Email', key: 'email', width: 30 },
-                    { header: 'ID', key: 'id', width: 15 },
-                    { header: 'Ngày đăng ký', key: 'created', width: 20 },
-                    { header: 'Lớp', key: 'class', width: 15 },
-                    { header: 'Hoạt động cuối', key: 'active', width: 20 },
-                    { header: 'Số lần đăng nhập', key: 'count', width: 15 }
-                ];
-                
-                const snap = await getDocs(collection(db, "users"));
-                snap.forEach(d => {
-                    const u = d.data();
-                    sheet.addRow({
-                        name: u.displayName || '',
-                        email: u.email || '',
-                        id: u.customID || '',
-                        created: u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : '',
-                        class: u.class || '',
-                        active: u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : '',
-                        count: u.loginCount || 1
-                    });
-                });
-            } else {
-                // Gallery or Contest
-                sheet.columns = [
-                    { header: 'Người đăng', key: 'author', width: 25 },
-                    { header: 'ID', key: 'uid', width: 15 },
-                    { header: 'Lớp', key: 'class', width: 10 },
-                    { header: 'Mô tả', key: 'desc', width: 40 },
-                    { header: 'Tim', key: 'likes', width: 10 },
-                    { header: 'Link ảnh', key: 'url', width: 40 },
-                    { header: 'Ngày đăng', key: 'date', width: 20 }
-                ];
-
-                const snap = await getDocs(collection(db, type));
-                snap.forEach(d => {
-                    const p = d.data();
-                    sheet.addRow({
-                        author: p.authorName,
-                        uid: p.authorID || '',
-                        class: p.className || '',
-                        desc: p.desc || '',
-                        likes: p.likes ? p.likes.length : 0,
-                        url: p.url,
-                        date: p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : ''
-                    });
-                });
-            }
-
-            // --- STYLING ---
-            // 1. Header Row Styling
-            const headerRow = sheet.getRow(1);
-            headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
-            headerRow.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF2E7D32' } // Brand Green Color
-            };
-            headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-            headerRow.height = 30;
-
-            // 2. Body Styling (Borders & Alignment)
-            sheet.eachRow((row, rowNumber) => {
-                row.eachCell((cell) => {
-                    // Borders
-                    cell.border = {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' }
-                    };
-                    // Alignment
-                    cell.alignment = { vertical: 'middle', wrapText: true };
-                });
-            });
-
-            // 3. Write and Save
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-            
-            // FileSaver.js to save file
-            saveAs(blob, `GreenSchool_${type}_${new Date().toISOString().slice(0,10)}.xlsx`);
-            
-            Utils.loader(false);
-        }
+        window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; Utils.loader(true, "Đang tạo file Excel chuẩn..."); const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('DuLieu'); if (type === 'users') { sheet.columns = [ { header: 'Tên người dùng', key: 'name', width: 25 }, { header: 'Email', key: 'email', width: 30 }, { header: 'ID', key: 'id', width: 15 }, { header: 'Ngày đăng ký', key: 'created', width: 20 }, { header: 'Lớp', key: 'class', width: 15 }, { header: 'Hoạt động cuối', key: 'active', width: 20 }, { header: 'Số lần đăng nhập', key: 'count', width: 15 } ]; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u = d.data(); sheet.addRow({ name: u.displayName || '', email: u.email || '', id: u.customID || '', created: u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : '', class: u.class || '', active: u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : '', count: u.loginCount || 1 }); }); } else { sheet.columns = [ { header: 'Người đăng', key: 'author', width: 25 }, { header: 'ID', key: 'uid', width: 15 }, { header: 'Lớp', key: 'class', width: 10 }, { header: 'Mô tả', key: 'desc', width: 40 }, { header: 'Tim', key: 'likes', width: 10 }, { header: 'Link ảnh', key: 'url', width: 40 }, { header: 'Ngày đăng', key: 'date', width: 20 } ]; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p = d.data(); sheet.addRow({ author: p.authorName, uid: p.authorID || '', class: p.className || '', desc: p.desc || '', likes: p.likes ? p.likes.length : 0, url: p.url, date: p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : '' }); }); } const headerRow = sheet.getRow(1); headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 }; headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }; headerRow.alignment = { vertical: 'middle', horizontal: 'center' }; headerRow.height = 30; sheet.eachRow((row, rowNumber) => { row.eachCell((cell) => { cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; cell.alignment = { vertical: 'middle', wrapText: true }; }); }); const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }); saveAs(blob, `GreenSchool_${type}_${new Date().toISOString().slice(0,10)}.xlsx`); Utils.loader(false); }
 
         window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
         window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
