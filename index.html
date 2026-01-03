@@ -107,7 +107,8 @@
         /* --- 6. AI CHATBOT UI --- */
         .ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; overflow: hidden; }
         .ai-fab:hover { transform: scale(1.1); }
-        .ai-fab img { width: 100%; height: 100%; object-fit: cover; }
+        /* ICON ROBOT */
+        .ai-fab i { font-size: 32px; }
         
         .ai-chat-window { position: fixed; bottom: 230px; right: 25px; width: 350px; height: 450px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2001; display: none; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
         .ai-header { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
@@ -216,9 +217,11 @@
         
         .lb-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
         .lb-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
+        .lb-meta { flex: 1; }
         .lb-meta h4 { margin: 0; font-size: 1rem; color: #333; }
         .lb-meta span { font-size: 0.85rem; color: #666; display:block; }
         
+        /* CONTROLS (Pin, Edit, Delete) */
         .lb-controls { display:flex; gap:10px; margin-left:auto; }
         .lb-btn-icon { background:none; border:none; font-size:1.2rem; cursor:pointer; color:#666; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; }
         .lb-btn-icon:hover { background:#eee; }
@@ -320,10 +323,9 @@
         <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
     </div>
 
-    <!-- AI CHAT BUTTON WITH IMAGE ICON -->
+    <!-- AI CHAT BUTTON WITH ICON -->
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
-        <!-- NEW ROBOT ICON -->
-        <img src="https://png.pngtree.com/png-vector/20250715/ourlarge/pngtree-friendly-ai-assistant-robot-icon-with-blue-antenna-and-headset-png-image_16771243.webp" alt="AI">
+        <i class="fas fa-robot"></i>
     </div>
 
     <div class="ai-chat-window" id="ai-window">
@@ -1027,9 +1029,37 @@
         window.deletePostFromLB = async () => { if(confirm("Bạn chắc chắn muốn xóa bài viết này chứ?")) { await deleteDoc(doc(db, currentCollection, currentImgId)); closeLightbox(); alert("Đã xóa bài viết!"); } }
         window.editPostFromLB = async () => { const newDesc = prompt("Nhập mô tả mới:"); if(newDesc) { await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc }); document.getElementById('lb-desc').innerText = newDesc; } }
 
-        // ... (Keep other functions: exportExcel, loadAdminData, etc.) ...
-        // Re-injecting full functions to be safe
+        window.handleLike = async () => { 
+            if(!currentUser) return alert("Vui lòng đăng nhập để thả tim!"); 
+            const btn = document.getElementById('lb-like-btn');
+            const countSpan = document.getElementById('lb-like-count');
+            let currentCount = parseInt(countSpan.innerText);
+            
+            const isLiked = btn.classList.contains('liked');
+            
+            // Immediate UI Update
+            if (isLiked) {
+                btn.classList.remove('liked');
+                btn.style.color = '#555';
+                countSpan.innerText = Math.max(0, currentCount - 1);
+                await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayRemove(currentUser.uid) });
+            } else {
+                btn.classList.add('liked');
+                btn.style.color = '#e53935';
+                countSpan.innerText = currentCount + 1;
+                await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayUnion(currentUser.uid) });
+            }
+        }
+        
+        function renderComments(arr) { 
+            const l=document.getElementById('lb-comments-list'); l.innerHTML=""; 
+            arr.forEach(c=>{ 
+                l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div></div></div>`; 
+            }); 
+            l.scrollTop = l.scrollHeight;
+        }
 
+        // --- NEW EXCEL EXPORT (EXCELJS) ---
         window.exportExcel = async (type) => { if(!currentUser || !isAdmin(currentUser.email)) return; Utils.loader(true, "Đang tạo file Excel chuẩn..."); const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('DuLieu'); if (type === 'users') { sheet.columns = [ { header: 'Tên người dùng', key: 'name', width: 25 }, { header: 'Email', key: 'email', width: 30 }, { header: 'ID', key: 'id', width: 15 }, { header: 'Ngày đăng ký', key: 'created', width: 20 }, { header: 'Lớp', key: 'class', width: 15 }, { header: 'Hoạt động cuối', key: 'active', width: 20 }, { header: 'Số lần đăng nhập', key: 'count', width: 15 } ]; const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u = d.data(); sheet.addRow({ name: u.displayName || '', email: u.email || '', id: u.customID || '', created: u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : '', class: u.class || '', active: u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : '', count: u.loginCount || 1 }); }); } else { sheet.columns = [ { header: 'Người đăng', key: 'author', width: 25 }, { header: 'ID', key: 'uid', width: 15 }, { header: 'Lớp', key: 'class', width: 10 }, { header: 'Mô tả', key: 'desc', width: 40 }, { header: 'Tim', key: 'likes', width: 10 }, { header: 'Link ảnh', key: 'url', width: 40 }, { header: 'Ngày đăng', key: 'date', width: 20 } ]; const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p = d.data(); sheet.addRow({ author: p.authorName, uid: p.authorID || '', class: p.className || '', desc: p.desc || '', likes: p.likes ? p.likes.length : 0, url: p.url, date: p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : '' }); }); } const headerRow = sheet.getRow(1); headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 }; headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }; headerRow.alignment = { vertical: 'middle', horizontal: 'center' }; headerRow.height = 30; sheet.eachRow((row, rowNumber) => { row.eachCell((cell) => { cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; cell.alignment = { vertical: 'middle', wrapText: true }; }); }); const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }); saveAs(blob, `GreenSchool_${type}_${new Date().toISOString().slice(0,10)}.xlsx`); Utils.loader(false); }
 
         window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
