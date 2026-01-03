@@ -154,7 +154,7 @@
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- 8. LIGHTBOX & COMMENTS (IMMERSIVE FIX) --- */
+        /* --- 8. LIGHTBOX & COMMENTS (FIXED & MODERN) --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: #000; overflow: hidden; }
         
         .lb-container { 
@@ -322,7 +322,7 @@
 
     <!-- AI CHAT BUTTON WITH IMAGE ICON -->
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
-        <!-- NEW ROBOT ICON -->
+        <!-- ROBOT ICON -->
         <img src="https://png.pngtree.com/png-vector/20250715/ourlarge/pngtree-friendly-ai-assistant-robot-icon-with-blue-antenna-and-headset-png-image_16771243.webp" alt="AI">
     </div>
 
@@ -727,7 +727,28 @@
         });
 
         // --- GEMINI AI (MULTI-KEY FAILOVER) ---
-        const WEB_CONTEXT = `...`; // (Keep context logic)
+        const WEB_CONTEXT = `
+        VAI TRÒ: Bạn là Green Bot 🤖, trợ lý AI của Green School A2K41.
+        NHIỆM VỤ:
+        1. Hỗ trợ điều hướng website (Góc Xanh, Thi Đua...).
+        2. Cung cấp kiến thức môi trường chuẩn xác, toàn cầu.
+
+        THÔNG TIN WEBSITE:
+        - Trang chủ: Xem thông báo, đăng nhập.
+        - Góc Xanh: Nơi học sinh đăng ảnh bảo vệ môi trường.
+        - Thi Đua: Báo cáo các hoạt động phong trào.
+        - Admin: Quản lý nhạc, khóa web, xuất Excel.
+
+        KIẾN THỨC MÔI TRƯỜNG:
+        - 🌍 Biến đổi khí hậu: Trái đất nóng lên, băng tan...
+        - ♻️ Rác thải: Phân loại rác (Hữu cơ, Vô cơ, Tái chế)...
+        - 🌱 Sống xanh: Tiết kiệm điện, nước, trồng cây...
+
+        QUY TẮC TRẢ LỜI:
+        - Luôn dùng Emoji/Icon đầu câu (🌿, 🍃, 💡, ♻️...) để làm đẹp.
+        - Trả lời ngắn gọn, thân thiện, mang tính giáo dục.
+        - Hạn chế dùng Markdown đậm/nghiêng (***), thay vào đó hãy dùng Icon để làm nổi bật ý.
+        `;
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
             // Thử từng key trong danh sách
@@ -737,7 +758,10 @@
                 
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-                    const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
+                    const requestBody = { 
+                        contents: [{ parts: [{ text: prompt }] }],
+                        system_instruction: { parts: [{ text: WEB_CONTEXT }] }
+                    };
                     if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
 
                     const response = await fetch(url, {
@@ -952,10 +976,15 @@
                 docs.forEach(d => {
                     const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
                     
+                    let ctrls=""; 
+                    if(currentUser && (currentUser.uid===d.uid || isAdmin(currentUser.email))){ 
+                        ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; 
+                    }
+                    
                     let badge = "";
                     if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
                     else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
-                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+                    g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${d.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
                 });
                 renderRank(uR.id, uS); renderRank(cR.id, cS);
             });
@@ -963,54 +992,15 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        window.openLightbox = async (c, i) => { 
-            currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
-            const s=await getDoc(doc(db,c,i)); const d=s.data(); 
-            const imgArea = document.getElementById('lb-zoom-area'); 
-            imgArea.classList.remove('zoomed'); 
-            const imgEl = document.getElementById('lb-img');
-            imgEl.style.transform = "scale(1)"; 
-            
-            imgEl.src=d.url; 
-            document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; 
-            document.getElementById('lb-author-name').innerHTML=d.authorName; 
-            document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
-            document.getElementById('lb-desc').innerText=d.desc; 
-            document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
-            
-            const btn = document.getElementById('lb-like-btn'); // FIX: Correct ID
-            if(currentUser && d.likes?.includes(currentUser.uid)) { 
-                btn.classList.add('liked'); btn.style.color='#e53935'; 
-            } else { 
-                btn.classList.remove('liked'); btn.style.color='#555'; 
-            } 
-            
-            // Check OWNER/ADMIN CONTROLS
-            const controls = document.getElementById('lb-owner-controls');
-            if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
-                controls.style.display = 'flex';
-            } else {
-                controls.style.display = 'none';
-            }
-
-            renderComments(d.comments||[]); 
-        }
-
-        window.closeLightbox = () => {
-            document.getElementById('lightbox').style.display='none';
-            document.getElementById('lb-details-sheet').classList.remove('open'); // Hide details
-        }
-        
-        // NEW: Toggle Details (Bottom Sheet)
-        window.toggleDetails = () => {
-            document.getElementById('lb-details-sheet').classList.toggle('open');
-        }
+        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='red'; } else { btn.classList.remove('liked'); btn.style.color='#ccc'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show'); renderComments(d.comments||[]); }
+        window.closeLightbox = () => document.getElementById('lightbox').style.display='none';
         
         // --- ZOOM LOGIC (DOUBLE TAP) ---
         let lastTap = 0;
         const imgEl = document.getElementById('lb-img');
         const zoomArea = document.getElementById('lb-zoom-area');
         
+        // Double tap for touch devices
         zoomArea.addEventListener('touchend', (e) => {
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
@@ -1021,6 +1011,7 @@
             lastTap = currentTime;
         });
         
+        // Double click for PC
         zoomArea.addEventListener('dblclick', toggleZoom);
 
         function toggleZoom(e) {
@@ -1029,6 +1020,7 @@
                 imgEl.style.transform = "scale(1)";
             } else {
                 zoomArea.classList.add('zoomed');
+                // Calculate click position to zoom into that area
                 let clientX, clientY;
                 if (e.changedTouches && e.changedTouches.length > 0) {
                     clientX = e.changedTouches[0].clientX;
@@ -1037,14 +1029,17 @@
                     clientX = e.clientX;
                     clientY = e.clientY;
                 }
+                
                 const rect = zoomArea.getBoundingClientRect();
                 const x = clientX - rect.left;
                 const y = clientY - rect.top;
+                
                 imgEl.style.transformOrigin = `${x}px ${y}px`;
                 imgEl.style.transform = "scale(2.5)";
             }
         }
         
+        // Quick Reply Logic
         window.quickReply = (text) => {
             if (!currentUser) return alert("Vui lòng đăng nhập!");
             
