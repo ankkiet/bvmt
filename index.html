@@ -37,31 +37,38 @@
             overscroll-behavior-y: contain; 
         }
 
-        /* --- NOTIFICATION BELL (NEW) --- */
+        /* --- NOTIFICATION BELL (REDESIGNED - ĐẸP HƠN) --- */
         .header-bell {
-            position: fixed; top: 15px; right: 15px; z-index: 1001; /* Trên cả Nav */
-            width: 45px; height: 45px; background: white; border-radius: 50%;
+            position: fixed; top: 15px; right: 15px; z-index: 1001;
+            width: 42px; height: 42px; 
+            background: rgba(255, 255, 255, 0.95); /* Màu trắng trong suốt */
+            backdrop-filter: blur(5px); /* Hiệu ứng kính mờ */
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer;
-            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Bóng đổ nhẹ nhàng */
+            border: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .header-bell i { font-size: 1.4rem; color: #555; transition: 0.3s; }
-        .header-bell:hover { transform: scale(1.1); }
+        .header-bell i { font-size: 1.2rem; color: #444; transition: 0.3s; }
+        .header-bell:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+        .header-bell:active { transform: scale(0.95); }
         
         /* Trạng thái có tin mới */
-        .header-bell.has-new i { color: #e53935; animation: bell-ring 1s infinite ease-in-out; }
+        .header-bell.has-new { border-color: #ffebee; }
+        .header-bell.has-new i { color: #e53935; animation: bell-shake 2s infinite; }
         .bell-dot {
-            position: absolute; top: 8px; right: 10px; width: 10px; height: 10px;
-            background: red; border-radius: 50%; border: 2px solid white;
+            position: absolute; top: 8px; right: 10px; width: 8px; height: 8px;
+            background: #ff1744; border-radius: 50%; border: 2px solid white;
+            box-shadow: 0 0 5px rgba(255, 23, 68, 0.5);
             display: none;
         }
         .header-bell.has-new .bell-dot { display: block; }
 
-        @keyframes bell-ring {
+        @keyframes bell-shake {
             0% { transform: rotate(0); }
-            20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); }
-            60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); }
-            100% { transform: rotate(0); }
+            10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); }
+            30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); }
+            50% { transform: rotate(0); } 100% { transform: rotate(0); }
         }
 
         /* --- PULL TO REFRESH UI --- */
@@ -179,7 +186,7 @@
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- 8. LIGHTBOX & COMMENTS (FIXED & MODERN) --- */
+        /* --- 8. LIGHTBOX & COMMENTS --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: #000; overflow: hidden; }
         
         .lb-container { 
@@ -187,7 +194,6 @@
             background: #000; position: relative;
         }
 
-        /* Image Area (Zoomable) */
         .lb-image-area { 
             flex: 1; display: flex; align-items: center; justify-content: center; 
             overflow: hidden; background: #000; position: relative; cursor: grab;
@@ -199,12 +205,11 @@
         }
         .lb-image-area img.zoomed { cursor: grab; transform: scale(2.5); }
 
-        /* Controls Overlay (Top) */
         .lb-overlay-top {
             position: absolute; top: 0; left: 0; width: 100%; 
             padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
             display: flex; justify-content: flex-end; align-items: center; z-index: 100;
-            pointer-events: none; /* Let clicks pass through */
+            pointer-events: none; 
         }
         .lb-overlay-top * { pointer-events: auto; }
         .lb-close-btn { 
@@ -214,7 +219,6 @@
             backdrop-filter: blur(5px);
         }
 
-        /* Show/Hide Comment Button (Bottom Center) */
         .lb-toggle-details-btn {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.3);
@@ -224,19 +228,17 @@
             transition: opacity 0.3s;
         }
 
-        /* Details (Bottom Sheet Style - Initially Hidden) */
         .lb-details { 
             position: absolute; bottom: 0; left: 0; width: 100%;
             background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; 
             padding: 20px; display: flex; flex-direction: column; 
-            height: 60vh; /* Taller for comments */
+            height: 60vh; 
             z-index: 60; box-shadow: 0 -5px 50px rgba(0,0,0,0.5);
-            transform: translateY(100%); /* Hidden by default */
+            transform: translateY(100%); 
             transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .lb-details.open { transform: translateY(0); }
 
-        /* Drag Handle */
         .lb-drag-handle { width: 40px; height: 5px; background: #ddd; border-radius: 5px; margin: -10px auto 15px auto; }
         
         .lb-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
@@ -245,7 +247,6 @@
         .lb-meta h4 { margin: 0; font-size: 1rem; color: #333; }
         .lb-meta span { font-size: 0.85rem; color: #666; display:block; }
         
-        /* CONTROLS (Pin, Edit, Delete) */
         .lb-controls { display:flex; gap:10px; margin-left:auto; }
         .lb-btn-icon { background:none; border:none; font-size:1.2rem; cursor:pointer; color:#666; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; }
         .lb-btn-icon:hover { background:#eee; }
@@ -259,7 +260,6 @@
         .lb-stat-item { color: #555; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .lb-stat-item.active { color: #e53935; }
 
-        /* Comments List */
         .lb-comments-list { 
             flex: 1; overflow-y: auto; margin-bottom: 15px; 
             background: #f9f9f9; padding: 10px; border-radius: 10px; 
@@ -276,7 +276,6 @@
             font-size: 0.9rem;
         }
 
-        /* Quick Replies Grid */
         .quick-replies-container { 
             overflow-x: auto; white-space: nowrap; padding-bottom: 5px; 
             display: flex; gap: 10px; flex-shrink: 0;
@@ -316,7 +315,7 @@
             .lb-details { position: static; flex: 1; height: 100%; max-height: 100%; border-radius: 0 12px 12px 0; transform: none; box-shadow: none; }
             .lb-overlay-top { display: none; } 
             .lb-close-btn { position: absolute; top: 15px; right: 15px; z-index: 100; background: rgba(0,0,0,0.6); }
-            .lb-toggle-details-btn { display: none; } /* Hide mobile toggle on PC */
+            .lb-toggle-details-btn { display: none; } 
             .lb-drag-handle { display: none; }
         }
 
@@ -365,12 +364,12 @@
     </div>
 
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Web Aware)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>🤖 Green Bot (Friendly)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
         <div class="ai-body" id="ai-messages">
-            <div class="ai-msg bot">Xin chào! Tớ là trợ lý AI của NVC Green. Tớ biết mọi thứ về trang web này, cứ hỏi nhé!</div>
+            <div class="ai-msg bot">Chào cậu nha! Tớ là Green Bot - Trợ lý ảo siêu cute của A2K41 đây! 🌱<br>Cậu cần tớ giúp gì không nè?</div>
         </div>
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
-            <input id="ai-input" required placeholder="Hỏi gì đó..." style="flex:1">
+            <input id="ai-input" required placeholder="Hỏi gì đó đi nè..." style="flex:1">
             <button class="btn btn-sm btn-ai">Gửi</button>
         </form>
     </div>
@@ -715,6 +714,14 @@
         // Multi-Key AI Logic (FAIL-OVER)
         let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; // Default
         
+        // --- CHAT HISTORY (MEMORY) ---
+        // Lưu trữ lịch sử chat để gửi kèm mỗi lần gọi API
+        let chatHistory = [];
+        // Lời nhắc hệ thống (Persona)
+        const SYSTEM_PROMPT = "Bạn là Green Bot - Trợ lý ảo của lớp A2K41. Hãy trả lời thật thân thiện, dễ thương, dùng nhiều emoji. Xưng hô là 'Tớ' và gọi người dùng là 'Cậu'. Luôn ghi nhớ thông tin người dùng cung cấp.";
+        chatHistory.push({ role: "user", parts: [{ text: SYSTEM_PROMPT }] });
+        chatHistory.push({ role: "model", parts: [{ text: "Okie, tớ nhớ rồi! Tớ sẽ là Green Bot siêu cute! 🌱" }] });
+
         let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
         const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
         const State = { unsubscribes: {} };
@@ -764,13 +771,11 @@
         });
 
         // --- NOTIFICATION SYSTEM (IN-APP) ---
-        // Listen for new notifications in 'settings/notifications'
         function listenForNotifications() {
             onSnapshot(doc(db, "settings", "notifications"), (doc) => {
                 if (doc.exists()) {
                     const data = doc.data();
                     const lastMsg = localStorage.getItem('last_notif_id');
-                    // Show only if new ID is different
                     if (data.id && data.id !== lastMsg && data.text) {
                         showNotification(data.text);
                         localStorage.setItem('last_notif_id', data.id);
@@ -784,7 +789,7 @@
             const popup = document.getElementById('notification-popup');
             document.getElementById('notif-text').innerText = text;
             popup.classList.add('show');
-            setTimeout(() => { popup.classList.remove('show'); }, 5000); // Auto hide after 5s
+            setTimeout(() => { popup.classList.remove('show'); }, 5000); 
         }
         
         window.closeNotification = () => {
@@ -814,28 +819,55 @@
             document.getElementById('admin-notif-msg').value = "";
         }
 
-        // --- GEMINI AI (MULTI-KEY FAILOVER) ---
+        // --- GEMINI AI (MULTI-KEY FAILOVER + HISTORY MEMORY) ---
         
         async function callGeminiAPI(prompt, imageBase64 = null) {
-            // Thử từng key trong danh sách
+            
+            // 1. Cập nhật lịch sử chat (Chỉ Text)
+            // Nếu có ảnh, ta chỉ gửi ảnh như một request đơn lẻ để tránh lỗi phức tạp
+            let requestContents = [];
+            
+            if (imageBase64) {
+                // Trường hợp có ảnh: Gửi prompt + ảnh (Không dùng history để tránh lỗi format)
+                requestContents = [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
+                    ]
+                }];
+            } else {
+                // Trường hợp Chat Text: Dùng lịch sử để nhớ
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                requestContents = chatHistory;
+            }
+
+            // 2. Thử từng key (Fail-over)
             for (let i = 0; i < aiKeys.length; i++) {
                 const keyObj = aiKeys[i];
                 console.log(`Đang thử Key: ${keyObj.name}`);
                 
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-                    const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
-                    if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
-
+                    
                     const response = await fetch(url, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestBody)
+                        body: JSON.stringify({ contents: requestContents })
                     });
 
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     
                     const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
+                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
+
+                    // 3. Nếu thành công và là Chat Text -> Lưu câu trả lời vào lịch sử
+                    if (!imageBase64) {
+                        chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                        // Giới hạn lịch sử để không quá dài (tối đa 20 lượt gần nhất)
+                        if (chatHistory.length > 20) chatHistory = chatHistory.slice(chatHistory.length - 20);
+                    }
+
+                    return aiText;
+
                 } catch (e) {
                     console.warn(`Key ${keyObj.name} lỗi:`, e);
                     if (i === aiKeys.length - 1) return "Tất cả Key AI đều bận hoặc lỗi.";
@@ -858,13 +890,32 @@
 
         window.removeAIKey = async (name, val) => { if(confirm(`Xóa Key "${name}"?`)) { await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayRemove({name, val}) }); } }
 
-        // 1. AI CHATBOT
+        // 1. AI CHATBOT INTERACTION
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
+        
         window.sendMessageToAI = async (e) => {
-            e.preventDefault(); const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
-            const msgList = document.getElementById('ai-messages'); msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
-            const loadingId = "ai-loading-" + Date.now(); msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`; msgList.scrollTop = msgList.scrollHeight;
-            try { const responseText = await callGeminiAPI(msg); document.getElementById(loadingId).innerText = responseText; } catch(err) { document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`; }
+            e.preventDefault(); 
+            const input = document.getElementById('ai-input'); 
+            const msg = input.value; 
+            if(!msg) return;
+            
+            const msgList = document.getElementById('ai-messages'); 
+            // Hiện tin nhắn người dùng
+            msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; 
+            input.value = ""; 
+            msgList.scrollTop = msgList.scrollHeight;
+            
+            // Hiện loading
+            const loadingId = "ai-loading-" + Date.now(); 
+            msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`; 
+            msgList.scrollTop = msgList.scrollHeight;
+            
+            try { 
+                const responseText = await callGeminiAPI(msg); 
+                document.getElementById(loadingId).innerText = responseText; 
+            } catch(err) { 
+                document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`; 
+            }
             msgList.scrollTop = msgList.scrollHeight;
         }
 
@@ -1064,7 +1115,7 @@
             l.scrollTop = l.scrollHeight;
         }
 
-        // --- NEW EXCEL EXPORT (EXCELJS) ---
+        // --- EXCEL EXPORT (EXCELJS) ---
         window.exportExcel = async (type) => { 
             if(!currentUser || !isAdmin(currentUser.email)) return; 
             Utils.loader(true, "Đang tạo file Excel chuẩn..."); 
@@ -1103,7 +1154,6 @@
                 }); 
             } 
             
-            // REVERTED STYLING
             const headerRow = sheet.getRow(1); 
             headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 }; 
             headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }; 
