@@ -1,57 +1,57 @@
-const CACHE_NAME = 'nvc-green-v46-pro'; // Tăng version khi sửa code
+const CACHE_NAME = 'nvc-green-v49-exceljs-fix'; 
 const STATIC_ASSETS = [
     './',
     './index.html',
     './manifest.json',
-    'https://placehold.co/512x512/2e7d32/ffffff.png?text=NVC+Green',
+    'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+192',
     'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js'
 ];
 
-// 1. INSTALL: Caching tài nguyên tĩnh ngay lập tức
+// 1. INSTALL: Cài đặt SW và Cache file tĩnh
 self.addEventListener('install', (event) => {
-    self.skipWaiting(); // Kích hoạt SW mới ngay lập tức
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Caching core assets...');
+            // console.log('[SW] Caching assets...');
             return cache.addAll(STATIC_ASSETS);
         })
     );
 });
 
-// 2. ACTIVATE: Dọn dẹp cache cũ
+// 2. ACTIVATE: Xóa cache cũ khi có phiên bản mới
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
                 if (key !== CACHE_NAME) {
-                    console.log('[SW] Removing old cache:', key);
+                    // console.log('[SW] Xóa cache cũ:', key);
                     return caches.delete(key);
                 }
             }));
         })
     );
-    self.clients.claim(); // Kiểm soát các clients ngay lập tức
+    self.clients.claim();
 });
 
-// 3. FETCH: Chiến lược hỗn hợp (Hybrid Strategy)
+// 3. FETCH: Chiến lược Network First cho HTML (để luôn thấy web mới nhất)
 self.addEventListener('fetch', (event) => {
-    // Chỉ xử lý GET request
     if (event.request.method !== 'GET') return;
 
     const url = event.request.url;
 
-    // A. Bỏ qua các API động (Firestore, Cloudinary, YouTube, Gemini...)
-    // Để tránh cache dữ liệu realtime hoặc video lớn
-    if (url.includes('firestore.googleapis.com') || 
-        url.includes('cloudinary.com') ||
-        url.includes('youtube.com') ||
-        url.includes('generativelanguage.googleapis.com')) {
+    // Bỏ qua các API động (Firestore, Cloudinary, YouTube, Gemini...)
+    if (url.includes('firestore') || 
+        url.includes('cloudinary') ||
+        url.includes('youtube') ||
+        url.includes('generativelanguage') ||
+        url.includes('script.google.com')) { // Thêm script google sheet
         return; 
     }
 
-    // B. Chiến lược cho file HTML chính (Navigation): NETWORK FIRST
-    // Ưu tiên lấy từ mạng để update code mới nhất. Nếu mất mạng -> dùng Cache.
+    // Với file HTML chính (điều hướng): Ưu tiên mạng -> Nếu lỗi thì dùng Cache
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request)
@@ -62,21 +62,17 @@ self.addEventListener('fetch', (event) => {
                     });
                 })
                 .catch(() => {
-                    // Nếu mất mạng, trả về trang offline (index.html đã cache)
+                    // Mất mạng thì trả về trang offline
                     return caches.match('./index.html');
                 })
         );
         return;
     }
 
-    // C. Chiến lược cho tài nguyên tĩnh (Fonts, CSS, Images): CACHE FIRST
-    // Ưu tiên tốc độ.
+    // Với ảnh, font, css: Ưu tiên Cache -> Nếu không có thì tải mạng
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-            return cachedResponse || fetch(event.request).then((networkResponse) => {
-                // Tùy chọn: Cache thêm các tài nguyên mới phát sinh nếu cần
-                return networkResponse; 
-            });
+            return cachedResponse || fetch(event.request);
         })
     );
 });
