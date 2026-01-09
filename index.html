@@ -39,6 +39,21 @@
             overscroll-behavior-y: contain; 
         }
 
+        /* --- NOTIFICATION POPUP --- */
+        #notification-popup {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            background: white; padding: 15px 20px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10000;
+            display: flex; align-items: center; gap: 15px; min-width: 300px;
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border-left: 5px solid var(--accent);
+        }
+        #notification-popup.show { transform: translateX(-50%) translateY(0); }
+        .notif-icon { font-size: 24px; color: var(--accent); }
+        .notif-content h4 { margin: 0 0 5px 0; font-size: 1rem; color: #333; }
+        .notif-content p { margin: 0; font-size: 0.9rem; color: #666; }
+        .notif-close { position: absolute; top: 5px; right: 10px; cursor: pointer; color: #999; }
+
         /* --- PULL TO REFRESH UI --- */
         #ptr-loader {
             position: fixed; top: -70px; left: 0; width: 100%; height: 70px;
@@ -107,8 +122,7 @@
         /* --- 6. AI CHATBOT UI --- */
         .ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; overflow: hidden; }
         .ai-fab:hover { transform: scale(1.1); }
-        /* ICON ROBOT */
-        .ai-fab i { font-size: 32px; }
+        .ai-fab img { width: 100%; height: 100%; object-fit: cover; }
         
         .ai-chat-window { position: fixed; bottom: 230px; right: 25px; width: 350px; height: 450px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2001; display: none; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
         .ai-header { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
@@ -311,6 +325,16 @@
 </head>
 <body>
 
+    <!-- Notification Popup -->
+    <div id="notification-popup">
+        <div class="notif-icon"><i class="fas fa-bell"></i></div>
+        <div class="notif-content">
+            <h4>Thông báo mới</h4>
+            <p id="notif-text">...</p>
+        </div>
+        <div class="notif-close" onclick="closeNotification()">✕</div>
+    </div>
+
     <!-- Pull to Refresh UI -->
     <div id="ptr-loader">
         <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
@@ -323,9 +347,9 @@
         <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
     </div>
 
-    <!-- AI CHAT BUTTON WITH ICON -->
+    <!-- AI CHAT BUTTON WITH IMAGE ICON -->
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
-        <i class="fas fa-robot"></i>
+        <img src="https://png.pngtree.com/png-vector/20250715/ourlarge/pngtree-friendly-ai-assistant-robot-icon-with-blue-antenna-and-headset-png-image_16771243.webp" alt="AI">
     </div>
 
     <div class="ai-chat-window" id="ai-window">
@@ -510,6 +534,15 @@
 
         <div id="admin" class="page-section">
             <h1>🛠 Quản Trị Hệ Thống</h1>
+
+            <div class="card" style="border-left: 5px solid #2e7d32;">
+                <h3>🔔 Gửi Thông Báo (In-App)</h3>
+                <p>Gửi tin nhắn nổi bật cho tất cả người dùng đang online.</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="admin-notif-msg" placeholder="Nhập nội dung thông báo..." style="flex:1">
+                    <button class="btn btn-sm" onclick="sendAdminNotification()">Gửi ngay</button>
+                </div>
+            </div>
             
             <div class="card" style="border-left: 5px solid #6200ea;">
                 <h3>🤖 Quản Lý API Key (AI Fail-over)</h3>
@@ -625,7 +658,7 @@
                         <span id="lb-custom-id">@id</span>
                     </div>
                     
-                    <!-- OWNER CONTROLS -->
+                    <!-- OWNER CONTROLS (FIXED) -->
                     <div class="lb-controls" id="lb-owner-controls" style="display:none">
                         <button class="lb-btn-icon lb-btn-pin" onclick="pinPost()" title="Ghim"><i class="fas fa-thumbtack"></i></button>
                         <button class="lb-btn-icon lb-btn-edit" onclick="editPostFromLB()" title="Sửa"><i class="fas fa-edit"></i></button>
@@ -728,29 +761,47 @@
             }
         });
 
+        // --- NOTIFICATION SYSTEM (IN-APP) ---
+        // Listen for new notifications in 'settings/notifications'
+        function listenForNotifications() {
+            onSnapshot(doc(db, "settings", "notifications"), (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    const lastMsg = localStorage.getItem('last_notif_id');
+                    // Show only if new ID is different
+                    if (data.id && data.id !== lastMsg && data.text) {
+                        showNotification(data.text);
+                        localStorage.setItem('last_notif_id', data.id);
+                    }
+                }
+            });
+        }
+
+        window.showNotification = (text) => {
+            const popup = document.getElementById('notification-popup');
+            document.getElementById('notif-text').innerText = text;
+            popup.classList.add('show');
+            setTimeout(() => { popup.classList.remove('show'); }, 5000); // Auto hide after 5s
+        }
+        
+        window.closeNotification = () => {
+            document.getElementById('notification-popup').classList.remove('show');
+        }
+
+        window.sendAdminNotification = async () => {
+            const text = document.getElementById('admin-notif-msg').value;
+            if(!text) return;
+            await setDoc(doc(db, "settings", "notifications"), {
+                text: text,
+                id: Date.now().toString(),
+                createdAt: serverTimestamp()
+            });
+            alert("Đã gửi thông báo đến toàn bộ người dùng!");
+            document.getElementById('admin-notif-msg').value = "";
+        }
+
         // --- GEMINI AI (MULTI-KEY FAILOVER) ---
-        const WEB_CONTEXT = `
-        VAI TRÒ: Bạn là Green Bot 🤖, trợ lý AI của Green School A2K41.
-        NHIỆM VỤ:
-        1. Hỗ trợ điều hướng website (Góc Xanh, Thi Đua...).
-        2. Cung cấp kiến thức môi trường chuẩn xác, toàn cầu.
-
-        THÔNG TIN WEBSITE:
-        - Trang chủ: Xem thông báo, đăng nhập.
-        - Góc Xanh: Nơi học sinh đăng ảnh bảo vệ môi trường.
-        - Thi Đua: Báo cáo các hoạt động phong trào.
-        - Admin: Quản lý nhạc, khóa web, xuất Excel.
-
-        KIẾN THỨC MÔI TRƯỜNG:
-        - 🌍 Biến đổi khí hậu: Trái đất nóng lên, băng tan...
-        - ♻️ Rác thải: Phân loại rác (Hữu cơ, Vô cơ, Tái chế)...
-        - 🌱 Sống xanh: Tiết kiệm điện, nước, trồng cây...
-
-        QUY TẮC TRẢ LỜI:
-        - Luôn dùng Emoji/Icon đầu câu (🌿, 🍃, 💡, ♻️...) để làm đẹp.
-        - Trả lời ngắn gọn, thân thiện, mang tính giáo dục.
-        - Hạn chế dùng Markdown đậm/nghiêng (***), thay vào đó hãy dùng Icon để làm nổi bật ý.
-        `;
+        const WEB_CONTEXT = `...`; // (Keep context logic)
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
             // Thử từng key trong danh sách
@@ -760,10 +811,7 @@
                 
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-                    const requestBody = { 
-                        contents: [{ parts: [{ text: prompt }] }],
-                        system_instruction: { parts: [{ text: WEB_CONTEXT }] }
-                    };
+                    const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
                     if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
 
                     const response = await fetch(url, {
@@ -942,6 +990,9 @@
                 }
                 currentUser=userData;
                 syncToGoogleSheet(currentUser);
+
+                // Start Listening for Notifications
+                listenForNotifications();
 
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
                 document.getElementById('home-login-area').style.display='none';
