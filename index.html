@@ -39,40 +39,32 @@
             overscroll-behavior-y: contain; 
         }
 
-        /* --- NOTIFICATION BELL UI --- */
-        .nav-bell-container { position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .nav-bell-icon { font-size: 1.2rem; color: #ffeb3b; /* Vàng */ transition: 0.3s; }
-        .nav-bell-dot {
-            position: absolute; top: 5px; right: 5px;
-            width: 10px; height: 10px; background: red; border-radius: 50%;
-            border: 2px solid var(--primary); display: none;
-            animation: pulse-red 1.5s infinite;
+        /* --- NOTIFICATION BELL (NEW) --- */
+        .header-bell {
+            position: fixed; top: 15px; right: 15px; z-index: 1001; /* Trên cả Nav */
+            width: 45px; height: 45px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer;
+            transition: 0.3s;
         }
-        .nav-bell-container.has-new .nav-bell-dot { display: block; }
-        .nav-bell-container.has-new .nav-bell-icon { animation: swing 1s ease infinite; }
+        .header-bell i { font-size: 1.4rem; color: #555; transition: 0.3s; }
+        .header-bell:hover { transform: scale(1.1); }
+        
+        /* Trạng thái có tin mới */
+        .header-bell.has-new i { color: #e53935; animation: bell-ring 1s infinite ease-in-out; }
+        .bell-dot {
+            position: absolute; top: 8px; right: 10px; width: 10px; height: 10px;
+            background: red; border-radius: 50%; border: 2px solid white;
+            display: none;
+        }
+        .header-bell.has-new .bell-dot { display: block; }
 
-        @keyframes pulse-red {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 82, 82, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        @keyframes bell-ring {
+            0% { transform: rotate(0); }
+            20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); }
+            60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); }
+            100% { transform: rotate(0); }
         }
-        @keyframes swing { 20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } 60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); } 100% { transform: rotate(0deg); } }
-
-        /* --- NOTIFICATION POPUP --- */
-        #notification-popup {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-200%);
-            background: white; padding: 15px 20px; border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000;
-            display: flex; align-items: center; gap: 15px; min-width: 320px;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-left: 5px solid var(--accent);
-        }
-        #notification-popup.show { transform: translateX(-50%) translateY(0); }
-        .notif-icon { font-size: 28px; color: var(--accent); }
-        .notif-content h4 { margin: 0 0 5px 0; font-size: 1rem; color: #333; font-weight: 800; }
-        .notif-content p { margin: 0; font-size: 0.9rem; color: #666; line-height: 1.4; }
-        .notif-close { position: absolute; top: 8px; right: 12px; cursor: pointer; color: #ccc; font-size: 1.2rem; }
-        .notif-close:hover { color: #333; }
 
         /* --- PULL TO REFRESH UI --- */
         #ptr-loader {
@@ -92,8 +84,8 @@
         }
 
         /* --- 2. NAVIGATION --- */
-        nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; }
-        nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 20px; align-items: center; } 
+        nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; padding-right: 60px; /* Chừa chỗ cho chuông */ }
+        nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 10px; }
         nav.pc-nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 10px 20px; font-size: 0.9rem; border-radius: 30px; transition: 0.3s; cursor: pointer; }
         nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); transform: translateY(-2px); }
 
@@ -367,9 +359,14 @@
         <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
     </div>
 
+    <!-- NOTIFICATION BELL (CORNER) -->
+    <div class="header-bell" onclick="showLatestNotif()">
+        <i class="fas fa-bell"></i>
+        <div class="bell-dot" id="nav-bell-dot"></div>
+    </div>
+
     <!-- AI CHAT BUTTON WITH IMAGE ICON -->
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
-        <!-- ROBOT ICON -->
         <img src="https://png.pngtree.com/png-vector/20250715/ourlarge/pngtree-friendly-ai-assistant-robot-icon-with-blue-antenna-and-headset-png-image_16771243.webp" alt="AI">
     </div>
 
@@ -399,11 +396,6 @@
             <li><a onclick="showPage('activities')" id="menu-pc-activities">Hoạt Động</a></li>
             <li><a onclick="showPage('guide')" id="menu-pc-guide">Tra Cứu</a></li>
             <li><a onclick="showPage('profile')" id="menu-pc-profile">Tài Khoản</a></li>
-            <!-- ADDED BELL HERE -->
-            <li class="nav-bell-container" onclick="showLatestNotif()" style="display:flex; align-items:center;">
-                <i class="fas fa-bell nav-bell-icon"></i>
-                <div class="nav-bell-dot" id="nav-bell-dot"></div>
-            </li>
             <li><a onclick="showPage('admin')" id="menu-pc-admin" style="display:none">Admin</a></li>
         </ul>
     </nav>
@@ -652,11 +644,6 @@
             <a onclick="showPage('contest')" id="mob-contest" class="nav-item"><i class="fas fa-trophy"></i><span>ThiĐua</span></a>
             <a onclick="showPage('archive')" id="mob-archive" class="nav-item"><i class="fas fa-box"></i><span>Lưu</span></a>
             <a onclick="showPage('profile')" id="mob-profile" class="nav-item"><i class="fas fa-user"></i><span>Tôi</span></a>
-            <!-- ADDED BELL HERE -->
-            <li class="nav-bell-container" onclick="showLatestNotif()" style="display:flex; align-items:center;">
-                <i class="fas fa-bell nav-bell-icon"></i>
-                <div class="nav-bell-dot" id="nav-bell-dot"></div>
-            </li>
             <a onclick="showPage('admin')" id="mob-admin" class="nav-item" style="display:none; color:red"><i class="fas fa-cogs"></i><span>Admin</span></a>
         </div>
     </nav>
@@ -793,15 +780,17 @@
         });
 
         // --- NOTIFICATION SYSTEM (IN-APP) ---
+        // Listen for new notifications in 'settings/notifications'
         function listenForNotifications() {
             onSnapshot(doc(db, "settings", "notifications"), (doc) => {
                 if (doc.exists()) {
                     const data = doc.data();
                     const lastMsg = localStorage.getItem('last_notif_id');
+                    // Show only if new ID is different
                     if (data.id && data.id !== lastMsg && data.text) {
                         showNotification(data.text);
                         localStorage.setItem('last_notif_id', data.id);
-                        document.querySelector('.nav-bell-container').classList.add('has-new');
+                        document.querySelector('.header-bell').classList.add('has-new');
                     }
                 }
             });
@@ -811,19 +800,19 @@
             const popup = document.getElementById('notification-popup');
             document.getElementById('notif-text').innerText = text;
             popup.classList.add('show');
-            setTimeout(() => { popup.classList.remove('show'); }, 8000); 
+            setTimeout(() => { popup.classList.remove('show'); }, 5000); // Auto hide after 5s
         }
         
         window.closeNotification = () => {
             document.getElementById('notification-popup').classList.remove('show');
-            document.querySelector('.nav-bell-container').classList.remove('has-new'); 
+            document.querySelector('.header-bell').classList.remove('has-new'); 
         }
         
         window.showLatestNotif = async () => {
              const docSnap = await getDoc(doc(db, "settings", "notifications"));
              if (docSnap.exists()) {
                  alert("Thông báo mới nhất:\n\n" + docSnap.data().text);
-                 document.querySelector('.nav-bell-container').classList.remove('has-new');
+                 document.querySelector('.header-bell').classList.remove('has-new');
              } else {
                  alert("Không có thông báo nào.");
              }
@@ -842,18 +831,26 @@
         }
 
         // --- GEMINI AI (MULTI-KEY FAILOVER) ---
-        const WEB_CONTEXT = `...`; 
+        const WEB_CONTEXT = `...`; // (Keep context logic)
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
+            // Thử từng key trong danh sách
             for (let i = 0; i < aiKeys.length; i++) {
                 const keyObj = aiKeys[i];
+                console.log(`Đang thử Key: ${keyObj.name}`);
+                
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
                     const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
                     if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
 
-                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+                    const response = await fetch(url, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
                     const data = await response.json();
                     return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
                 } catch (e) {
@@ -984,15 +981,41 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like-btn'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='#555'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show'); renderComments(d.comments||[]); 
-        // FIX: Show controls in Lightbox for Admin/Owner
-        const controls = document.getElementById('lb-owner-controls');
-        if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
-            controls.style.display = 'flex';
-        } else {
-            controls.style.display = 'none';
+        window.openLightbox = async (c, i) => { 
+            currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
+            const s=await getDoc(doc(db,c,i)); const d=s.data(); 
+            const imgArea = document.getElementById('lb-zoom-area'); 
+            imgArea.classList.remove('zoomed'); 
+            const imgEl = document.getElementById('lb-img');
+            imgEl.style.transform = "scale(1)"; 
+            
+            imgEl.src=d.url; 
+            document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; 
+            document.getElementById('lb-author-name').innerHTML=d.authorName; 
+            document.getElementById('lb-custom-id').innerText=d.authorID || ""; 
+            document.getElementById('lb-desc').innerText=d.desc; 
+            document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
+            
+            const btn = document.getElementById('lb-like-btn'); // FIX: Correct ID
+            if(currentUser && d.likes?.includes(currentUser.uid)) { 
+                btn.classList.add('liked'); btn.style.color='#e53935'; 
+            } else { 
+                btn.classList.remove('liked'); btn.style.color='#555'; 
+            } 
+            
+            // Check OWNER/ADMIN CONTROLS (FIXED LOGIC)
+            const controls = document.getElementById('lb-owner-controls');
+            if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
+                controls.style.display = 'flex';
+                // Show Pin Button ONLY for Admins
+                document.querySelector('.lb-btn-pin').style.display = isAdmin(currentUser.email) ? 'block' : 'none';
+            } else {
+                controls.style.display = 'none';
+            }
+
+            document.getElementById('lb-details-sheet').classList.remove('open'); renderComments(d.comments||[]); 
         }
-        }
+
         window.closeLightbox = () => { document.getElementById('lightbox').style.display='none'; document.getElementById('lb-details-sheet').classList.remove('open'); }
         window.toggleDetails = () => { document.getElementById('lb-details-sheet').classList.toggle('open'); }
         
