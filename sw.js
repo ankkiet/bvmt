@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nvc-green-v50-exceljs-fix'; 
+const CACHE_NAME = 'nvc-green-v51-exceljs-fix'; 
 const STATIC_ASSETS = [
     './',
     './index.html',
