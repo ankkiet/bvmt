@@ -39,20 +39,40 @@
             overscroll-behavior-y: contain; 
         }
 
+        /* --- NOTIFICATION BELL UI --- */
+        .nav-bell-container { position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+        .nav-bell-icon { font-size: 1.2rem; color: #ffeb3b; /* Vàng */ transition: 0.3s; }
+        .nav-bell-dot {
+            position: absolute; top: 5px; right: 5px;
+            width: 10px; height: 10px; background: red; border-radius: 50%;
+            border: 2px solid var(--primary); display: none;
+            animation: pulse-red 1.5s infinite;
+        }
+        .nav-bell-container.has-new .nav-bell-dot { display: block; }
+        .nav-bell-container.has-new .nav-bell-icon { animation: swing 1s ease infinite; }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 82, 82, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        }
+        @keyframes swing { 20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } 60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); } 100% { transform: rotate(0deg); } }
+
         /* --- NOTIFICATION POPUP --- */
         #notification-popup {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-200%);
             background: white; padding: 15px 20px; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10000;
-            display: flex; align-items: center; gap: 15px; min-width: 300px;
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000;
+            display: flex; align-items: center; gap: 15px; min-width: 320px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border-left: 5px solid var(--accent);
         }
         #notification-popup.show { transform: translateX(-50%) translateY(0); }
-        .notif-icon { font-size: 24px; color: var(--accent); }
-        .notif-content h4 { margin: 0 0 5px 0; font-size: 1rem; color: #333; }
-        .notif-content p { margin: 0; font-size: 0.9rem; color: #666; }
-        .notif-close { position: absolute; top: 5px; right: 10px; cursor: pointer; color: #999; }
+        .notif-icon { font-size: 28px; color: var(--accent); }
+        .notif-content h4 { margin: 0 0 5px 0; font-size: 1rem; color: #333; font-weight: 800; }
+        .notif-content p { margin: 0; font-size: 0.9rem; color: #666; line-height: 1.4; }
+        .notif-close { position: absolute; top: 8px; right: 12px; cursor: pointer; color: #ccc; font-size: 1.2rem; }
+        .notif-close:hover { color: #333; }
 
         /* --- PULL TO REFRESH UI --- */
         #ptr-loader {
@@ -73,7 +93,7 @@
 
         /* --- 2. NAVIGATION --- */
         nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; }
-        nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 10px; }
+        nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 20px; align-items: center; } 
         nav.pc-nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 10px 20px; font-size: 0.9rem; border-radius: 30px; transition: 0.3s; cursor: pointer; }
         nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); transform: translateY(-2px); }
 
@@ -349,6 +369,7 @@
 
     <!-- AI CHAT BUTTON WITH IMAGE ICON -->
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
+        <!-- ROBOT ICON -->
         <img src="https://png.pngtree.com/png-vector/20250715/ourlarge/pngtree-friendly-ai-assistant-robot-icon-with-blue-antenna-and-headset-png-image_16771243.webp" alt="AI">
     </div>
 
@@ -378,6 +399,11 @@
             <li><a onclick="showPage('activities')" id="menu-pc-activities">Hoạt Động</a></li>
             <li><a onclick="showPage('guide')" id="menu-pc-guide">Tra Cứu</a></li>
             <li><a onclick="showPage('profile')" id="menu-pc-profile">Tài Khoản</a></li>
+            <!-- ADDED BELL HERE -->
+            <li class="nav-bell-container" onclick="showLatestNotif()" style="display:flex; align-items:center;">
+                <i class="fas fa-bell nav-bell-icon"></i>
+                <div class="nav-bell-dot" id="nav-bell-dot"></div>
+            </li>
             <li><a onclick="showPage('admin')" id="menu-pc-admin" style="display:none">Admin</a></li>
         </ul>
     </nav>
@@ -626,6 +652,11 @@
             <a onclick="showPage('contest')" id="mob-contest" class="nav-item"><i class="fas fa-trophy"></i><span>ThiĐua</span></a>
             <a onclick="showPage('archive')" id="mob-archive" class="nav-item"><i class="fas fa-box"></i><span>Lưu</span></a>
             <a onclick="showPage('profile')" id="mob-profile" class="nav-item"><i class="fas fa-user"></i><span>Tôi</span></a>
+            <!-- ADDED BELL HERE -->
+            <li class="nav-bell-container" onclick="showLatestNotif()" style="display:flex; align-items:center;">
+                <i class="fas fa-bell nav-bell-icon"></i>
+                <div class="nav-bell-dot" id="nav-bell-dot"></div>
+            </li>
             <a onclick="showPage('admin')" id="mob-admin" class="nav-item" style="display:none; color:red"><i class="fas fa-cogs"></i><span>Admin</span></a>
         </div>
     </nav>
@@ -762,16 +793,15 @@
         });
 
         // --- NOTIFICATION SYSTEM (IN-APP) ---
-        // Listen for new notifications in 'settings/notifications'
         function listenForNotifications() {
             onSnapshot(doc(db, "settings", "notifications"), (doc) => {
                 if (doc.exists()) {
                     const data = doc.data();
                     const lastMsg = localStorage.getItem('last_notif_id');
-                    // Show only if new ID is different
                     if (data.id && data.id !== lastMsg && data.text) {
                         showNotification(data.text);
                         localStorage.setItem('last_notif_id', data.id);
+                        document.querySelector('.nav-bell-container').classList.add('has-new');
                     }
                 }
             });
@@ -781,11 +811,22 @@
             const popup = document.getElementById('notification-popup');
             document.getElementById('notif-text').innerText = text;
             popup.classList.add('show');
-            setTimeout(() => { popup.classList.remove('show'); }, 5000); // Auto hide after 5s
+            setTimeout(() => { popup.classList.remove('show'); }, 8000); 
         }
         
         window.closeNotification = () => {
             document.getElementById('notification-popup').classList.remove('show');
+            document.querySelector('.nav-bell-container').classList.remove('has-new'); 
+        }
+        
+        window.showLatestNotif = async () => {
+             const docSnap = await getDoc(doc(db, "settings", "notifications"));
+             if (docSnap.exists()) {
+                 alert("Thông báo mới nhất:\n\n" + docSnap.data().text);
+                 document.querySelector('.nav-bell-container').classList.remove('has-new');
+             } else {
+                 alert("Không có thông báo nào.");
+             }
         }
 
         window.sendAdminNotification = async () => {
@@ -801,26 +842,18 @@
         }
 
         // --- GEMINI AI (MULTI-KEY FAILOVER) ---
-        const WEB_CONTEXT = `...`; // (Keep context logic)
+        const WEB_CONTEXT = `...`; 
 
         async function callGeminiAPI(prompt, imageBase64 = null) {
-            // Thử từng key trong danh sách
             for (let i = 0; i < aiKeys.length; i++) {
                 const keyObj = aiKeys[i];
-                console.log(`Đang thử Key: ${keyObj.name}`);
-                
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
                     const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
                     if (imageBase64) requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
 
-                    const response = await fetch(url, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestBody)
-                    });
-
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    
                     const data = await response.json();
                     return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
                 } catch (e) {
@@ -832,73 +865,36 @@
 
         window.testAIConnection = async () => {
             const btn = document.querySelector('.btn-ai'); const originalText = btn.innerText; btn.innerText = "Đang test...";
-            try {
-                const result = await callGeminiAPI("Chào Green Bot!");
-                alert("✅ Kết nối AI thành công!\nTrả lời: " + result);
-            } catch(e) { alert("❌ Lỗi: " + e.message); }
+            try { const result = await callGeminiAPI("Chào Green Bot!"); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); }
             btn.innerText = originalText;
         }
         
         window.addAIKey = async () => {
-            const name = document.getElementById('new-key-name').value.trim();
-            const val = document.getElementById('new-key-val').value.trim();
+            const name = document.getElementById('new-key-name').value.trim(); const val = document.getElementById('new-key-val').value.trim();
             if(!name || !val) return alert("Nhập đủ tên và Key!");
-            
-            await updateDoc(doc(db, "settings", "config"), { 
-                aiKeys: arrayUnion({name, val}) 
-            });
-            document.getElementById('new-key-name').value = "";
-            document.getElementById('new-key-val').value = "";
-            alert("Đã thêm Key mới!");
+            await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayUnion({name, val}) });
+            document.getElementById('new-key-name').value = ""; document.getElementById('new-key-val').value = ""; alert("Đã thêm Key mới!");
         }
 
-        window.removeAIKey = async (name, val) => {
-            if(confirm(`Xóa Key "${name}"?`)) {
-                await updateDoc(doc(db, "settings", "config"), { 
-                    aiKeys: arrayRemove({name, val}) 
-                });
-            }
-        }
+        window.removeAIKey = async (name, val) => { if(confirm(`Xóa Key "${name}"?`)) { await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayRemove({name, val}) }); } }
 
         // 1. AI CHATBOT
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
         window.sendMessageToAI = async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
-            const msgList = document.getElementById('ai-messages');
-            msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
-            
-            const loadingId = "ai-loading-" + Date.now();
-            msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`;
-            msgList.scrollTop = msgList.scrollHeight;
-
-            try {
-                const responseText = await callGeminiAPI(msg);
-                document.getElementById(loadingId).innerText = responseText;
-            } catch(err) {
-                document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`;
-            }
+            e.preventDefault(); const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
+            const msgList = document.getElementById('ai-messages'); msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; input.value = ""; msgList.scrollTop = msgList.scrollHeight;
+            const loadingId = "ai-loading-" + Date.now(); msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`; msgList.scrollTop = msgList.scrollHeight;
+            try { const responseText = await callGeminiAPI(msg); document.getElementById(loadingId).innerText = responseText; } catch(err) { document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`; }
             msgList.scrollTop = msgList.scrollHeight;
         }
 
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader(); reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error);
-            });
-        }
+        function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
 
         // --- YOUTUBE ID & MUSIC ---
         function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
-        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        let player; 
-        window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
-        function onPlayerStateChange(event) { 
-            const icon = document.getElementById('music-icon-display');
-            if(event.data == YT.PlayerState.PLAYING) { icon.classList.add('playing'); icon.style.color = 'var(--primary)'; } 
-            else { icon.classList.remove('playing'); icon.style.color = '#333'; }
-        }
+        const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        let player; window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
+        function onPlayerStateChange(event) { const icon = document.getElementById('music-icon-display'); if(event.data == YT.PlayerState.PLAYING) { icon.classList.add('playing'); icon.style.color = 'var(--primary)'; } else { icon.classList.remove('playing'); icon.style.color = '#333'; } }
         window.toggleMusic = () => { try { if(player && player.getPlayerState() == YT.PlayerState.PLAYING) player.pauseVideo(); else if(player) player.playVideo(); } catch(e){} }
         window.addNewSong = async () => { const name = document.getElementById('new-song-name').value; let url = document.getElementById('new-song-url').value; if(!name || !url) return alert("Nhập đủ tên và link!"); const id = getYoutubeID(url); await updateDoc(doc(db, "settings", "config"), { playlist: arrayUnion({name, id}) }); alert("Đã thêm bài hát!"); }
         window.playSong = async (id) => { await updateDoc(doc(db, "settings", "config"), { musicId: id }); alert("Đã phát bài này!"); }
@@ -908,31 +904,15 @@
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if(docSnap.exists()) {
                 const cfg = docSnap.data();
-                
-                // MULTI-KEY AI LOADING
-                if(cfg.aiKeys && cfg.aiKeys.length > 0) { 
-                    aiKeys = cfg.aiKeys; 
-                    const list = document.getElementById('ai-key-list');
-                    if(list) {
-                        list.innerHTML = "";
-                        aiKeys.forEach(k => {
-                            list.innerHTML += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`;
-                        });
-                    }
-                }
-                
+                if(cfg.aiKeys && cfg.aiKeys.length > 0) { aiKeys = cfg.aiKeys; const list = document.getElementById('ai-key-list'); if(list) { list.innerHTML = ""; aiKeys.forEach(k => { list.innerHTML += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`; }); } }
                 if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
-                
                 if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
-                const plDiv = document.getElementById('music-playlist-container');
-                if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:#e8f5e9; border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
+                const plDiv = document.getElementById('music-playlist-container'); if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:#e8f5e9; border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
                 const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
                 applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities); applyLock('guide',cfg.locks?.guide); applyLock('archive',cfg.locks?.archive);
                 handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
-                
                 if(currentUser && isAdmin(currentUser.email)) {
-                    document.getElementById('cfg-maintenance').checked=cfg.maintenance;
-                    document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
+                    document.getElementById('cfg-maintenance').checked=cfg.maintenance; document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
                     document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
                     if(cfg.googleSheetUrl) { document.getElementById('cfg-sheet-url').value = cfg.googleSheetUrl; }
                 }
@@ -945,31 +925,7 @@
         // --- AUTH ---
         window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
         window.checkAdminLogin=()=>signInWithPopup(auth,provider);
-        
-        async function syncToGoogleSheet(user) {
-            if (!googleSheetUrl) return; 
-            try {
-                const payload = {
-                    displayName: user.displayName || "Chưa đặt tên",
-                    email: user.email,
-                    customID: user.customID || "",
-                    createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'),
-                    classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp",
-                    lastActive: new Date().toLocaleString('vi-VN'),
-                    loginCount: user.loginCount || 1,
-                    uid: user.uid
-                };
-                await fetch(googleSheetUrl, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                console.log("Synced to Google Sheet");
-            } catch (e) {
-                console.error("Sync Error:", e);
-            }
-        }
+        async function syncToGoogleSheet(user) { if (!googleSheetUrl) return; try { const payload = { displayName: user.displayName || "Chưa đặt tên", email: user.email, customID: user.customID || "", createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'), classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp", lastActive: new Date().toLocaleString('vi-VN'), loginCount: user.loginCount || 1, uid: user.uid }; await fetch(googleSheetUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); console.log("Synced to Google Sheet"); } catch (e) { console.error("Sync Error:", e); } }
 
         onAuthStateChanged(auth, async(u)=>{
             // RELOAD DATA LISTENERS WITH CORRECT AUTH STATE
@@ -977,33 +933,16 @@
             renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
             if(u){
-                const r=doc(db,"users",u.uid), s=await getDoc(r);
-                let userData;
-                if(s.exists()){
-                    const d=s.data();
-                    if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;}
-                    userData = { ...d, loginCount: (d.loginCount || 0) + 1 };
-                    await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) });
-                } else {
-                    userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 };
-                    await setDoc(r,userData);
-                }
-                currentUser=userData;
-                syncToGoogleSheet(currentUser);
+                const r=doc(db,"users",u.uid), s=await getDoc(r); let userData;
+                if(s.exists()){ const d=s.data(); if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;} userData = { ...d, loginCount: (d.loginCount || 0) + 1 }; await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) }); } 
+                else { userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 }; await setDoc(r,userData); }
+                currentUser=userData; syncToGoogleSheet(currentUser); listenForNotifications();
 
-                // Start Listening for Notifications
-                listenForNotifications();
-
-                document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none';
-                document.getElementById('home-login-area').style.display='none';
+                document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none'; document.getElementById('home-login-area').style.display='none';
                 document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
-                document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id";
-                document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
+                document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id"; document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
                 if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
-            }else{ 
-                currentUser=null; 
-                document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
-            }
+            }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
         });
 
         window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
@@ -1045,7 +984,7 @@
         }
         function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
         
-        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like-btn'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='#555'; } 
+        window.openLightbox = async (c, i) => { currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; const s=await getDoc(doc(db,c,i)); const d=s.data(); const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); document.getElementById('lb-img').style.transform = "scale(1)"; document.getElementById('lb-img').src=d.url; document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; const btn = document.getElementById('lb-like-btn'); if(currentUser&&d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='#555'; } document.getElementById('lb-admin-pin').style.display=(currentUser&&isAdmin(currentUser.email))?'block':'none'; document.getElementById('lb-comments-wrapper').classList.remove('show'); document.getElementById('lb-input-area').classList.remove('show'); renderComments(d.comments||[]); 
         // FIX: Show controls in Lightbox for Admin/Owner
         const controls = document.getElementById('lb-owner-controls');
         if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
@@ -1053,7 +992,7 @@
         } else {
             controls.style.display = 'none';
         }
-        document.getElementById('lb-details-sheet').classList.remove('open'); renderComments(d.comments||[]); }
+        }
         window.closeLightbox = () => { document.getElementById('lightbox').style.display='none'; document.getElementById('lb-details-sheet').classList.remove('open'); }
         window.toggleDetails = () => { document.getElementById('lb-details-sheet').classList.toggle('open'); }
         
