@@ -15,7 +15,6 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            // console.log('[SW] Caching assets...');
             return cache.addAll(STATIC_ASSETS);
         })
     );
@@ -27,7 +26,6 @@ self.addEventListener('activate', (event) => {
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
                 if (key !== CACHE_NAME) {
-                    // console.log('[SW] Xóa cache cũ:', key);
                     return caches.delete(key);
                 }
             }));
@@ -46,8 +44,8 @@ self.addEventListener('fetch', (event) => {
     if (url.includes('firestore') || 
         url.includes('cloudinary') ||
         url.includes('youtube') ||
-        url.includes('generativelanguage') ||
-        url.includes('script.google.com')) { // Thêm script google sheet
+        url.includes('generativelanguage') || 
+        url.includes('script.google.com')) {
         return; 
     }
 
