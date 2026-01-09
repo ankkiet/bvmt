@@ -37,6 +37,19 @@
             overscroll-behavior-y: contain; 
         }
 
+        /* --- WEBVIEW WARNING OVERLAY (FIX LỖI ZALO/MESSENGER) --- */
+        #webview-warning {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.98); z-index: 10000;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+        .wv-icon { font-size: 4rem; color: #ff9800; margin-bottom: 20px; }
+        .wv-title { font-size: 1.5rem; color: #333; margin-bottom: 10px; font-weight: bold; }
+        .wv-desc { color: #666; margin-bottom: 30px; font-size: 1rem; line-height: 1.5; }
+        .wv-arrow { font-size: 2rem; color: var(--primary); animation: bounce 1.5s infinite; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+
         /* --- FIX: NOTIFICATION POPUP (TOAST STYLE) --- */
         #notification-popup {
             position: fixed; top: 20px; right: 20px; z-index: 9999;
@@ -350,6 +363,17 @@
             <p id="notif-text">...</p>
         </div>
         <div class="notif-close" onclick="closeNotification()">✕</div>
+    </div>
+
+    <div id="webview-warning">
+        <div class="wv-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="wv-title">Lỗi trình duyệt không hỗ trợ</div>
+        <div class="wv-desc">
+            Bạn đang mở web bằng Zalo/Messenger/Facebook.<br>
+            Google chặn đăng nhập trên các ứng dụng này để bảo mật.<br><br>
+            <b>Vui lòng nhấn vào dấu <i class="fas fa-ellipsis-h"></i> hoặc <i class="fas fa-ellipsis-v"></i> ở góc màn hình và chọn "Mở bằng trình duyệt" (Chrome/Safari).</b>
+        </div>
+        <div class="wv-arrow"><i class="fas fa-arrow-up"></i></div>
     </div>
 
     <div id="ptr-loader">
@@ -762,6 +786,18 @@
                 document.getElementById('upload-loading-text').innerText = text;
             }
         };
+
+        // --- DETECT WEBVIEW (ZALO/MESSENGER FIX) ---
+        window.addEventListener('load', () => {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const isInstagram = (ua.indexOf('Instagram') > -1) ? true : false;
+            const isFB = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1);
+            const isZalo = (ua.indexOf("Zalo") > -1);
+            
+            if (isInstagram || isFB || isZalo) {
+                document.getElementById('webview-warning').style.display = 'flex';
+            }
+        });
 
         // --- PULL TO REFRESH LOGIC ---
         let startY = 0;
