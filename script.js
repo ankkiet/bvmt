@@ -370,7 +370,11 @@ onAuthStateChanged(auth, async(u)=>{
         else { userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 }; await setDoc(r,userData); }
         currentUser=userData; syncToGoogleSheet(currentUser);
         
+        // NOTIFICATION LISTENER (PERSONAL)
         listenToMyNotifications(u.uid);
+
+        // RE-CHECK ROUTE ON LOGIN (To redirect to Admin if needed)
+        handleRoute();
 
         document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none'; document.getElementById('home-login-area').style.display='none';
         document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
@@ -378,7 +382,7 @@ onAuthStateChanged(auth, async(u)=>{
         if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
     }else{ 
         currentUser=null; 
-        if(notifUnsub) notifUnsub(); 
+        if(notifUnsub) notifUnsub(); // Clear Notif Listener
         document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
     }
 });
@@ -640,7 +644,51 @@ window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await upda
 window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
 async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
 window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
-window.showPage = (id) => { document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active')); const target = document.getElementById(id); if(target) target.classList.add('active'); else document.getElementById('home').classList.add('active'); document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu')); if(document.getElementById('menu-pc-'+id)) document.getElementById('menu-pc-'+id).classList.add('active-menu'); if(document.getElementById('mob-'+id)) document.getElementById('mob-'+id).classList.add('active-menu'); sessionStorage.setItem('page', id); if(id==='archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); } }
+
+// --- ROUTING LOGIC (NEW: Xử lý Link # và Bảo mật Admin) ---
+function handleRoute() {
+    const hash = window.location.hash.slice(1) || 'home';
+    showPage(hash);
+}
+
+window.addEventListener('hashchange', handleRoute);
+window.addEventListener('load', handleRoute);
+
+window.showPage = (id) => {
+    const validPages = ['home', 'greenclass', 'contest', 'archive', 'activities', 'guide', 'profile', 'admin'];
+    let targetId = validPages.includes(id) ? id : 'home';
+
+    // SECURITY CHECK FOR ADMIN PAGE
+    if (targetId === 'admin') {
+        if (!currentUser) {
+            alert("Vui lòng đăng nhập quyền Admin trước!");
+            targetId = 'profile'; 
+            window.location.hash = 'profile'; 
+        } 
+        else if (!isAdmin(currentUser.email)) {
+            alert("⛔ Bạn không có quyền truy cập khu vực này!");
+            targetId = 'home';
+            window.location.hash = 'home';
+        }
+    }
+
+    document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+    const section = document.getElementById(targetId);
+    if(section) section.classList.add('active');
+
+    document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu'));
+    if(document.getElementById('menu-pc-'+targetId)) document.getElementById('menu-pc-'+targetId).classList.add('active-menu');
+    if(document.getElementById('mob-'+targetId)) document.getElementById('mob-'+targetId).classList.add('active-menu');
+
+    if(targetId === 'archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); }
+
+    const titles = {
+        'home': 'Trang Chủ', 'greenclass': 'Góc Xanh', 'contest': 'Thi Đua',
+        'archive': 'Lưu Trữ', 'activities': 'Hoạt Động', 'guide': 'Tra Cứu',
+        'profile': 'Hồ Sơ', 'admin': '🛠 Quản Trị Hệ Thống'
+    };
+    document.title = `Green School - ${titles[targetId] || 'A2K41'}`;
+}
 
 const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
 window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
@@ -648,9 +696,6 @@ document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi l�
 
 const mainLoginBtn = document.getElementById('main-login-btn');
 if(mainLoginBtn) { mainLoginBtn.addEventListener('click', () => { console.log("Login clicked"); signInWithPopup(auth, provider); }); }
-
-const savedPage = sessionStorage.getItem('page') || 'home';
-showPage(savedPage);
 
 let deferredPrompt;
 const pcMenu = document.querySelector('nav.pc-nav ul');
