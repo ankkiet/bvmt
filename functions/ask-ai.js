@@ -12,7 +12,7 @@ export async function onRequest(context) {
   try {
     // --- BƯỚC 1: DÁN KEY MỚI CỦA BẠN VÀO ĐÂY ---
     // (Nhớ xóa cái key cũ bị lộ đi nhé, tạo cái mới dán vào)
-    const MY_API_KEY = "AIzaSyCsuqU1zliMVcikvw7Pcm-JWrcn_HE2Vu0"; 
+    const MY_API_KEY = "AIzaSyDB6lGWelQhurxSACjO6Few5xW_XiVZCvA"; 
     // ------------------------------------------
 
     // --- BƯỚC 2: URL CHUẨN DÀNH CHO GEMINI 2.0 FLASH ---
