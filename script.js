@@ -1,5 +1,3 @@
---- START OF FILE script.js ---
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -39,7 +37,6 @@ chatHistory.push({ role: "user", parts: [{ text: SYSTEM_PROMPT }] });
 chatHistory.push({ role: "model", parts: [{ text: "Okie, tớ nhớ rồi! Tớ là chuyên gia về web A2K41 đây! 🌱" }] });
 
 let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
-// Lưu ý: Bảo mật thực sự cần được xử lý bằng Firestore Rules phía server
 const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
 const State = { unsubscribes: {} };
 
@@ -154,9 +151,7 @@ function listenToMyNotifications(uid) {
     notifUnsub = onSnapshot(q, (snap) => {
         const list = document.getElementById('notif-list-ui');
         const dot = document.getElementById('nav-bell-dot');
-        let unreadCount = 0; 
-        let html = ""; // Tối ưu: Dùng buffer thay vì += innerHTML
-        let notifs = [];
+        let unreadCount = 0; let html = ""; let notifs = [];
         if (snap.empty) {
             list.innerHTML = '<div class="empty-notif">Chưa có thông báo nào</div>';
             dot.style.display = 'none'; return;
@@ -199,11 +194,6 @@ async function callGeminiAPI(prompt, imageBase64 = null) {
         requestContents = [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }] }];
     } else {
         chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-        // Tối ưu: Giới hạn context để tránh lỗi token và tiết kiệm bộ nhớ
-        // Luôn giữ System Prompt (index 0) và lấy 10 tin nhắn gần nhất
-        if (chatHistory.length > 12) {
-            chatHistory = [chatHistory[0], ...chatHistory.slice(-11)];
-        }
         requestContents = chatHistory;
     }
     for (let i = 0; i < aiKeys.length; i++) {
@@ -216,6 +206,7 @@ async function callGeminiAPI(prompt, imageBase64 = null) {
             const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
             if (!imageBase64) {
                 chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                if (chatHistory.length > 20) chatHistory = chatHistory.slice(chatHistory.length - 20);
             }
             return aiText;
         } catch (e) { if (i === aiKeys.length - 1) return "Tất cả Key AI đều bận hoặc lỗi."; }
@@ -266,10 +257,10 @@ window.deleteSong = async (name, id) => { if(confirm("Xóa bài này?")) await u
 onSnapshot(doc(db, "settings", "config"), (docSnap) => {
     if(docSnap.exists()) {
         const cfg = docSnap.data();
-        if(cfg.aiKeys && cfg.aiKeys.length > 0) { aiKeys = cfg.aiKeys; const list = document.getElementById('ai-key-list'); if(list) { let html = ""; aiKeys.forEach(k => { html += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`; }); list.innerHTML = html; } }
+        if(cfg.aiKeys && cfg.aiKeys.length > 0) { aiKeys = cfg.aiKeys; const list = document.getElementById('ai-key-list'); if(list) { list.innerHTML = ""; aiKeys.forEach(k => { list.innerHTML += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`; }); } }
         if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
         if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
-        const plDiv = document.getElementById('music-playlist-container'); if(plDiv && cfg.playlist) { let html = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:rgba(46, 125, 50, 0.1); border-left:4px solid green;' : ''; html += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border); ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); plDiv.innerHTML = html; }
+        const plDiv = document.getElementById('music-playlist-container'); if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:rgba(46, 125, 50, 0.1); border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border); ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
         const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
         applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities); applyLock('guide',cfg.locks?.guide); applyLock('archive',cfg.locks?.archive);
         handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
@@ -338,13 +329,8 @@ window.executeUpload = async (i) => {
 }
 
 // --- OPTIMIZE IMAGE & RENDER GRID ---
-// Cải tiến: Thêm tham số width để Cloudinary resize ảnh nhỏ lại
-const optimizeUrl = (url, width) => {
-    if (url.includes('cloudinary.com')) {
-        let params = 'f_auto,q_auto';
-        if (width) params += `,w_${width}`;
-        return url.replace('/upload/', `/upload/${params}/`);
-    }
+const optimizeUrl = (url) => {
+    if (url.includes('cloudinary.com')) return url.replace('/upload/', '/upload/f_auto,q_auto/');
     return url;
 };
 
@@ -352,18 +338,14 @@ function renderGrid(col, elId, uR, cR) {
     if(State.unsubscribes[col]) State.unsubscribes[col]();
     const unsub = onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
         const g = document.getElementById(elId); if(!g) return;
-        
-        // Tối ưu: Dùng buffer để render 1 lần
-        let gridHtml = ""; 
-        let uS={}, cS={}, docs=[];
+        g.innerHTML = ""; let uS={}, cS={}, docs=[];
         snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         
         if(col === 'gallery' && docs.length > 0) {
             const topPost = [...docs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
             if(topPost) {
                 document.getElementById('featured-post').style.display = 'flex';
-                // Load ảnh top chất lượng cao hơn chút (w_800)
-                document.getElementById('feat-img').src = optimizeUrl(topPost.url, 800); 
+                document.getElementById('feat-img').src = optimizeUrl(topPost.url); 
                 document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH"; document.getElementById('feat-desc').innerText = topPost.desc; document.getElementById('feat-author').innerText = "— " + topPost.authorName;
             }
         }
@@ -376,11 +358,9 @@ function renderGrid(col, elId, uR, cR) {
             if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
             else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
             
-            // LAZY LOADING + OPTIMIZED URL (w_400 cho thumbnail)
-            gridHtml += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${optimizeUrl(d.url, 400)}" class="gallery-img" loading="lazy"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+            // LAZY LOADING + OPTIMIZED URL
+            g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${optimizeUrl(d.url)}" class="gallery-img" loading="lazy"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
         });
-        
-        g.innerHTML = gridHtml; // Gán 1 lần duy nhất
         renderRank(uR.id, uS); renderRank(cR.id, cS);
     });
     State.unsubscribes[col] = unsub;
@@ -392,8 +372,7 @@ window.openLightbox = async (c, i) => {
     const s=await getDoc(doc(db,c,i)); const d=s.data(); 
     const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); 
     const imgEl = document.getElementById('lb-img'); imgEl.style.transform = "scale(1)"; 
-    // Load ảnh full HD khi xem chi tiết (không truyền width hoặc truyền 1200)
-    imgEl.src=optimizeUrl(d.url, 1200); 
+    imgEl.src=optimizeUrl(d.url); 
     document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
     const btn = document.getElementById('lb-like-btn'); 
     if(currentUser && d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='var(--text-sec)'; } 
@@ -435,13 +414,7 @@ window.handleLike = async () => {
     const postSnap = await getDoc(doc(db, currentCollection, currentImgId)); if(postSnap.exists()){ const ownerId = postSnap.data().uid; pushNotification(ownerId, 'like', `<b>${currentUser.displayName}</b> đã thả tim ảnh của bạn ❤️`, currentImgId, currentCollection); } }
 }
 
-function renderComments(arr) { 
-    const l=document.getElementById('lb-comments-list'); 
-    let html = "";
-    arr.forEach(c=>{ html += `<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div></div></div>`; }); 
-    l.innerHTML = html;
-    l.scrollTop = l.scrollHeight; 
-}
+function renderComments(arr) { const l=document.getElementById('lb-comments-list'); l.innerHTML=""; arr.forEach(c=>{ l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div></div></div>`; }); l.scrollTop = l.scrollHeight; }
 
 window.exportExcel = async (type) => { 
     if(!currentUser || !isAdmin(currentUser.email)) return; 
@@ -465,14 +438,10 @@ window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{loc
 window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
 window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
 window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); const sn=await getDocs(q); const docs = []; sn.forEach(d => docs.push(d.data())); docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0)); docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); }
-window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } 
-    let html = "";
-    s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; html += `<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${optimizeUrl(da.url, 400)}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); 
-    g.innerHTML = html;
-}
+window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }
 window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
 window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
-window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); let html = ""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; html+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`}); b.innerHTML = html; }
+window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); b.innerHTML=""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; b.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`}); }
 window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
 window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
 window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
@@ -507,7 +476,7 @@ window.showPage = (id) => {
 }
 
 const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
-window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); let html = ""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ html+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); r.innerHTML = html; }; window.filterTrash();
+window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
 document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
 const mainLoginBtn = document.getElementById('main-login-btn'); if(mainLoginBtn) { mainLoginBtn.addEventListener('click', () => { console.log("Login clicked"); signInWithPopup(auth, provider); }); }
 
