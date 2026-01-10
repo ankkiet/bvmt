@@ -53,6 +53,10 @@
         <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
     </div>
 
+    <div class="dark-mode-toggle" onclick="toggleDarkMode()" title="Chế độ tối">
+        <i class="fas fa-moon" id="dark-icon"></i>
+    </div>
+
     <div class="header-bell" onclick="toggleNotifDropdown()">
         <i class="fas fa-bell"></i>
         <div class="bell-dot" id="nav-bell-dot"></div>
@@ -279,7 +283,7 @@
                     <input type="password" id="new-key-val" placeholder="Nhập API Key..." style="flex:2">
                     <button class="btn btn-sm btn-ai" onclick="addAIKey()">➕ Thêm</button>
                 </div>
-                <div id="ai-key-list" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; border-radius:8px; padding:5px;">
+                <div id="ai-key-list" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border); border-radius:8px; padding:5px;">
                     </div>
                 <div style="margin-top:10px;">
                     <button class="btn btn-sm btn-outline" onclick="testAIConnection()">Kiểm tra kết nối AI</button>
@@ -302,12 +306,12 @@
                     <input type="text" id="new-song-url" placeholder="Dán Link YouTube..." style="flex:1">
                     <button class="btn btn-sm" onclick="addNewSong()">➕ Thêm</button>
                 </div>
-                <div id="music-playlist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius:8px;"></div>
+                <div id="music-playlist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius:8px;"></div>
             </div>
 
             <div class="card" style="border-left: 5px solid var(--admin-color);">
                 <h3>⚙️ Cấu hình Hệ thống</h3>
-                <div style="padding:15px; background:#ffebee; margin-bottom:20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="padding:15px; background:rgba(255, 235, 238, 0.2); margin-bottom:20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-weight:bold; color:red"><i class="fas fa-tools"></i> BẢO TRÌ TOÀN TRANG:</span>
                     <label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label>
                 </div>
