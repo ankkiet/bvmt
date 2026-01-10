@@ -10,14 +10,13 @@ export async function onRequest(context) {
   }
 
   try {
-    // --- BƯỚC 1: DÁN KEY MỚI CỦA BẠN VÀO ĐÂY ---
-    // (Nhớ xóa cái key cũ bị lộ đi nhé, tạo cái mới dán vào)
+    // --- DÁN KEY MỚI CỦA BẠN VÀO ĐÂY (Key vừa tạo trong AI Studio) ---
     const MY_API_KEY = "AIzaSyDB6lGWelQhurxSACjO6Few5xW_XiVZCvA"; 
-    // ------------------------------------------
+    // ----------------------------------------------------------------
 
-    // --- BƯỚC 2: URL CHUẨN DÀNH CHO GEMINI 2.0 FLASH ---
-    // (Đây là dòng quan trọng nhất sửa lỗi 404)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${MY_API_KEY}`;
+    // --- SỬA URL VỀ BẢN 1.5 FLASH (BẢN CHUẨN) ---
+    // Lưu ý: Dùng v1beta và tên đúng là gemini-1.5-flash (không thêm đuôi gì cả)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_API_KEY}`;
 
     let body = await context.request.json();
     const { prompt, imageBase64, history } = body;
@@ -41,6 +40,7 @@ export async function onRequest(context) {
 
     if (!response.ok) {
         const errText = await response.text();
+        // Ném lỗi ra để xem nó báo gì
         throw new Error(`Google từ chối: ${response.status} - ${errText}`);
     }
 
