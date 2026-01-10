@@ -67,7 +67,7 @@
         #maintenance-overlay i.fa-hammer { font-size: 6rem; color: #ffa000; margin-bottom: 20px; animation: hammer 2s infinite; }
         @keyframes hammer { 0% {transform: rotate(0);} 20% {transform: rotate(-15deg);} 40% {transform: rotate(10deg);} 60% {transform: rotate(-5deg);} 100% {transform: rotate(0);} }
 
-        /* --- NOTIFICATION POPUP (TOAST) --- */
+        /* --- NOTIFICATION POPUP (TOAST - OLD STYLE) --- */
         #notification-popup {
             position: fixed; top: 20px; right: 20px; z-index: 9999;
             background: white; width: 300px; padding: 15px;
@@ -84,7 +84,7 @@
         .notif-content p { margin: 0; font-size: 0.9rem; color: #666; line-height: 1.4; }
         .notif-close { position: absolute; top: 5px; right: 10px; cursor: pointer; color: #999; font-size: 0.8rem; }
 
-        /* --- NOTIFICATION BELL --- */
+        /* --- NEW: PROFESSIONAL NOTIFICATION DROPDOWN --- */
         .header-bell {
             position: fixed; top: 15px; right: 15px; z-index: 1001;
             width: 42px; height: 42px; 
@@ -95,10 +95,42 @@
             cursor: pointer; transition: all 0.3s;
         }
         .header-bell:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-        .header-bell.has-new i { color: #e53935; animation: bell-shake 2s infinite; }
-        .bell-dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: #ff1744; border-radius: 50%; border: 2px solid white; display: none; }
-        .header-bell.has-new .bell-dot { display: block; }
-        @keyframes bell-shake { 0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 30% { transform: rotate(-15deg); } 50% { transform: rotate(0); } 100% { transform: rotate(0); } }
+        .bell-dot { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; background: #ff1744; border-radius: 50%; border: 2px solid white; display: none; }
+        
+        /* Dropdown UI */
+        .notif-dropdown {
+            position: fixed; top: 70px; right: 20px; width: 320px;
+            background: white; border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            z-index: 1000; display: none; overflow: hidden;
+            border: 1px solid #eee;
+            animation: slideDown 0.3s ease-out;
+        }
+        .notif-dropdown.active { display: block; }
+        .notif-header {
+            padding: 12px 15px; border-bottom: 1px solid #eee;
+            font-weight: bold; color: var(--primary);
+            display: flex; justify-content: space-between; align-items: center; background: #fff;
+        }
+        .notif-list { max-height: 350px; overflow-y: auto; background: #fff; }
+        .notif-item {
+            padding: 12px 15px; border-bottom: 1px solid #f5f5f5;
+            display: flex; gap: 10px; align-items: flex-start;
+            cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .notif-item:hover { background: #f9f9f9; }
+        .notif-item.unread { background: #e8f5e9; } 
+        .notif-item.unread::after {
+            content: ''; position: absolute; top: 15px; right: 10px;
+            width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+        }
+        .notif-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
+        .notif-body { flex: 1; }
+        .notif-body p { margin: 0; font-size: 0.9rem; color: #333; line-height: 1.3; }
+        .notif-time { font-size: 0.75rem; color: #888; margin-top: 4px; display: block; }
+        .empty-notif { text-align: center; padding: 20px; color: #999; font-size: 0.9rem; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- PULL TO REFRESH UI --- */
         #ptr-loader {
@@ -329,9 +361,19 @@
         <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
     </div>
 
-    <div class="header-bell" onclick="showLatestNotif()">
+    <div class="header-bell" onclick="toggleNotifDropdown()">
         <i class="fas fa-bell"></i>
         <div class="bell-dot" id="nav-bell-dot"></div>
+    </div>
+
+    <div class="notif-dropdown" id="notif-dropdown">
+        <div class="notif-header">
+            <span>Thông báo</span>
+            <span style="font-size:0.8rem; cursor:pointer; color:#666" onclick="markAllRead()">Đã đọc hết</span>
+        </div>
+        <div class="notif-list" id="notif-list-ui">
+            <div class="empty-notif">Không có thông báo mới</div>
+        </div>
     </div>
 
     <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
@@ -529,7 +571,7 @@
             <h1>🛠 Quản Trị Hệ Thống</h1>
 
             <div class="card" style="border-left: 5px solid #2e7d32;">
-                <h3>🔔 Gửi Thông Báo (In-App)</h3>
+                <h3>🔔 Gửi Thông Báo (Global)</h3>
                 <p>Gửi tin nhắn nổi bật cho tất cả người dùng đang online.</p>
                 <div style="display:flex; gap:10px;">
                     <input type="text" id="admin-notif-msg" placeholder="Nhập nội dung thông báo..." style="flex:1">
@@ -686,7 +728,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
@@ -699,11 +741,8 @@
         let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; // Default
         
         // --- CHAT HISTORY (MEMORY) ---
-        // Lưu trữ lịch sử chat để gửi kèm mỗi lần gọi API
         let chatHistory = [];
         
-        // --- SYSTEM PROMPT (NẠP KIẾN THỨC WEB CHO BOT) ---
-        // Đây là "não" của bot, giúp nó hiểu web bạn làm gì
         const SYSTEM_PROMPT = `
         Bạn là Green Bot - Trợ lý ảo AI thân thiện của lớp A2K41 và trường Green School.
         Bạn xưng là 'Tớ' và gọi người dùng là 'Cậu'. Dùng nhiều emoji dễ thương (🌱, 🤖, ✨).
@@ -785,7 +824,9 @@
             }
         });
 
-        // --- NOTIFICATION SYSTEM (IN-APP) ---
+        // --- NOTIFICATION SYSTEM (HYBRID: Global & Personal) ---
+        
+        // 1. Global Admin Notification (Old)
         function listenForNotifications() {
             onSnapshot(doc(db, "settings", "notifications"), (doc) => {
                 if (doc.exists()) {
@@ -794,7 +835,6 @@
                     if (data.id && data.id !== lastMsg && data.text) {
                         showNotification(data.text);
                         localStorage.setItem('last_notif_id', data.id);
-                        document.querySelector('.header-bell').classList.add('has-new');
                     }
                 }
             });
@@ -809,17 +849,6 @@
         
         window.closeNotification = () => {
             document.getElementById('notification-popup').classList.remove('show');
-            document.querySelector('.header-bell').classList.remove('has-new'); 
-        }
-        
-        window.showLatestNotif = async () => {
-             const docSnap = await getDoc(doc(db, "settings", "notifications"));
-             if (docSnap.exists()) {
-                 alert("Thông báo mới nhất:\n\n" + docSnap.data().text);
-                 document.querySelector('.header-bell').classList.remove('has-new');
-             } else {
-                 alert("Không có thông báo nào.");
-             }
         }
 
         window.sendAdminNotification = async () => {
@@ -834,15 +863,97 @@
             document.getElementById('admin-notif-msg').value = "";
         }
 
+        // 2. Personal Notification (New)
+        let notifUnsub = null;
+
+        function listenToMyNotifications(uid) {
+            if (notifUnsub) notifUnsub(); // Clear old listener
+
+            const q = query(
+                collection(db, "notifications"), 
+                where("recipientUid", "==", uid),
+                orderBy("createdAt", "desc"),
+                limit(20)
+            );
+
+            notifUnsub = onSnapshot(q, (snap) => {
+                const list = document.getElementById('notif-list-ui');
+                const dot = document.getElementById('nav-bell-dot');
+                let unreadCount = 0;
+                let html = "";
+
+                if (snap.empty) {
+                    list.innerHTML = '<div class="empty-notif">Chưa có thông báo nào</div>';
+                    dot.style.display = 'none';
+                    return;
+                }
+
+                snap.forEach(d => {
+                    const data = d.data();
+                    const id = d.id;
+                    if (!data.isRead) unreadCount++;
+                    
+                    html += `
+                    <div class="notif-item ${data.isRead ? '' : 'unread'}" onclick="clickNotification('${id}', '${data.collectionRef}', '${data.link}')">
+                        <img src="${data.senderAvatar || 'https://via.placeholder.com/30'}" class="notif-avatar">
+                        <div class="notif-body">
+                            <p>${data.message}</p>
+                            <span class="notif-time">${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</span>
+                        </div>
+                    </div>`;
+                });
+
+                list.innerHTML = html;
+                dot.style.display = unreadCount > 0 ? 'block' : 'none';
+            });
+        }
+
+        async function pushNotification(recipientId, type, message, linkId, colRef) {
+            if (!currentUser || recipientId === currentUser.uid) return; 
+            try {
+                await addDoc(collection(db, "notifications"), {
+                    recipientUid: recipientId,
+                    senderName: currentUser.displayName,
+                    senderAvatar: currentUser.photoURL,
+                    type: type,
+                    message: message,
+                    link: linkId,
+                    collectionRef: colRef,
+                    isRead: false,
+                    createdAt: serverTimestamp()
+                });
+            } catch (e) {
+                console.error("Lỗi gửi thông báo:", e);
+            }
+        }
+
+        window.clickNotification = async (notifId, col, postId) => {
+            await updateDoc(doc(db, "notifications", notifId), { isRead: true });
+            if(col && postId && col !== 'undefined') {
+                window.openLightbox(col, postId);
+            }
+            document.getElementById('notif-dropdown').classList.remove('active');
+        }
+
+        window.toggleNotifDropdown = () => {
+            const d = document.getElementById('notif-dropdown');
+            d.classList.toggle('active');
+        }
+
+        window.markAllRead = async () => {
+           // Basic UI clear for feeling
+           const list = document.querySelectorAll('.notif-item.unread');
+           list.forEach(item => item.classList.remove('unread'));
+           document.getElementById('nav-bell-dot').style.display='none';
+           // In production, we should run a batch update here
+        }
+
         // --- GEMINI AI (MULTI-KEY FAILOVER + HISTORY MEMORY) ---
         
         async function callGeminiAPI(prompt, imageBase64 = null) {
-            
-            // 1. Cập nhật lịch sử chat (Chỉ Text)
             let requestContents = [];
             
             if (imageBase64) {
-                // Trường hợp có ảnh: Gửi prompt + ảnh (Không dùng history để tránh lỗi format)
                 requestContents = [{
                     parts: [
                         { text: prompt },
@@ -850,40 +961,28 @@
                     ]
                 }];
             } else {
-                // Trường hợp Chat Text: Dùng lịch sử để nhớ
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                 requestContents = chatHistory;
             }
 
-            // 2. Thử từng key (Fail-over)
             for (let i = 0; i < aiKeys.length; i++) {
                 const keyObj = aiKeys[i];
-                console.log(`Đang thử Key: ${keyObj.name}`);
-                
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-                    
                     const response = await fetch(url, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: requestContents })
                     });
-
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    
                     const data = await response.json();
                     const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
 
-                    // 3. Nếu thành công và là Chat Text -> Lưu câu trả lời vào lịch sử
                     if (!imageBase64) {
                         chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-                        // Giới hạn lịch sử để không quá dài (tối đa 20 lượt gần nhất)
                         if (chatHistory.length > 20) chatHistory = chatHistory.slice(chatHistory.length - 20);
                     }
-
                     return aiText;
-
                 } catch (e) {
-                    console.warn(`Key ${keyObj.name} lỗi:`, e);
                     if (i === aiKeys.length - 1) return "Tất cả Key AI đều bận hoặc lỗi.";
                 }
             }
@@ -904,10 +1003,8 @@
 
         window.removeAIKey = async (name, val) => { if(confirm(`Xóa Key "${name}"?`)) { await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayRemove({name, val}) }); } }
 
-        // 1. AI CHATBOT INTERACTION
         window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
         
-        // CHAT SUGGESTIONS HANDLER
         window.fillChat = (text) => {
             document.getElementById('ai-input').value = text;
             window.sendMessageToAI(new Event('submit'));
@@ -920,12 +1017,10 @@
             if(!msg) return;
             
             const msgList = document.getElementById('ai-messages'); 
-            // Hiện tin nhắn người dùng
             msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; 
             input.value = ""; 
             msgList.scrollTop = msgList.scrollHeight;
             
-            // Hiện loading
             const loadingId = "ai-loading-" + Date.now(); 
             msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`; 
             msgList.scrollTop = msgList.scrollHeight;
@@ -955,7 +1050,6 @@
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if(docSnap.exists()) {
                 const cfg = docSnap.data();
-                // TẢI DANH SÁCH KEY AI TỪ DATABASE VỀ (FAIL-OVER)
                 if(cfg.aiKeys && cfg.aiKeys.length > 0) { 
                     aiKeys = cfg.aiKeys; 
                     const list = document.getElementById('ai-key-list'); 
@@ -988,7 +1082,6 @@
         async function syncToGoogleSheet(user) { if (!googleSheetUrl) return; try { const payload = { displayName: user.displayName || "Chưa đặt tên", email: user.email, customID: user.customID || "", createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'), classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp", lastActive: new Date().toLocaleString('vi-VN'), loginCount: user.loginCount || 1, uid: user.uid }; await fetch(googleSheetUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); console.log("Synced to Google Sheet"); } catch (e) { console.error("Sync Error:", e); } }
 
         onAuthStateChanged(auth, async(u)=>{
-            // RELOAD DATA LISTENERS WITH CORRECT AUTH STATE
             renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
             renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
 
@@ -997,23 +1090,28 @@
                 if(s.exists()){ const d=s.data(); if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;} userData = { ...d, loginCount: (d.loginCount || 0) + 1 }; await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) }); } 
                 else { userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 }; await setDoc(r,userData); }
                 currentUser=userData; syncToGoogleSheet(currentUser); listenForNotifications();
+                
+                // NOTIFICATION LISTENER
+                listenToMyNotifications(u.uid);
 
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none'; document.getElementById('home-login-area').style.display='none';
                 document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
                 document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id"; document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
                 if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
-            }else{ currentUser=null; document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; }
+            }else{ 
+                currentUser=null; 
+                if(notifUnsub) notifUnsub(); // Clear Notif Listener
+                document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
+            }
         });
 
         window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
         window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash') ? 'gallery' : c; document.getElementById('file-input').click(); }
         
-        // --- UPLOAD ẢNH & GỌI AI (NÂNG CẤP PERSONA) ---
         window.executeUpload = async (i) => { 
             const f = i.files[0]; if(!f) return; 
             const isTrash = (window.uploadMode === 'trash'); 
             
-            // PROMPT NÂNG CẤP: NGÔI THỨ NHẤT & GỢI Ý
             let aiPrompt = isTrash 
                 ? "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn." 
                 : "Đóng vai một học sinh lớp A2K41 đăng ảnh lên mạng xã hội của lớp. Hãy viết 3 dòng trạng thái (caption) ngắn gọn, tự nhiên, xưng hô 'mình' hoặc 'lớp tớ' về bức ảnh này. Gợi ý 1: Vui vẻ. Gợi ý 2: Ý nghĩa. Gợi ý 3: Hài hước. Mỗi gợi ý 1 dòng gạch đầu dòng."; 
@@ -1041,7 +1139,6 @@
                             if(isTrash) { 
                                 alert(`🤖 AI Kết luận:\n${aiResult}`); description = aiResult; 
                             } else { 
-                                // Nếu là caption ảnh, chỉ lấy nội dung, không alert phiền
                                 description = aiResult; 
                             } 
                         } catch(err) { 
@@ -1105,18 +1202,16 @@
             document.getElementById('lb-desc').innerText=d.desc; 
             document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
             
-            const btn = document.getElementById('lb-like-btn'); // FIX: Correct ID
+            const btn = document.getElementById('lb-like-btn'); 
             if(currentUser && d.likes?.includes(currentUser.uid)) { 
                 btn.classList.add('liked'); btn.style.color='#e53935'; 
             } else { 
                 btn.classList.remove('liked'); btn.style.color='#555'; 
             } 
             
-            // Check OWNER/ADMIN CONTROLS (FIXED LOGIC)
             const controls = document.getElementById('lb-owner-controls');
             if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) {
                 controls.style.display = 'flex';
-                // Show Pin Button ONLY for Admins
                 document.querySelector('.lb-btn-pin').style.display = isAdmin(currentUser.email) ? 'block' : 'none';
             } else {
                 controls.style.display = 'none';
@@ -1135,7 +1230,7 @@
         zoomArea.addEventListener('dblclick', toggleZoom);
         function toggleZoom(e) { if (zoomArea.classList.contains('zoomed')) { zoomArea.classList.remove('zoomed'); imgEl.style.transform = "scale(1)"; } else { zoomArea.classList.add('zoomed'); let clientX, clientY; if (e.changedTouches && e.changedTouches.length > 0) { clientX = e.changedTouches[0].clientX; clientY = e.changedTouches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; } const rect = zoomArea.getBoundingClientRect(); const x = clientX - rect.left; const y = clientY - rect.top; imgEl.style.transformOrigin = `${x}px ${y}px`; imgEl.style.transform = "scale(2.5)"; } }
         
-        window.quickReply = (text) => {
+        window.quickReply = async (text) => {
             if (!currentUser) return alert("Vui lòng đăng nhập!");
             const list = document.getElementById('lb-comments-list');
             const fakeDiv = document.createElement('div');
@@ -1144,7 +1239,14 @@
             list.appendChild(fakeDiv);
             list.scrollTop = list.scrollHeight;
             const c = { uid: currentUser.uid, name: currentUser.displayName, avatar: currentUser.photoURL, text: text, time: Date.now() };
-            updateDoc(doc(db, currentCollection, currentImgId), { comments: arrayUnion(c) });
+            await updateDoc(doc(db, currentCollection, currentImgId), { comments: arrayUnion(c) });
+
+            // NOTIF: COMMENT
+            const postSnap = await getDoc(doc(db, currentCollection, currentImgId));
+            if(postSnap.exists()){
+                const ownerId = postSnap.data().uid;
+                pushNotification(ownerId, 'comment', `<b>${currentUser.displayName}</b> đã bình luận: "${text}"`, currentImgId, currentCollection);
+            }
         }
         
         window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentCollection, id: currentImgId }); alert("Đã ghim bài viết lên trang chủ!"); }
@@ -1159,7 +1261,6 @@
             
             const isLiked = btn.classList.contains('liked');
             
-            // Immediate UI Update
             if (isLiked) {
                 btn.classList.remove('liked');
                 btn.style.color = '#555';
@@ -1170,6 +1271,13 @@
                 btn.style.color = '#e53935';
                 countSpan.innerText = currentCount + 1;
                 await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayUnion(currentUser.uid) });
+
+                // NOTIF: LIKE
+                const postSnap = await getDoc(doc(db, currentCollection, currentImgId));
+                if(postSnap.exists()){
+                    const ownerId = postSnap.data().uid;
+                    pushNotification(ownerId, 'like', `<b>${currentUser.displayName}</b> đã thả tim ảnh của bạn ❤️`, currentImgId, currentCollection);
+                }
             }
         }
         
