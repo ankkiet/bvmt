@@ -1,23 +1,30 @@
 export async function onRequest(context) {
+  // 1. Cấu hình CORS (Để trình duyệt không chặn)
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
 
-  if (context.request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (context.request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
 
   try {
-    // ⚠️ QUAN TRỌNG: TẠO KEY MỚI VÀ DÁN VÀO ĐÂY (VÌ KEY CŨ ĐÃ LỘ TRONG ẢNH)
-    const MY_API_KEY = "AIzaSyDbCJ4TdZgzuAAp6r3M9V_R24amSTr4uPA"; 
-    
-    // --- SỬA LỖI 404 TẠI ĐÂY ---
-    // Dùng tên cụ thể: gemini-1.5-flash-001 (Thay vì tên chung chung)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${MY_API_KEY}`;
+    // 2. LẤY KEY TỰ ĐỘNG TỪ CLOUDFLARE (Không dán cứng nữa)
+    const API_KEY = context.env.GEMINI_API_KEY;
+
+    if (!API_KEY) {
+      throw new Error("Chưa cài đặt GEMINI_API_KEY trong Cloudflare Settings!");
+    }
+
+    // 3. Cấu hình Model (Dùng bản 1.5 Flash chuẩn 001 ổn định nhất)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${API_KEY}`;
 
     const body = await context.request.json();
     const { prompt, imageBase64, history } = body;
-    
+
+    // 4. Chuẩn bị dữ liệu
     let contents = [];
     if (imageBase64) {
         contents = [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }] }];
@@ -29,6 +36,7 @@ export async function onRequest(context) {
         contents = [{ parts: [{ text: prompt }] }];
     }
 
+    // 5. Gọi Google
     const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,15 +44,15 @@ export async function onRequest(context) {
     });
 
     if (!response.ok) {
-        const errText = await response.text();
-        // In lỗi chi tiết ra để xem nếu vẫn không được
-        throw new Error(`Google Error ${response.status}: ${errText}`);
+        const txt = await response.text();
+        throw new Error(`Google Error ${response.status}: ${txt}`);
     }
 
     const data = await response.json();
     return new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (err) {
+    // Trả về lỗi sạch sẽ cho Client hiển thị
     return new Response(JSON.stringify({ error: err.message }), { 
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } 
     });
