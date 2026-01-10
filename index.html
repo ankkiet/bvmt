@@ -274,6 +274,19 @@
         .key-name { font-weight: bold; font-size: 0.9rem; }
         .key-val { font-size: 0.8rem; color: #666; margin-left: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+        /* NEW API KEY MODAL STYLES */
+        #api-key-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 10000;
+            justify-content: center; align-items: center;
+        }
+        .api-modal-content {
+            background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center;
+        }
+        .api-input {
+            width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;
+        }
+
         @media (min-width: 769px) {
             .lb-container { flex-direction: row; max-width: 1100px; height: 90vh; border-radius: 12px; margin: 5vh auto; background: black; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
             .lb-image-area { flex: 2; height: 100%; border-right: 1px solid #333; border-radius: 12px 0 0 12px; }
@@ -309,6 +322,16 @@
         <div class="wv-arrow"><i class="fas fa-arrow-up"></i></div>
     </div>
 
+    <div id="api-key-modal">
+        <div class="api-modal-content">
+            <h3 style="margin-top:0; color:var(--ai-color)">🔑 Cấu hình Green Bot</h3>
+            <p style="font-size:0.9rem; color:#666">Nhập API Key Google (Gemini) để bot hoạt động:</p>
+            <input type="password" id="gemini-key-input" class="api-input" placeholder="Dán key AIza... vào đây">
+            <button class="btn btn-ai" onclick="saveApiKey()" style="width:100%">Lưu & Bắt đầu</button>
+            <p style="margin-top:10px; font-size:0.8rem; cursor:pointer; color:#999" onclick="document.getElementById('api-key-modal').style.display='none'">Đóng</p>
+        </div>
+    </div>
+
     <div id="maintenance-overlay">
         <i class="fas fa-hammer"></i>
         <h1>Hệ Thống Đang Bảo Trì</h1>
@@ -339,7 +362,13 @@
     </div>
 
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Chuyên Gia)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header">
+            <span>🤖 Green Bot (Chuyên Gia)</span> 
+            <div style="display:flex; gap:10px">
+                <i class="fas fa-cog" onclick="openKeySettings()" style="cursor:pointer" title="Cài đặt Key"></i>
+                <span onclick="toggleAIChat()" style="cursor:pointer">X</span>
+            </div>
+        </div>
         
         <div class="chat-suggestions">
             <div class="chat-chip" onclick="fillChat('Web này có chức năng gì?')">Chức năng web?</div>
@@ -537,9 +566,10 @@
                 </div>
             </div>
             
-            <div class="card" style="border-left: 5px solid #6200ea; opacity: 0.6; pointer-events: none;">
-                <h3>🤖 Quản Lý API Key</h3>
-                <p><i>Tính năng này đã được chuyển lên Server Cloudflare để bảo mật tối đa. Vui lòng cài đặt Key trong Dashboard của Cloudflare.</i></p>
+            <div class="card" style="border-left: 5px solid #6200ea;">
+                <h3>🤖 Quản Lý API Key (Client Mode)</h3>
+                <p>Nhập Key Google Gemini để kích hoạt AI Chat & Soi Rác.</p>
+                <button class="btn btn-sm btn-ai" onclick="openKeySettings()">🔑 Nhập/Đổi API Key</button>
             </div>
 
             <div class="card" style="border-left: 5px solid #2e7d32;">
@@ -748,30 +778,85 @@
         window.showLatestNotif = async () => { const docSnap = await getDoc(doc(db, "settings", "notifications")); if (docSnap.exists()) { alert("Thông báo mới nhất:\n\n" + docSnap.data().text); document.querySelector('.header-bell').classList.remove('has-new'); } else { alert("Không có thông báo nào."); } }
         window.sendAdminNotification = async () => { const text = document.getElementById('admin-notif-msg').value; if(!text) return; await setDoc(doc(db, "settings", "notifications"), { text: text, id: Date.now().toString(), createdAt: serverTimestamp() }); alert("Đã gửi thông báo!"); document.getElementById('admin-notif-msg').value = ""; }
 
-        // --- GEMINI AI (SERVERLESS CALL) ---
+        // --- NEW: API KEY MANAGEMENT ---
+        window.openKeySettings = () => {
+            const currentKey = localStorage.getItem('gemini_key') || "";
+            document.getElementById('gemini-key-input').value = currentKey;
+            document.getElementById('api-key-modal').style.display = 'flex';
+        }
+
+        window.saveApiKey = () => {
+            const key = document.getElementById('gemini-key-input').value.trim();
+            if (key.length > 10 && key.startsWith('AIza')) {
+                localStorage.setItem('gemini_key', key);
+                document.getElementById('api-key-modal').style.display = 'none';
+                alert('Đã lưu API Key! Bot đã sẵn sàng.');
+            } else {
+                alert('Key không hợp lệ! Vui lòng nhập đúng Key từ AI Studio.');
+            }
+        }
+
+        // --- GEMINI AI (CLIENT-SIDE CALL) ---
         async function callGeminiAPI(prompt, imageBase64 = null) {
-            let historyToSend = [];
-            if (!imageBase64) {
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                historyToSend = chatHistory;
-            }
-            // GỌI VỀ SERVER CLOUDFLARE FUNCTIONS
-            const response = await fetch('/ask-ai', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: prompt, imageBase64: imageBase64, history: historyToSend })
-            });
-            if (!response.ok) throw new Error("Server Error: " + response.status);
-            const data = await response.json();
+            const apiKey = localStorage.getItem('gemini_key');
             
-            // Cập nhật lịch sử nếu thành công
-            if (!imageBase64 && data.candidates) {
-                const aiText = data.candidates[0].content.parts[0].text;
-                chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-                if (chatHistory.length > 20) chatHistory = chatHistory.slice(chatHistory.length - 20);
-                return aiText;
+            // Nếu chưa có key thì bắt nhập
+            if (!apiKey) {
+                openKeySettings();
+                throw new Error("Vui lòng nhập API Key để tiếp tục!");
             }
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
+
+            // Chuẩn bị URL (Dùng Model 1.5 Flash ổn định)
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+            // Chuẩn bị nội dung gửi đi
+            let userContentParts = [{ text: prompt }];
+            if (imageBase64) {
+                userContentParts.push({
+                    inline_data: { mime_type: "image/jpeg", data: imageBase64 }
+                });
+            }
+
+            // Cập nhật history tạm để gửi đi
+            let contentsPayload = chatHistory.map(msg => ({
+                role: msg.role === "model" ? "model" : "user",
+                parts: msg.parts
+            }));
+
+            contentsPayload.push({ role: "user", parts: userContentParts });
+
+            // Fetch trực tiếp từ Google
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: contentsPayload })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                if (response.status === 400 || response.status === 403) {
+                    localStorage.removeItem('gemini_key'); // Key sai thì xóa đi bắt nhập lại
+                    openKeySettings();
+                    throw new Error("API Key không đúng hoặc hết hạn. Vui lòng nhập lại.");
+                }
+                throw new Error(`Lỗi Google (${response.status}): ${errData.error?.message || 'Unknown error'}`);
+            }
+
+            const data = await response.json();
+            const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (aiText) {
+                // Chỉ lưu text vào lịch sử chat (không lưu ảnh base64 để tiết kiệm bộ nhớ)
+                if(!imageBase64) {
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                    // Giới hạn lịch sử
+                    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+                }
+                return aiText;
+            } else {
+                return "AI không trả lời được câu này.";
+            }
         }
 
         window.testAIConnection = async () => { const btn = document.querySelector('.btn-ai'); const originalText = btn.innerText; btn.innerText = "Đang test..."; try { const result = await callGeminiAPI("Chào Green Bot!"); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); } btn.innerText = originalText; }
@@ -1107,5 +1192,5 @@
         document.getElementById('btn-install-mob').addEventListener('click', installPWA);
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered!', reg)).catch(err => console.log('SW Error:', err)); }); }
     </script>
-<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "18a4fa3e191846769c91bd8e455fa668"}'></script></body>
+</body>
 </html>
