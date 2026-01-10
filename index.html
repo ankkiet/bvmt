@@ -18,6 +18,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -125,6 +126,11 @@
                         <button class="home-login-btn" id="main-login-btn"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
                     </div>
                 </div>
+                <div id="birthday-alert" style="display:none; background: linear-gradient(135deg, #fce4ec, #f8bbd0); padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; border: 2px dashed #e91e63;">
+                    <h2 style="color:#c2185b; margin:0">🎂 CHÚC MỪNG SINH NHẬT! 🎉</h2>
+                    <p style="color:#880e4f; margin-top:10px">Chúc bạn có một ngày sinh nhật thật vui vẻ và ý nghĩa bên A2K41!</p>
+                </div>
+
                 <div id="featured-post" class="featured-section" style="display: none;">
                     <div class="featured-badge">🌟 TOP 1 ĐƯỢC YÊU THÍCH</div>
                     <img id="feat-img" src="" class="featured-img">
@@ -201,10 +207,24 @@
             <div id="locked-activities" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-activities">
                 <h1>📅 Hoạt Động & Tin Tức</h1>
+                
+                <div class="card">
+                    <h2>💌 Góc Tâm Sự (Confessions)</h2>
+                    <p style="font-size:0.9rem; color:var(--text-sec)">Nơi chia sẻ ẩn danh những điều khó nói...</p>
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <input type="text" id="confess-content" placeholder="Nhập tâm sự của bạn..." style="flex:1">
+                        <button class="btn btn-sm" onclick="postConfession()">Gửi</button>
+                    </div>
+                    <div id="confession-list" class="confession-container">
+                        <div style="text-align:center; padding:10px; color:#999">Đang tải tâm sự...</div>
+                    </div>
+                </div>
+
                 <div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div>
                 <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#" style="text-decoration:none; color:var(--primary)">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
             </div>
         </div>
+
         <div id="guide" class="page-section">
             <div id="locked-guide" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-guide">
@@ -233,6 +253,9 @@
                         <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
                         <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
                         
+                        <label>Ngày sinh:</label>
+                        <input type="date" id="edit-dob" style="width:100%">
+
                         <label>Lớp:</label>
                         <select id="edit-class" required>
                             <option value="">-- Chọn --</option>
@@ -332,11 +355,12 @@
             </div>
 
             <div class="card" style="border-left: 5px solid #0288d1;">
-                <h3>📊 Xuất Dữ Liệu Excel (XLSX)</h3>
+                <h3>📊 Xuất Dữ Liệu & Backup (Excel)</h3>
+                <p>Tải dữ liệu về máy để dự phòng.</p>
                 <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                    <button class="btn btn-sm btn-outline" onclick="exportExcel('users')">DS Thành viên</button>
-                    <button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')">Góc Xanh</button>
-                    <button class="btn btn-sm btn-outline" onclick="exportExcel('contest')">Thi Đua</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('users')"><i class="fas fa-file-excel"></i> DS Thành viên</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')"><i class="fas fa-file-excel"></i> Backup Góc Xanh</button>
+                    <button class="btn btn-sm btn-outline" onclick="exportExcel('contest')"><i class="fas fa-file-excel"></i> Backup Thi Đua</button>
                 </div>
                 <table id="export-table" style="display:none"></table>
             </div>
@@ -347,6 +371,33 @@
                 <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px">Làm mới</button>
             </div>
         </div>
+
+        <div id="settings" class="page-section">
+            <h1>⚙️ Cài Đặt</h1>
+            <h3 style="margin-left:10px; color:var(--text-sec); font-size:0.9rem; text-transform:uppercase;">Giao diện & Âm thanh</h3>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <div class="settings-label"><div class="settings-icon-box" style="background:#212121"><i class="fas fa-moon"></i></div><span>Chế độ tối (Dark Mode)</span></div>
+                    <label class="toggle-switch"><input type="checkbox" id="set-darkmode" onchange="toggleDarkMode()"><span class="slider-round"></span></label>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label"><div class="settings-icon-box" style="background:#e91e63"><i class="fas fa-music"></i></div><span>Nhạc nền</span></div>
+                    <label class="toggle-switch"><input type="checkbox" id="set-music" onchange="toggleMusic()"><span class="slider-round"></span></label>
+                </div>
+            </div>
+            <h3 style="margin-left:10px; color:var(--text-sec); font-size:0.9rem; text-transform:uppercase;">Thông tin ứng dụng</h3>
+            <div class="settings-group">
+                <div class="settings-item" onclick="window.open('https://github.com/webcuaban')">
+                    <div class="settings-label"><div class="settings-icon-box" style="background:#333"><i class="fab fa-github"></i></div><span>Mã nguồn mở</span></div><i class="fas fa-chevron-right" style="color:var(--text-sec)"></i>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label"><div class="settings-icon-box" style="background:var(--primary)"><i class="fas fa-info-circle"></i></div><span>Phiên bản</span></div><span style="color:var(--text-sec); font-weight:bold;">v3.0.0</span>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button class="btn btn-outline" style="border-color:var(--danger); color:var(--danger)" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất tài khoản</button>
+            </div>
+        </div>
     </div>
 
     <nav class="mobile-nav">
@@ -355,54 +406,32 @@
             <a href="#greenclass" id="mob-greenclass" class="nav-item"><i class="fas fa-leaf"></i><span>Xanh</span></a>
             <a href="#contest" id="mob-contest" class="nav-item"><i class="fas fa-trophy"></i><span>ThiĐua</span></a>
             <a href="#archive" id="mob-archive" class="nav-item"><i class="fas fa-box"></i><span>Lưu</span></a>
-            <a href="#profile" id="mob-profile" class="nav-item"><i class="fas fa-user"></i><span>Tôi</span></a>
+            <a href="#settings" id="mob-settings" class="nav-item"><i class="fas fa-cog"></i><span>Cài Đặt</span></a>
             <a href="#admin" id="mob-admin" class="nav-item" style="display:none; color:red"><i class="fas fa-cogs"></i><span>Admin</span></a>
         </div>
     </nav>
 
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container">
-            <div class="lb-overlay-top">
-                <button class="lb-close-btn" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="lb-image-area" id="lb-zoom-area">
-                <img id="lb-img" src="">
-            </div>
-
-            <div class="lb-toggle-details-btn" onclick="toggleDetails()">
-                <i class="fas fa-comment-alt"></i> Bình luận / Chi tiết
-            </div>
-
+            <div class="lb-overlay-top"><button class="lb-close-btn" onclick="closeLightbox()"><i class="fas fa-times"></i></button></div>
+            <div class="lb-image-area" id="lb-zoom-area"><img id="lb-img" src=""></div>
+            <div class="lb-toggle-details-btn" onclick="toggleDetails()"><i class="fas fa-comment-alt"></i> Bình luận / Chi tiết</div>
             <div class="lb-details" id="lb-details-sheet">
                 <div class="lb-drag-handle" onclick="toggleDetails()"></div>
                 <div class="lb-header">
-                    <img id="lb-author-avatar" class="lb-avatar">
-                    <div class="lb-meta">
-                        <h4 id="lb-author-name">Name</h4>
-                        <span id="lb-custom-id">@id</span>
-                    </div>
-                    
+                    <img id="lb-author-avatar" class="lb-avatar"><div class="lb-meta"><h4 id="lb-author-name">Name</h4><span id="lb-custom-id">@id</span></div>
                     <div class="lb-controls" id="lb-owner-controls" style="display:none">
                         <button class="lb-btn-icon lb-btn-pin" onclick="pinPost()" title="Ghim"><i class="fas fa-thumbtack"></i></button>
                         <button class="lb-btn-icon lb-btn-edit" onclick="editPostFromLB()" title="Sửa"><i class="fas fa-edit"></i></button>
                         <button class="lb-btn-icon lb-btn-delete" onclick="deletePostFromLB()" title="Xóa"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
-                
                 <div class="lb-desc" id="lb-desc">Description</div>
-                
                 <div class="lb-stats">
-                    <div id="lb-like-btn" class="lb-stat-item" onclick="handleLike()">
-                        <i class="fas fa-heart"></i> <span id="lb-like-count">0</span>
-                    </div>
-                    <div class="lb-stat-item" onclick="window.open(document.getElementById('lb-img').src)">
-                        <i class="fas fa-download"></i> Tải ảnh
-                    </div>
+                    <div id="lb-like-btn" class="lb-stat-item" onclick="handleLike()"><i class="fas fa-heart"></i> <span id="lb-like-count">0</span></div>
+                    <div class="lb-stat-item" onclick="window.open(document.getElementById('lb-img').src)"><i class="fas fa-download"></i> Tải ảnh</div>
                 </div>
-
                 <div class="lb-comments-list" id="lb-comments-list"></div>
-
                 <div class="quick-replies-container">
                     <div class="quick-chip" onclick="quickReply('Tuyệt vời! 😍')">Tuyệt vời! 😍</div>
                     <div class="quick-chip" onclick="quickReply('Xanh quá! 🌿')">Xanh quá! 🌿</div>
@@ -422,7 +451,6 @@
     </div>
 
     <script type="module" src="script.js"></script>
-
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "18a4fa3e191846769c91bd8e455fa668"}'></script>
 </body>
 </html>
