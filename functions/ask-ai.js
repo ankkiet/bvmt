@@ -8,15 +8,16 @@ export async function onRequest(context) {
   if (context.request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // 1. Dán Key vào đây (Key của dự án bạn vừa Enable API ở trên)
-    const MY_API_KEY = "AIzaSyDB6lGWelQhurxSACjO6Few5xW_XiVZCvA"; 
+    // ⚠️ QUAN TRỌNG: TẠO KEY MỚI VÀ DÁN VÀO ĐÂY (VÌ KEY CŨ ĐÃ LỘ TRONG ẢNH)
+    const MY_API_KEY = "AIzaSyDbCJ4TdZgzuAAp6r3M9V_R24amSTr4uPA"; 
     
-    // 2. URL chuẩn nhất quả đất (v1beta + gemini-1.5-flash)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_API_KEY}`;
+    // --- SỬA LỖI 404 TẠI ĐÂY ---
+    // Dùng tên cụ thể: gemini-1.5-flash-001 (Thay vì tên chung chung)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${MY_API_KEY}`;
 
     const body = await context.request.json();
     const { prompt, imageBase64, history } = body;
-
+    
     let contents = [];
     if (imageBase64) {
         contents = [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }] }];
@@ -35,9 +36,9 @@ export async function onRequest(context) {
     });
 
     if (!response.ok) {
-        // Nếu lỗi, in lỗi ra luôn để biết đường sửa
-        const txt = await response.text();
-        throw new Error(`Google Error ${response.status}: ${txt}`);
+        const errText = await response.text();
+        // In lỗi chi tiết ra để xem nếu vẫn không được
+        throw new Error(`Google Error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
