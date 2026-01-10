@@ -5,20 +5,16 @@ export async function onRequest(context) {
     "Access-Control-Allow-Headers": "Content-Type",
   };
 
-  if (context.request.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (context.request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // --- DÁN KEY MỚI CỦA BẠN VÀO ĐÂY (Key vừa tạo trong AI Studio) ---
+    // 1. Dán Key vào đây (Key của dự án bạn vừa Enable API ở trên)
     const MY_API_KEY = "AIzaSyDB6lGWelQhurxSACjO6Few5xW_XiVZCvA"; 
-    // ----------------------------------------------------------------
-
-    // --- SỬA URL VỀ BẢN 1.5 FLASH (BẢN CHUẨN) ---
-    // Lưu ý: Dùng v1beta và tên đúng là gemini-1.5-flash (không thêm đuôi gì cả)
+    
+    // 2. URL chuẩn nhất quả đất (v1beta + gemini-1.5-flash)
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_API_KEY}`;
 
-    let body = await context.request.json();
+    const body = await context.request.json();
     const { prompt, imageBase64, history } = body;
 
     let contents = [];
@@ -39,19 +35,17 @@ export async function onRequest(context) {
     });
 
     if (!response.ok) {
-        const errText = await response.text();
-        // Ném lỗi ra để xem nó báo gì
-        throw new Error(`Google từ chối: ${response.status} - ${errText}`);
+        // Nếu lỗi, in lỗi ra luôn để biết đường sửa
+        const txt = await response.text();
+        throw new Error(`Google Error ${response.status}: ${txt}`);
     }
 
     const data = await response.json();
-    return new Response(JSON.stringify(data), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    return new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: `LỖI SERVER: ${err.message}` }), {
-      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" }
+    return new Response(JSON.stringify({ error: err.message }), { 
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } 
     });
   }
 }
