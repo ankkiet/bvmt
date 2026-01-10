@@ -1,6 +1,4 @@
---- START OF FILE sw.js ---
-
-const CACHE_NAME = 'nvc-green-v54-optimized'; 
+const CACHE_NAME = 'nvc-green-v53-exceljs-fix'; 
 const STATIC_ASSETS = [
     './',
     './index.html',
