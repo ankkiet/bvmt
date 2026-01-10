@@ -19,7 +19,7 @@ export async function onRequest(context) {
   try {
     // --- KHU VỰC NHẬP KEY (SỬA Ở ĐÂY) ---
     // Bạn hãy dán key của bạn vào giữa hai dấu ngoặc kép bên dưới
-    const MY_API_KEY = "DÁN_KEY_CỦA_BẠN_VÀO_ĐÂY"; 
+    const MY_API_KEY = "AIzaSyCsuqU1zliMVcikvw7Pcm-JWrcn_HE2Vu0"; 
     
     // Kiểm tra xem đã nhập key chưa
     if (!MY_API_KEY || MY_API_KEY.includes("DÁN_KEY")) {
