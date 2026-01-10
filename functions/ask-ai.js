@@ -38,7 +38,7 @@ export async function onRequest(context) {
     const { prompt, imageBase64, history } = body;
 
     // 4. Chuẩn bị dữ liệu gửi Google
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${MY_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${MY_API_KEY}`;
     
     let contents = [];
     if (imageBase64) {
