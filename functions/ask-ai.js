@@ -26,7 +26,8 @@ export async function onRequest(context) {
     const { prompt, imageBase64, history } = await context.request.json();
 
     // 3. Lấy chuỗi Key từ "Két sắt" Cloudflare
-    const RAW_KEYS = context.env.GEMINI_API_KEY; 
+    // Dán thẳng key vào đây (nhớ có dấu ngoặc kép)
+   const RAW_KEYS = "AIzaSyCsuqU1zliMVcikvw7Pcm-JWrcn_HE2Vu0"; 
     
     if (!RAW_KEYS) {
       return new Response(JSON.stringify({ error: "Server chưa cấu hình API Key (Vào Cloudflare Settings -> Environment Variables để thêm)" }), { 
