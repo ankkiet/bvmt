@@ -37,11 +37,11 @@
             overscroll-behavior-y: contain; 
         }
 
-        /* --- WEBVIEW WARNING (FIX LỖI ZALO/MESSENGER) --- */
+        /* --- WEBVIEW WARNING --- */
         #webview-warning {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #fff, #f0f2f5); 
-            z-index: 999999; /* Cao nhất */
+            z-index: 999999;
             flex-direction: column; align-items: center; justify-content: center;
             text-align: center; padding: 30px;
         }
@@ -49,16 +49,14 @@
         .wv-title { font-size: 1.6rem; color: #333; margin-bottom: 15px; font-weight: 800; font-family: 'Quicksand', sans-serif; }
         .wv-desc { color: #555; margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6; max-width: 500px; }
         .wv-arrow { font-size: 3rem; color: var(--primary); animation: bounce 1.5s infinite; position: absolute; top: 20px; right: 20px; }
-        
         @keyframes float { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-10px);} }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(20px);} 60% {transform: translateY(10px);} }
 
-        /* --- MAINTENANCE OVERLAY (FIXED & BEAUTIFUL) --- */
+        /* --- MAINTENANCE OVERLAY --- */
         #maintenance-overlay {
-            display: none; /* JS sẽ bật */
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(135deg, #ffffff, #e8f5e9);
-            z-index: 99999; /* Đảm bảo che hết */
+            z-index: 99999;
             flex-direction: column; justify-content: center; align-items: center;
             text-align: center; padding: 20px;
         }
@@ -67,12 +65,12 @@
         #maintenance-overlay i.fa-hammer { font-size: 6rem; color: #ffa000; margin-bottom: 20px; animation: hammer 2s infinite; }
         @keyframes hammer { 0% {transform: rotate(0);} 20% {transform: rotate(-15deg);} 40% {transform: rotate(10deg);} 60% {transform: rotate(-5deg);} 100% {transform: rotate(0);} }
 
-        /* --- NOTIFICATION POPUP (TOAST - OLD STYLE) --- */
+        /* --- NOTIFICATION POPUP (GLOBAL ADMIN) --- */
         #notification-popup {
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            position: fixed; top: 20px; right: 20px; z-index: 10000; /* Tăng Z-Index */
             background: white; width: 300px; padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             border-left: 5px solid var(--primary);
             display: flex; align-items: flex-start; gap: 12px;
             transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -84,7 +82,7 @@
         .notif-content p { margin: 0; font-size: 0.9rem; color: #666; line-height: 1.4; }
         .notif-close { position: absolute; top: 5px; right: 10px; cursor: pointer; color: #999; font-size: 0.8rem; }
 
-        /* --- NEW: PROFESSIONAL NOTIFICATION DROPDOWN --- */
+        /* --- BELL & DROPDOWN (PERSONAL) --- */
         .header-bell {
             position: fixed; top: 15px; right: 15px; z-index: 1001;
             width: 42px; height: 42px; 
@@ -97,12 +95,11 @@
         .header-bell:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
         .bell-dot { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; background: #ff1744; border-radius: 50%; border: 2px solid white; display: none; }
         
-        /* Dropdown UI */
         .notif-dropdown {
             position: fixed; top: 70px; right: 20px; width: 320px;
             background: white; border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            z-index: 1000; display: none; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 1002; display: none; overflow: hidden; /* Tăng Z-Index */
             border: 1px solid #eee;
             animation: slideDown 0.3s ease-out;
         }
@@ -132,7 +129,7 @@
 
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- PULL TO REFRESH UI --- */
+        /* --- PULL TO REFRESH --- */
         #ptr-loader {
             position: fixed; top: -70px; left: 0; width: 100%; height: 70px;
             display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px;
@@ -146,7 +143,7 @@
             border: 2px solid var(--primary);
         }
 
-        /* --- 2. NAVIGATION --- */
+        /* --- NAVIGATION --- */
         nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; padding-right: 60px; }
         nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 10px; }
         nav.pc-nav ul li a { color: var(--white); text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 10px 20px; font-size: 0.9rem; border-radius: 30px; transition: 0.3s; cursor: pointer; }
@@ -159,7 +156,7 @@
         .nav-item.active-menu { color: var(--primary); font-weight: 800; }
         .nav-item.active-menu i { color: var(--primary); transform: translateY(-3px); }
 
-        /* --- 3. LAYOUT --- */
+        /* --- LAYOUT --- */
         .container { max-width: 1200px; width: 95%; margin: 25px auto; background: var(--white); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); min-height: 80vh; }
         .page-section { display: none; animation: fadeIn 0.4s ease-out; }
         .page-section.active { display: block; }
@@ -169,7 +166,7 @@
         h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.4rem; border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; }
         .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s; }
 
-        /* --- 4. BUTTONS & INPUTS --- */
+        /* --- BUTTONS & INPUTS --- */
         .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
         .btn-danger { background: var(--danger); } 
@@ -183,7 +180,7 @@
         input, textarea, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-family: inherit; font-size: 1rem; transition: 0.3s; background: #fafafa; }
         input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
 
-        /* --- 5. EXTRAS & MUSIC --- */
+        /* --- EXTRAS & MUSIC --- */
         .countdown-container { background: linear-gradient(135deg, #d32f2f, #c62828); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(211, 47, 47, 0.3); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
         .timer-display { font-size: 2rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; margin-top: 5px; }
 
@@ -194,7 +191,7 @@
         .music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- 6. AI CHATBOT UI --- */
+        /* --- AI CHATBOT UI --- */
         .ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; overflow: hidden; }
         .ai-fab:hover { transform: scale(1.1); }
         .ai-fab img { width: 100%; height: 100%; object-fit: cover; }
@@ -207,14 +204,12 @@
         .ai-msg.user { background: #6200ea; color: white; align-self: flex-end; }
         .ai-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; background: white; }
         .ai-input-area input { margin: 0; padding: 8px; font-size: 0.9rem; }
-
-        /* SUGGESTION CHIPS (NEW) */
         .chat-suggestions { display: flex; gap: 8px; padding: 10px; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #eee; background: #fff; scrollbar-width: none; }
         .chat-suggestions::-webkit-scrollbar { display: none; }
         .chat-chip { padding: 6px 12px; background: #f3e5f5; color: #6200ea; border: 1px solid #e1bee7; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-weight: 600; }
         .chat-chip:hover { background: #6200ea; color: white; }
 
-        /* --- 7. GALLERY & RANKING --- */
+        /* --- GALLERY & RANKING --- */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         .gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #fff; border: 1px solid #eee; transition: 0.3s; }
         .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
@@ -250,7 +245,7 @@
         .archive-tab { cursor: pointer; padding: 10px 20px; background: #ddd; border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: #555; transition: 0.2s; }
         .archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- 8. LIGHTBOX & COMMENTS --- */
+        /* --- LIGHTBOX & COMMENTS --- */
         .modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: #000; overflow: hidden; }
         .lb-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; position: relative; }
         .lb-image-area { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; position: relative; cursor: grab; padding: 0; margin: 0; }
@@ -287,7 +282,7 @@
         .quick-chip { background: #e8f5e9; color: var(--primary-dark); border: 1px solid #c8e6c9; padding: 10px 18px; border-radius: 25px; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .quick-chip:active { background: var(--primary); color: white; transform: scale(0.95); }
 
-        /* --- 9. ADMIN & MOBILE --- */
+        /* --- ADMIN & MOBILE --- */
         .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
         .admin-table th { text-align: left; padding: 12px; background: #f1f1f1; color: #555; }
         .admin-table td { padding: 12px; border-bottom: 1px solid #eee; }
@@ -824,14 +819,15 @@
             }
         });
 
-        // --- NOTIFICATION SYSTEM (HYBRID: Global & Personal) ---
-        
-        // 1. Global Admin Notification (Old)
+        // --- 1. GLOBAL NOTIFICATION SYSTEM (ADMIN POPUP) ---
         function listenForNotifications() {
+            // Lắng nghe real-time từ Firestore
             onSnapshot(doc(db, "settings", "notifications"), (doc) => {
                 if (doc.exists()) {
                     const data = doc.data();
                     const lastMsg = localStorage.getItem('last_notif_id');
+                    
+                    // Nếu ID khác hoặc chưa có, và có nội dung
                     if (data.id && data.id !== lastMsg && data.text) {
                         showNotification(data.text);
                         localStorage.setItem('last_notif_id', data.id);
@@ -842,38 +838,45 @@
 
         window.showNotification = (text) => {
             const popup = document.getElementById('notification-popup');
-            document.getElementById('notif-text').innerText = text;
-            popup.classList.add('show');
-            setTimeout(() => { popup.classList.remove('show'); }, 5000); 
+            const content = document.getElementById('notif-text');
+            if(popup && content) {
+                content.innerText = text;
+                popup.classList.add('show');
+                // Tự đóng sau 8 giây
+                setTimeout(() => { popup.classList.remove('show'); }, 8000);
+            }
         }
         
         window.closeNotification = () => {
-            document.getElementById('notification-popup').classList.remove('show');
+            const popup = document.getElementById('notification-popup');
+            if(popup) popup.classList.remove('show');
         }
 
         window.sendAdminNotification = async () => {
             const text = document.getElementById('admin-notif-msg').value;
             if(!text) return;
+            // Gửi lên Firestore
             await setDoc(doc(db, "settings", "notifications"), {
                 text: text,
-                id: Date.now().toString(),
+                id: Date.now().toString(), // Tạo ID mới để kích hoạt popup
                 createdAt: serverTimestamp()
             });
             alert("Đã gửi thông báo đến toàn bộ người dùng!");
             document.getElementById('admin-notif-msg').value = "";
         }
 
-        // 2. Personal Notification (New)
+        // --- 2. PERSONAL NOTIFICATION SYSTEM (LIKE/COMMENT) ---
         let notifUnsub = null;
 
         function listenToMyNotifications(uid) {
             if (notifUnsub) notifUnsub(); // Clear old listener
 
+            // FIX QUAN TRỌNG: Bỏ orderBy("createdAt") để tránh lỗi Index Firestore
+            // Chúng ta sẽ sort bằng Javascript bên dưới.
             const q = query(
                 collection(db, "notifications"), 
                 where("recipientUid", "==", uid),
-                orderBy("createdAt", "desc"),
-                limit(20)
+                limit(50) // Lấy 50 tin gần nhất
             );
 
             notifUnsub = onSnapshot(q, (snap) => {
@@ -881,6 +884,7 @@
                 const dot = document.getElementById('nav-bell-dot');
                 let unreadCount = 0;
                 let html = "";
+                let notifs = [];
 
                 if (snap.empty) {
                     list.innerHTML = '<div class="empty-notif">Chưa có thông báo nào</div>';
@@ -888,13 +892,19 @@
                     return;
                 }
 
+                // Chuyển Data sang Array để Sort
                 snap.forEach(d => {
-                    const data = d.data();
-                    const id = d.id;
+                    notifs.push({ id: d.id, ...d.data() });
+                });
+
+                // SORT CLIENT-SIDE (Mới nhất lên đầu)
+                notifs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                notifs.forEach(data => {
                     if (!data.isRead) unreadCount++;
                     
                     html += `
-                    <div class="notif-item ${data.isRead ? '' : 'unread'}" onclick="clickNotification('${id}', '${data.collectionRef}', '${data.link}')">
+                    <div class="notif-item ${data.isRead ? '' : 'unread'}" onclick="clickNotification('${data.id}', '${data.collectionRef}', '${data.link}')">
                         <img src="${data.senderAvatar || 'https://via.placeholder.com/30'}" class="notif-avatar">
                         <div class="notif-body">
                             <p>${data.message}</p>
@@ -909,7 +919,9 @@
         }
 
         async function pushNotification(recipientId, type, message, linkId, colRef) {
+            // Không tự thông báo cho chính mình
             if (!currentUser || recipientId === currentUser.uid) return; 
+            
             try {
                 await addDoc(collection(db, "notifications"), {
                     recipientUid: recipientId,
@@ -922,16 +934,21 @@
                     isRead: false,
                     createdAt: serverTimestamp()
                 });
+                console.log("Push notif success");
             } catch (e) {
                 console.error("Lỗi gửi thông báo:", e);
             }
         }
 
         window.clickNotification = async (notifId, col, postId) => {
+            // Đánh dấu đã đọc
             await updateDoc(doc(db, "notifications", notifId), { isRead: true });
+            
+            // Mở bài viết (nếu có link)
             if(col && postId && col !== 'undefined') {
                 window.openLightbox(col, postId);
             }
+            // Đóng menu
             document.getElementById('notif-dropdown').classList.remove('active');
         }
 
@@ -941,18 +958,15 @@
         }
 
         window.markAllRead = async () => {
-           // Basic UI clear for feeling
+           // Giả lập UI đã đọc hết (để đỡ tốn quota write database)
            const list = document.querySelectorAll('.notif-item.unread');
            list.forEach(item => item.classList.remove('unread'));
            document.getElementById('nav-bell-dot').style.display='none';
-           // In production, we should run a batch update here
         }
 
-        // --- GEMINI AI (MULTI-KEY FAILOVER + HISTORY MEMORY) ---
-        
+        // --- GEMINI AI ---
         async function callGeminiAPI(prompt, imageBase64 = null) {
             let requestContents = [];
-            
             if (imageBase64) {
                 requestContents = [{
                     parts: [
@@ -1084,14 +1098,17 @@
         onAuthStateChanged(auth, async(u)=>{
             renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
             renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+            
+            // Luôn lắng nghe thông báo Admin (kể cả chưa login)
+            listenForNotifications();
 
             if(u){
                 const r=doc(db,"users",u.uid), s=await getDoc(r); let userData;
                 if(s.exists()){ const d=s.data(); if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;} userData = { ...d, loginCount: (d.loginCount || 0) + 1 }; await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) }); } 
                 else { userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 }; await setDoc(r,userData); }
-                currentUser=userData; syncToGoogleSheet(currentUser); listenForNotifications();
+                currentUser=userData; syncToGoogleSheet(currentUser);
                 
-                // NOTIFICATION LISTENER
+                // NOTIFICATION LISTENER (PERSONAL)
                 listenToMyNotifications(u.uid);
 
                 document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none'; document.getElementById('home-login-area').style.display='none';
@@ -1241,7 +1258,7 @@
             const c = { uid: currentUser.uid, name: currentUser.displayName, avatar: currentUser.photoURL, text: text, time: Date.now() };
             await updateDoc(doc(db, currentCollection, currentImgId), { comments: arrayUnion(c) });
 
-            // NOTIF: COMMENT
+            // NOTIF: COMMENT (Fix logic real-time)
             const postSnap = await getDoc(doc(db, currentCollection, currentImgId));
             if(postSnap.exists()){
                 const ownerId = postSnap.data().uid;
@@ -1272,7 +1289,7 @@
                 countSpan.innerText = currentCount + 1;
                 await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayUnion(currentUser.uid) });
 
-                // NOTIF: LIKE
+                // NOTIF: LIKE (Fix logic real-time)
                 const postSnap = await getDoc(doc(db, currentCollection, currentImgId));
                 if(postSnap.exists()){
                     const ownerId = postSnap.data().uid;
