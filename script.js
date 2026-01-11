@@ -1022,10 +1022,35 @@ function animateEffect() {
     effectAnimationId = requestAnimationFrame(animateEffect);
 }
 
+let fabTimer;
 window.toggleFabGroup = () => {
-    document.getElementById('fab-group').classList.toggle('open');
-    document.querySelector('.fab-main-btn').classList.toggle('active');
-    document.getElementById('effect-menu').classList.remove('active'); // Đóng menu mùa nếu đang mở
+    const g = document.getElementById('fab-group');
+    const b = document.querySelector('.fab-main-btn');
+    g.classList.toggle('open');
+    b.classList.toggle('active');
+    document.getElementById('effect-menu').classList.remove('active'); 
+
+    if(fabTimer) clearTimeout(fabTimer);
+    if(g.classList.contains('open')) {
+        fabTimer = setTimeout(() => {
+            g.classList.remove('open');
+            b.classList.remove('active');
+        }, 5000);
+    }
+}
+
+// Reset timer on interaction
+const fabGroupEl = document.getElementById('fab-group');
+if(fabGroupEl) {
+    fabGroupEl.addEventListener('click', () => {
+        if(fabTimer) clearTimeout(fabTimer);
+        if(fabGroupEl.classList.contains('open')) {
+            fabTimer = setTimeout(() => {
+                fabGroupEl.classList.remove('open');
+                document.querySelector('.fab-main-btn').classList.remove('active');
+            }, 5000);
+        }
+    });
 }
 
 window.toggleSeasonalMenu = () => { document.getElementById('effect-menu').classList.toggle('active'); }
@@ -1033,5 +1058,60 @@ window.toggleSeasonalMenu = () => { document.getElementById('effect-menu').class
 window.setEffectMode = (mode) => {
     localStorage.setItem('seasonal_mode', mode);
     document.getElementById('effect-menu').classList.remove('active');
+    gameScore = 0; // Reset điểm khi đổi mùa
+    const scoreEl = document.getElementById('seasonal-score');
+    if(scoreEl) scoreEl.style.display = 'none';
     initSeasonalEffect();
+}
+
+// --- SEASONAL GAME LOGIC (HỨNG QUÀ) ---
+let gameScore = 0;
+window.addEventListener('pointerdown', (e) => {
+    // Chỉ chơi khi: Hiệu ứng bật, Canvas đã tải, và đang ở Trang Chủ
+    if (!effectConfig.active || !effectCanvas || !document.getElementById('home').classList.contains('active')) return;
+    
+    const rect = effectCanvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    for (let i = 0; i < effectParticles.length; i++) {
+        const p = effectParticles[i];
+        // Tính khoảng cách từ điểm click đến tâm hạt
+        const centerX = p.x + p.size / 2;
+        const centerY = p.y + p.size / 2;
+        const dist = Math.sqrt((clickX - centerX) ** 2 + (clickY - centerY) ** 2);
+        
+        // Hitbox rộng hơn kích thước hạt 1.2 lần để dễ bấm trên điện thoại
+        if (dist < p.size * 1.2) { 
+            gameScore++;
+            updateScoreDisplay();
+            showFloatingText(e.clientX, e.clientY, "+1");
+            
+            // Reset hạt lên trên cùng (coi như đã hứng xong)
+            p.y = -50;
+            p.x = Math.random() * effectCanvas.width;
+            break; // Chỉ hứng 1 hạt mỗi lần click
+        }
+    }
+});
+
+function updateScoreDisplay() {
+    let el = document.getElementById('seasonal-score');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'seasonal-score';
+        document.body.appendChild(el);
+    }
+    el.style.display = 'block';
+    el.innerHTML = `<i class="fas fa-star" style="color:#fbc02d"></i> Điểm: ${gameScore}`;
+}
+
+function showFloatingText(x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'floating-score';
+    el.innerText = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
 }
