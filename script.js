@@ -7,7 +7,22 @@ const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", auth
 const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
 const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 
+// KHO ẢNH MINH HỌA CHO BOT
+const BOT_IMAGES = {
+    "logo": "https://placehold.co/300x200/2e7d32/ffffff.png?text=Green+School",
+    "rac_thai": "https://cdn-icons-png.flaticon.com/512/3299/3299935.png",
+    "trong_cay": "https://cdn-icons-png.flaticon.com/512/628/628283.png",
+    "phan_loai": "https://cdn-icons-png.flaticon.com/512/8634/8634075.png",
+    "admin": "https://cdn-icons-png.flaticon.com/512/2942/2942813.png"
+};
+
 let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
+let pinnedSettings = null, latestGalleryDocs = []; // Biến lưu trạng thái ghim và danh sách ảnh
+let adminUsersCache = []; // Cache danh sách thành viên cho Admin
+let adminPage = 1;
+const adminItemsPerPage = 10;
+let adminSortField = 'displayName';
+let adminSortOrder = 'asc';
 
 // Multi-Key AI Logic (FAIL-OVER)
 let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; 
@@ -15,25 +30,43 @@ let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95f
 // --- CHAT HISTORY (MEMORY) ---
 let chatHistory = [];
 
-const SYSTEM_PROMPT = `
-Bạn là Green Bot - Trợ lý ảo AI thân thiện của lớp A2K41 và trường Green School.
-Bạn xưng là 'Tớ' và gọi người dùng là 'Cậu'. Dùng nhiều emoji dễ thương (🌱, 🤖, ✨).
+const BASE_SYSTEM_PROMPT = `
+NHẬP VAI:
+Bạn là **Green Bot** 🤖 - Trợ lý AI siêu cấp vip pro của trường THPT **Nguyễn Văn Cừ** và dự án **Green School**.
+- Tính cách: Thân thiện, hài hước, năng động (Gen Z), hay dùng emoji (🌱, 🌿, ✨, 😂, 🥰).
+- Xưng hô: 'Tớ' (Green Bot) và 'Cậu' (Người dùng).
+- Nhiệm vụ: Hỗ trợ giải đáp thắc mắc về website, hướng dẫn phân loại rác, và trò chuyện vui vẻ.
 
-HÃY GHI NHỚ THÔNG TIN VỀ WEBSITE NÀY ĐỂ HỖ TRỢ:
-1. Trang Chủ (Home): Xem thông báo, tin tức nổi bật và ảnh 'Top 1 yêu thích'.
-2. Góc Xanh (Green Class): Nơi upload ảnh hoạt động môi trường. Có tính năng 'AI Soi Rác' để nhận diện rác thải.
-3. Thi Đua (Contest): Nơi các tổ/cá nhân upload báo cáo thành tích để cộng điểm thi đua.
-4. Lưu Trữ (Archive): Xem lại các ảnh cũ từ các đợt trước.
-5. Hoạt Động (Activities): Xem lịch 'Đổi giấy lấy cây' và các tin tức tình nguyện.
-6. Tra Cứu (Guide): Từ điển phân loại rác (Vỏ sữa, pin, lá cây...).
-7. Tài Khoản (Profile): Chỉnh sửa tên, avatar và xem lớp của mình.
+KIẾN THỨC VỀ WEBSITE (Cần nhớ kỹ):
+1. 🏠 **Trang Chủ (Home)**: Xem thông báo mới, bảng xếp hạng thi đua, và ảnh "Top 1 Trending".
+2. 📸 **Góc Xanh (Green Class)**: Nơi đăng ảnh hoạt động môi trường (trồng cây, dọn rác). Đặc biệt có nút **"AI Soi Rác"** để nhận diện rác tự động.
+3. 🏆 **Thi Đua (Contest)**: Nơi các tổ nộp minh chứng thành tích để cộng điểm.
+4. 📂 **Lưu Trữ (Archive)**: Kho ảnh kỷ niệm của các mùa trước.
+5. 📅 **Hoạt Động (Activities)**: Lịch sự kiện (Đổi giấy lấy cây, Tình nguyện...).
+6. 🔍 **Tra Cứu (Guide)**: Từ điển rác (Vỏ sữa, pin, nhựa...).
+7. 👤 **Tài Khoản (Profile)**: Đổi avatar, tên hiển thị, xem lớp.
 
-Nếu người dùng hỏi làm sao để đăng ảnh? -> Hướng dẫn vào mục 'Góc Xanh' hoặc 'Thi Đua'.
-Nếu người dùng hỏi về rác? -> Hướng dẫn dùng tính năng 'AI Soi Rác' ở Góc Xanh.
-Hãy luôn trả lời ngắn gọn, vui vẻ và hướng dẫn cụ thể vào đúng mục trên web.
+HƯỚNG DẪN TRẢ LỜI:
+- **Hỏi cách đăng ảnh**: "Cậu vào mục 'Góc Xanh' hoặc 'Thi Đua', bấm nút Camera 📷 màu xanh lá to đùng nhé!"
+- **Hỏi về phân loại rác**: "Cậu thử tính năng 'AI Soi Rác' ở mục Góc Xanh xem, hoặc vào mục 'Tra Cứu' để xem danh sách nhé!"
+- **Hỏi Admin là ai**: "Là bạn Kiệt đẹp trai (Admin_xinhxinh) chứ ai! 😎"
+- **Nếu không biết câu trả lời**: "Câu này khó quá, tớ chưa được học. Cậu hỏi Admin thử xem sao? 😅"
+- **Luôn trả lời ngắn gọn, đi thẳng vào vấn đề, không dài dòng.**
+- **CUỐI CÙNG**: Hãy gợi ý 3 câu hỏi ngắn gọn liên quan mà người dùng có thể hỏi tiếp theo.
+- **HÌNH ẢNH**: Nếu nội dung cần minh họa, hãy thêm mã {{IMAGE:keyword}} vào cuối câu.
+  (Keyword hỗ trợ: logo, rac_thai, trong_cay, phan_loai, admin).
+- Định dạng trả về: [Nội dung trả lời] ---SUGGESTIONS--- [Gợi ý 1] | [Gợi ý 2] | [Gợi ý 3]
 `;
 
-chatHistory.push({ role: "user", parts: [{ text: SYSTEM_PROMPT }] });
+const getSystemPrompt = () => {
+    let p = BASE_SYSTEM_PROMPT;
+    if(currentUser) {
+        p += `\n\nTHÔNG TIN NGƯỜI DÙNG ĐANG CHAT VỚI BẠN:\n- Tên: ${currentUser.displayName}\n- ID: ${currentUser.customID}\n- Lớp: ${currentUser.class}\n- Ngày sinh: ${currentUser.dob}\n=> Hãy xưng hô thân mật bằng tên của họ và trả lời phù hợp với ngữ cảnh lớp học của họ.`;
+    }
+    return p;
+};
+
+chatHistory.push({ role: "user", parts: [{ text: getSystemPrompt() }] });
 chatHistory.push({ role: "model", parts: [{ text: "Okie, tớ nhớ rồi! Tớ là chuyên gia về web A2K41 đây! 🌱" }] });
 
 let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
@@ -71,6 +104,8 @@ window.addEventListener('load', () => {
     
     // Init Router
     handleRoute();
+    updateGreeting(); // Gọi hàm chào khi web tải xong
+    initSeasonalEffect(); // Khởi chạy hiệu ứng mùa
 });
 
 // --- PULL TO REFRESH LOGIC ---
@@ -187,6 +222,20 @@ window.markAllRead = async () => {
    document.getElementById('nav-bell-dot').style.display='none';
 }
 
+// --- GREETING LOGIC ---
+window.updateGreeting = () => {
+    const h = new Date().getHours();
+    let g = "Xin chào";
+    if (h >= 5 && h < 11) g = "Chào buổi sáng ☀️";
+    else if (h >= 11 && h < 14) g = "Chào buổi trưa 🍚";
+    else if (h >= 14 && h < 18) g = "Chào buổi chiều 🌇";
+    else g = "Chào buổi tối 🌙";
+    
+    const name = currentUser ? currentUser.displayName : "bạn mới";
+    const el = document.getElementById('greeting-msg');
+    if(el) el.innerText = `${g}, ${name}! Chúc bạn một ngày năng lượng! 🌿`;
+}
+
 // --- GEMINI AI ---
 async function callGeminiAPI(prompt, imageBase64 = null) {
     let requestContents = [];
@@ -232,13 +281,75 @@ window.fillChat = (text) => { document.getElementById('ai-input').value = text; 
 
 window.sendMessageToAI = async (e) => {
     e.preventDefault(); const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
+    
+    // GIỚI HẠN CHAT CHO KHÁCH
+    if (!currentUser) {
+        if (guestChatCount >= 3) {
+            alert("🔒 Bạn đã hết 3 lượt chat miễn phí!\nVui lòng Đăng nhập/Đăng ký để tiếp tục trò chuyện với Green Bot nhé! 🌱");
+            showPage('profile'); // Chuyển hướng đến trang đăng nhập
+            return;
+        }
+        guestChatCount++;
+    }
+
     const msgList = document.getElementById('ai-messages'); msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; 
     input.value = ""; msgList.scrollTop = msgList.scrollHeight;
     const loadingId = "ai-loading-" + Date.now(); 
     msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`; msgList.scrollTop = msgList.scrollHeight;
-    try { const responseText = await callGeminiAPI(msg); document.getElementById(loadingId).innerText = responseText; } 
+    try { 
+        const rawResponse = await callGeminiAPI(msg); 
+        // Tách phần trả lời và phần gợi ý
+        const parts = rawResponse.split('---SUGGESTIONS---');
+        const mainAnswer = parts[0].trim();
+        const suggestions = parts[1] ? parts[1].split('|') : [];
+
+        const formatted = mainAnswer.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/\*(.*?)\*/g, '<i>$1</i>')
+            .replace(/(?:^|\n)[-*] (.*?)(?=\n|$)/g, '<div style="display:flex; align-items:flex-start; gap:6px; margin:4px 0;"><span style="color:var(--primary); font-weight:bold; flex-shrink:0; margin-top:2px;">•</span><span>$1</span></div>')
+            .replace(/{{IMAGE:(.*?)}}/g, (match, key) => {
+                const url = BOT_IMAGES[key.trim()];
+                return url ? `<img src="${url}" style="max-width:150px; border-radius:10px; margin:10px 0; border:1px solid #eee; display:block;">` : "";
+            })
+            .replace(/\n/g, '<br>');
+        await typeWriterEffect(document.getElementById(loadingId), formatted);
+
+        // Hiển thị gợi ý nếu có
+        if (suggestions.length > 0) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'ai-msg-actions';
+            actionsDiv.innerHTML = suggestions.map(s => `<button class="suggestion-chip" onclick="fillChat('${s.trim()}')">${s.trim()}</button>`).join('');
+            msgList.appendChild(actionsDiv);
+        }
+    } 
     catch(err) { document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`; }
     msgList.scrollTop = msgList.scrollHeight;
+}
+
+async function typeWriterEffect(element, html, speed = 10) {
+    element.innerHTML = "";
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    const nodes = Array.from(tempDiv.childNodes);
+    for (const node of nodes) await typeNode(element, node, speed);
+}
+
+async function typeNode(parent, node, speed) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        const textNode = document.createTextNode("");
+        parent.appendChild(textNode);
+        for (let i = 0; i < node.textContent.length; i++) {
+            textNode.textContent += node.textContent[i];
+            const list = document.getElementById('ai-messages');
+            if(list) list.scrollTop = list.scrollHeight;
+            if(node.textContent[i] !== ' ') await new Promise(r => setTimeout(r, speed));
+        }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node.cloneNode(false);
+        parent.appendChild(el);
+        if (node.tagName === 'BR') await new Promise(r => setTimeout(r, speed));
+        for (const child of Array.from(node.childNodes)) await typeNode(el, child, speed);
+    }
 }
 
 function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
@@ -294,10 +405,20 @@ onAuthStateChanged(auth, async(u)=>{
         listenToMyNotifications(u.uid);
         handleRoute(); // Redirect to Admin if needed
 
+        // KIỂM TRA THÔNG TIN CÁ NHÂN (BẮT BUỘC)
+        if(!currentUser.class || !currentUser.customID || !currentUser.dob) {
+            if(window.location.hash !== '#profile') {
+                alert("Chào bạn mới! Vui lòng cập nhật đầy đủ thông tin (Lớp, Ngày sinh, ID) để tiếp tục hoạt động nhé! 🌱");
+                showPage('profile');
+                window.location.hash = 'profile';
+            }
+        }
+
         document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none'; document.getElementById('home-login-area').style.display='none';
         document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
-        document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id"; document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-bio').value=currentUser.bio||"";
+        document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id"; document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-dob').value=currentUser.dob||""; document.getElementById('edit-bio').value=currentUser.bio||"";
         if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
+        updateGreeting(); // Cập nhật lại lời chào khi đã có tên user
     }else{ 
         currentUser=null; 
         if(notifUnsub) notifUnsub(); 
@@ -306,7 +427,7 @@ onAuthStateChanged(auth, async(u)=>{
 });
 
 window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
-window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class) { alert("Vui lòng cập nhật Lớp!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash') ? 'gallery' : c; document.getElementById('file-input').click(); }
+window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash') ? 'gallery' : c; document.getElementById('file-input').click(); }
 
 window.executeUpload = async (i) => { 
     const f = i.files[0]; if(!f) return; const isTrash = (window.uploadMode === 'trash'); 
@@ -329,8 +450,12 @@ window.executeUpload = async (i) => {
 }
 
 // --- OPTIMIZE IMAGE & RENDER GRID ---
-const optimizeUrl = (url) => {
-    if (url.includes('cloudinary.com')) return url.replace('/upload/', '/upload/f_auto,q_auto/');
+const optimizeUrl = (url, width) => {
+    if (url.includes('cloudinary.com')) {
+        let params = 'f_auto,q_auto';
+        if (width) params += `,w_${width}`;
+        return url.replace('/upload/', `/upload/${params}/`);
+    }
     return url;
 };
 
@@ -338,16 +463,12 @@ function renderGrid(col, elId, uR, cR) {
     if(State.unsubscribes[col]) State.unsubscribes[col]();
     const unsub = onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
         const g = document.getElementById(elId); if(!g) return;
-        g.innerHTML = ""; let uS={}, cS={}, docs=[];
+        let htmlBuffer = ""; let uS={}, cS={}, docs=[];
         snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         
-        if(col === 'gallery' && docs.length > 0) {
-            const topPost = [...docs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
-            if(topPost) {
-                document.getElementById('featured-post').style.display = 'flex';
-                document.getElementById('feat-img').src = optimizeUrl(topPost.url); 
-                document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH"; document.getElementById('feat-desc').innerText = topPost.desc; document.getElementById('feat-author').innerText = "— " + topPost.authorName;
-            }
+        if(col === 'gallery') {
+            latestGalleryDocs = docs;
+            updateFeaturedUI();
         }
 
         docs.forEach(d => {
@@ -359,25 +480,112 @@ function renderGrid(col, elId, uR, cR) {
             else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
             
             // LAZY LOADING + OPTIMIZED URL
-            g.innerHTML += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${optimizeUrl(d.url)}" class="gallery-img" loading="lazy"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+            // Load ảnh siêu nhỏ (w=50) làm placeholder, ảnh thật (w=400) để trong data-src
+            const tinyUrl = optimizeUrl(d.url, 50);
+            const realUrl = optimizeUrl(d.url, 400);
+            htmlBuffer += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${tinyUrl}" data-src="${realUrl}" class="gallery-img lazy-blur"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
         });
+        g.innerHTML = htmlBuffer;
+        lazyLoadImages(); // Kích hoạt observer sau khi render
         renderRank(uR.id, uS); renderRank(cR.id, cS);
     });
     State.unsubscribes[col] = unsub;
 }
-function renderRank(eid, obj) { const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; s.forEach((i,x)=>{ b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; }); if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; }
+
+// --- FEATURED POST LOGIC (PIN & TOP 1) ---
+onSnapshot(doc(db, "settings", "featured"), (snap) => {
+    pinnedSettings = snap.exists() ? snap.data() : null;
+    updateFeaturedUI();
+});
+
+async function updateFeaturedUI() {
+    // 1. Xử lý Bài Ghim (Pinned Post)
+    const pinSection = document.getElementById('pinned-post');
+    if (pinSection) {
+        let pinnedPost = null;
+        if (pinnedSettings && pinnedSettings.id) {
+            if (pinnedSettings.col === 'gallery') pinnedPost = latestGalleryDocs.find(d => d.id === pinnedSettings.id);
+            if (!pinnedPost) { 
+                try { const s = await getDoc(doc(db, pinnedSettings.col, pinnedSettings.id)); if(s.exists()) pinnedPost = {id:s.id, ...s.data()}; } catch(e){}
+            }
+        }
+        if (pinnedPost) {
+            pinSection.style.display = 'flex';
+            document.getElementById('pin-img').src = optimizeUrl(pinnedPost.url, 400);
+            document.getElementById('pin-desc').innerText = pinnedPost.desc;
+            document.getElementById('pin-author').innerText = "— " + pinnedPost.authorName;
+        } else {
+            pinSection.style.display = 'none';
+        }
+    }
+
+    // 2. Xử lý Top 1 (Top Trending)
+    const featSection = document.getElementById('featured-post');
+    if (featSection && latestGalleryDocs.length > 0) {
+        const topPost = [...latestGalleryDocs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
+        if (topPost) {
+        featSection.style.display = 'flex';
+            document.getElementById('feat-img').src = optimizeUrl(topPost.url, 400);
+            document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH";
+            document.getElementById('feat-desc').innerText = topPost.desc;
+            document.getElementById('feat-author').innerText = "— " + topPost.authorName;
+            if (currentUser && topPost.uid === currentUser.uid) triggerFireworks();
+        } else {
+            featSection.style.display = 'none';
+        }
+    } else {
+        featSection.style.display = 'none';
+    }
+}
+
+function lazyLoadImages() {
+    const imgObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.onload = () => {
+                    img.classList.remove('lazy-blur');
+                    img.classList.add('loaded');
+                };
+                observer.unobserve(img);
+            }
+        });
+    });
+    document.querySelectorAll('img.lazy-blur').forEach(img => imgObserver.observe(img));
+}
+
+function renderRank(eid, obj) { 
+    const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); 
+    const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; 
+    s.forEach((i,x)=>{ 
+        b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}" onclick="${x===0?'triggerFireworks()':''}" style="${x===0?'cursor:pointer':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; 
+    }); 
+    if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; 
+}
 
 window.openLightbox = async (c, i) => { 
     currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
     const s=await getDoc(doc(db,c,i)); const d=s.data(); 
     const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); 
     const imgEl = document.getElementById('lb-img'); imgEl.style.transform = "scale(1)"; 
-    imgEl.src=optimizeUrl(d.url); 
+    imgEl.src=optimizeUrl(d.url, 1200); // Load ảnh chất lượng cao (w=1200) khi xem chi tiết
     document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
     const btn = document.getElementById('lb-like-btn'); 
     if(currentUser && d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='var(--text-sec)'; } 
     const controls = document.getElementById('lb-owner-controls');
-    if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) { controls.style.display = 'flex'; document.querySelector('.lb-btn-pin').style.display = isAdmin(currentUser.email) ? 'block' : 'none'; } else { controls.style.display = 'none'; }
+    if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) { 
+        controls.style.display = 'flex'; 
+        const pinBtn = document.querySelector('.lb-btn-pin');
+        if(isAdmin(currentUser.email)) {
+            pinBtn.style.display = 'block';
+            const isPinned = pinnedSettings && pinnedSettings.id === i && pinnedSettings.col === c;
+            pinBtn.innerHTML = isPinned ? '<i class="fas fa-times-circle"></i>' : '<i class="fas fa-thumbtack"></i>';
+            pinBtn.onclick = isPinned ? window.unpinPost : window.pinPost;
+            pinBtn.title = isPinned ? "Bỏ ghim" : "Ghim";
+            pinBtn.style.color = isPinned ? '#d32f2f' : '#ffa000';
+        } else { pinBtn.style.display = 'none'; }
+    } else { controls.style.display = 'none'; }
     document.getElementById('lb-details-sheet').classList.remove('open'); renderComments(d.comments||[]); 
 }
 
@@ -401,7 +609,24 @@ window.quickReply = async (text) => {
     if(postSnap.exists()){ const ownerId = postSnap.data().uid; pushNotification(ownerId, 'comment', `<b>${currentUser.displayName}</b> đã bình luận: "${text}"`, currentImgId, currentCollection); }
 }
 
-window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentCollection, id: currentImgId }); alert("Đã ghim bài viết lên trang chủ!"); }
+window.pinPost = async () => { 
+    await setDoc(doc(db, "settings", "featured"), { col: currentCollection, id: currentImgId }); 
+    // Gửi thông báo Global
+    await setDoc(doc(db, "settings", "notifications"), { text: "📌 Một bài viết mới vừa được ghim lên Trang Chủ! Xem ngay!", id: Date.now().toString(), createdAt: serverTimestamp() });
+    alert("Đã ghim và gửi thông báo!"); 
+    const pinBtn = document.querySelector('.lb-btn-pin');
+    if(pinBtn) { pinBtn.innerHTML = '<i class="fas fa-times-circle"></i>'; pinBtn.onclick = window.unpinPost; pinBtn.title = "Bỏ ghim"; pinBtn.style.color = '#d32f2f'; }
+}
+
+window.unpinPost = async () => {
+    if(confirm("Bỏ ghim bài viết này?")) {
+        await deleteDoc(doc(db, "settings", "featured"));
+        alert("Đã bỏ ghim!");
+        const pinBtn = document.querySelector('.lb-btn-pin');
+        if(pinBtn) { pinBtn.innerHTML = '<i class="fas fa-thumbtack"></i>'; pinBtn.onclick = window.pinPost; pinBtn.title = "Ghim"; pinBtn.style.color = '#ffa000'; }
+    }
+}
+
 window.deletePostFromLB = async () => { if(confirm("Bạn chắc chắn muốn xóa bài viết này chứ?")) { await deleteDoc(doc(db, currentCollection, currentImgId)); closeLightbox(); alert("Đã xóa bài viết!"); } }
 window.editPostFromLB = async () => { const newDesc = prompt("Nhập mô tả mới:"); if(newDesc) { await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc }); document.getElementById('lb-desc').innerText = newDesc; } }
 
@@ -414,21 +639,144 @@ window.handleLike = async () => {
     const postSnap = await getDoc(doc(db, currentCollection, currentImgId)); if(postSnap.exists()){ const ownerId = postSnap.data().uid; pushNotification(ownerId, 'like', `<b>${currentUser.displayName}</b> đã thả tim ảnh của bạn ❤️`, currentImgId, currentCollection); } }
 }
 
-function renderComments(arr) { const l=document.getElementById('lb-comments-list'); l.innerHTML=""; arr.forEach(c=>{ l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div></div></div>`; }); l.scrollTop = l.scrollHeight; }
+function renderComments(arr) { 
+    const l=document.getElementById('lb-comments-list'); l.innerHTML=""; 
+    arr.forEach((c, index)=>{ 
+        const delBtn = (currentUser && (isAdmin(currentUser.email) || currentUser.uid === c.uid)) ? `<span onclick="deleteComment(${index})" style="color:#d32f2f; cursor:pointer; margin-left:8px; font-size:0.8rem;" title="Xóa">✕</span>` : '';
+        l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div>${delBtn}</div></div>`; 
+    }); l.scrollTop = l.scrollHeight; 
+}
+
+window.deleteComment = async (index) => {
+    if(!confirm("Xóa bình luận này?")) return;
+    const docRef = doc(db, currentImgCollection, currentImgId);
+    const snap = await getDoc(docRef);
+    if(snap.exists()) {
+        const comments = snap.data().comments || [];
+        if(index >= 0 && index < comments.length) {
+            const newComments = [...comments];
+            newComments.splice(index, 1);
+            await updateDoc(docRef, { comments: newComments });
+            renderComments(newComments);
+        }
+    }
+}
 
 window.exportExcel = async (type) => { 
     if(!currentUser || !isAdmin(currentUser.email)) return; 
     Utils.loader(true, "Đang tạo file Excel chuẩn..."); const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('DuLieu'); 
     if (type === 'users') { 
-        sheet.columns = [ { header: 'Tên người dùng', key: 'name', width: 25 }, { header: 'Email', key: 'email', width: 30 }, { header: 'ID', key: 'id', width: 15 }, { header: 'Ngày đăng ký', key: 'created', width: 20 }, { header: 'Lớp', key: 'class', width: 15 }, { header: 'Hoạt động cuối', key: 'active', width: 20 }, { header: 'Số lần đăng nhập', key: 'count', width: 15 } ]; 
-        const snap = await getDocs(collection(db, "users")); snap.forEach(d => { const u = d.data(); sheet.addRow({ name: u.displayName || '', email: u.email || '', id: u.customID || '', created: u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : '', class: u.class || '', active: u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : '', count: u.loginCount || 1 }); }); 
+        sheet.columns = [ { header: 'STT', key: 'stt', width: 6 }, { header: 'Tên người dùng', key: 'name', width: 25 }, { header: 'Ngày sinh', key: 'dob', width: 15 }, { header: 'Email', key: 'email', width: 30 }, { header: 'ID', key: 'id', width: 15 }, { header: 'Ngày đăng ký', key: 'created', width: 20 }, { header: 'Lớp', key: 'class', width: 15 }, { header: 'Hoạt động cuối', key: 'active', width: 20 }, { header: 'Số lần đăng nhập', key: 'count', width: 15 } ]; 
+        const snap = await getDocs(collection(db, "users")); let i=1; snap.forEach(d => { const u = d.data(); sheet.addRow({ stt: i++, name: u.displayName || '', dob: u.dob || '', email: u.email || '', id: u.customID || '', created: u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : '', class: u.class || '', active: u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : '', count: u.loginCount || 1 }); }); 
     } else { 
-        sheet.columns = [ { header: 'Người đăng', key: 'author', width: 25 }, { header: 'ID', key: 'uid', width: 15 }, { header: 'Lớp', key: 'class', width: 10 }, { header: 'Mô tả', key: 'desc', width: 40 }, { header: 'Tim', key: 'likes', width: 10 }, { header: 'Link ảnh', key: 'url', width: 40 }, { header: 'Ngày đăng', key: 'date', width: 20 } ]; 
-        const snap = await getDocs(collection(db, type)); snap.forEach(d => { const p = d.data(); sheet.addRow({ author: p.authorName, uid: p.authorID || '', class: p.className || '', desc: p.desc || '', likes: p.likes ? p.likes.length : 0, url: p.url, date: p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : '' }); }); 
+        sheet.columns = [ { header: 'STT', key: 'stt', width: 6 }, { header: 'Người đăng', key: 'author', width: 25 }, { header: 'ID', key: 'uid', width: 15 }, { header: 'Lớp', key: 'class', width: 10 }, { header: 'Mô tả', key: 'desc', width: 40 }, { header: 'Tim', key: 'likes', width: 10 }, { header: 'Link ảnh', key: 'url', width: 40 }, { header: 'Ngày đăng', key: 'date', width: 20 } ]; 
+        const snap = await getDocs(collection(db, type)); let i=1; snap.forEach(d => { const p = d.data(); sheet.addRow({ stt: i++, author: p.authorName, uid: p.authorID || '', class: p.className || '', desc: p.desc || '', likes: p.likes ? p.likes.length : 0, url: p.url, date: p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : '' }); }); 
     } 
     const headerRow = sheet.getRow(1); headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 }; headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }; headerRow.alignment = { vertical: 'middle', horizontal: 'center' }; headerRow.height = 30; 
     sheet.eachRow((row, rowNumber) => { row.eachCell((cell) => { cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; cell.alignment = { vertical: 'middle', wrapText: true }; }); }); 
     const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }); saveAs(blob, `GreenSchool_${type}_${new Date().toISOString().slice(0,10)}.xlsx`); Utils.loader(false); 
+}
+
+// --- PDF EXPORT LOGIC ---
+window.exportPDF = async (type) => {
+    if(!currentUser || !isAdmin(currentUser.email)) return;
+    Utils.loader(true, "Đang tạo PDF...");
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Tiêu đề
+    doc.setFontSize(18);
+    doc.text("BAO CAO THI DUA - GREEN SCHOOL A2K41", 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Ngay xuat: ${new Date().toLocaleString('vi-VN')}`, 14, 30);
+
+    // Lấy dữ liệu
+    const snap = await getDocs(collection(db, type));
+    let bodyData = [];
+    snap.forEach(d => {
+        const p = d.data();
+        // Lưu ý: jsPDF mặc định không hỗ trợ tiếng Việt có dấu tốt nếu không nhúng font.
+        // Ở đây ta dùng toLocaleString để format ngày, và lấy các trường cơ bản.
+        bodyData.push([p.className || '', p.authorName, p.desc || '', p.likes ? p.likes.length : 0, p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleDateString('vi-VN') : '']);
+    });
+
+    // Tạo bảng
+    doc.autoTable({
+        head: [['Lop', 'Nguoi Dang', 'Mo Ta', 'Tim', 'Ngay']],
+        body: bodyData,
+        startY: 40,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [46, 125, 50] } // Màu xanh Green School
+    });
+
+    doc.save(`BaoCao_${type}_${Date.now()}.pdf`);
+    Utils.loader(false);
+}
+
+// --- CHART JS LOGIC ---
+window.drawClassChart = async () => {
+    if(!currentUser || !isAdmin(currentUser.email)) return;
+    Utils.loader(true, "Đang tổng hợp dữ liệu...");
+    const filter = document.getElementById('chart-filter').value;
+    const now = new Date();
+    
+    // Lấy dữ liệu từ cả 2 bộ sưu tập
+    const gallerySnap = await getDocs(collection(db, 'gallery'));
+    const contestSnap = await getDocs(collection(db, 'contest'));
+    
+    let stats = {};
+    const process = (snap) => {
+        snap.forEach(doc => {
+            const d = doc.data();
+            
+            // Logic lọc thời gian
+            if (d.createdAt) {
+                const docDate = new Date(d.createdAt.seconds * 1000);
+                if (filter === 'month' && (docDate.getMonth() !== now.getMonth() || docDate.getFullYear() !== now.getFullYear())) return;
+                if (filter === 'week') {
+                    const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                    if (docDate < oneWeekAgo) return;
+                }
+            }
+
+            const c = d.className || "Chưa cập nhật";
+            if(!stats[c]) stats[c] = 0;
+            stats[c]++;
+        });
+    };
+    process(gallerySnap);
+    process(contestSnap);
+
+    const labels = Object.keys(stats).sort();
+    const data = labels.map(k => stats[k]);
+
+    const ctx = document.getElementById('classChart');
+    if(window.myClassChart) window.myClassChart.destroy(); // Xóa biểu đồ cũ nếu có
+
+    window.myClassChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Số lượng bài đăng', data: data, backgroundColor: '#2e7d32', borderColor: '#1b5e20', borderWidth: 1 }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+    Utils.loader(false);
+}
+
+// --- FIREWORKS EFFECT ---
+window.triggerFireworks = () => {
+    const duration = 3000; const end = Date.now() + duration;
+    // Phát nhạc
+    const audio = document.getElementById('fireworks-audio');
+    if(audio) { audio.currentTime = 0; audio.play().catch(e => console.log("Audio play failed (Autoplay policy):", e)); }
+    (function frame() {
+        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+        if (Date.now() < end) requestAnimationFrame(frame);
+    }());
 }
 
 window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
@@ -440,15 +788,96 @@ window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n
 window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); const sn=await getDocs(q); const docs = []; sn.forEach(d => docs.push(d.data())); docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0)); docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); }
 window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }
 window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
-window.pinPost = async () => { await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); alert("Đã ghim!"); }
-window.loadAdminData = async () => { if(!currentUser||!isAdmin(currentUser.email))return; const b=document.getElementById('user-table-body'); b.innerHTML="Loading..."; const s=await getDocs(collection(db,"users")); b.innerHTML=""; s.forEach(d=>{const u=d.data(); const btn=u.banned?`<button onclick="togBan('${d.id}',0)">Mở</button>`:`<button onclick="togBan('${d.id}',1)" style="color:red">Khóa</button>`; b.innerHTML+=`<tr><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`}); }
+
+window.loadAdminData = async () => { 
+    if(!currentUser||!isAdmin(currentUser.email))return; 
+    const b=document.getElementById('user-table-body'); b.innerHTML="<tr><td colspan='6' style='text-align:center'>Đang tải dữ liệu...</td></tr>"; 
+    const s=await getDocs(collection(db,"users")); 
+    adminUsersCache = []; s.forEach(d => adminUsersCache.push({id: d.id, ...d.data()}));
+    adminPage = 1; // Reset về trang 1 khi tải lại
+    filterAdminUsers();
+}
+
+window.filterAdminUsers = () => {
+    const k = document.getElementById('admin-user-search').value.toLowerCase();
+    const b = document.getElementById('user-table-body'); b.innerHTML = "";
+    
+    // 1. Lọc dữ liệu
+    let filtered = adminUsersCache.filter(u => (u.displayName||"").toLowerCase().includes(k) || (u.email||"").toLowerCase().includes(k) || (u.customID||"").toLowerCase().includes(k) || (u.class||"").toLowerCase().includes(k));
+
+    // 2. Sắp xếp
+    filtered.sort((a, b) => {
+        let valA = (a[adminSortField] || "").toString().toLowerCase();
+        let valB = (b[adminSortField] || "").toString().toLowerCase();
+        if (valA < valB) return adminSortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return adminSortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    // 3. Phân trang
+    const totalPages = Math.ceil(filtered.length / adminItemsPerPage);
+    if (adminPage > totalPages) adminPage = totalPages || 1;
+    if (adminPage < 1) adminPage = 1;
+    
+    const start = (adminPage - 1) * adminItemsPerPage;
+    const paginatedItems = filtered.slice(start, start + adminItemsPerPage);
+
+    paginatedItems.forEach((u, index) => {
+        const realIndex = start + index + 1;
+        const btn = u.banned ? `<button onclick="togBan('${u.id}',0)">Mở</button>` : `<button onclick="togBan('${u.id}',1)" style="color:red">Khóa</button>`; 
+        b.innerHTML+=`<tr><td>${realIndex}</td><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`;
+    });
+
+    if(filtered.length === 0) b.innerHTML = "<tr><td colspan='6' style='text-align:center'>Không tìm thấy thành viên nào.</td></tr>";
+
+    // Cập nhật UI phân trang
+    const pageInfo = document.getElementById('admin-page-info');
+    if(pageInfo) pageInfo.innerText = `Trang ${adminPage} / ${totalPages || 1}`;
+    const btnPrev = document.getElementById('btn-prev-page');
+    const btnNext = document.getElementById('btn-next-page');
+    if(btnPrev) btnPrev.disabled = adminPage === 1;
+    if(btnNext) btnNext.disabled = adminPage >= (totalPages || 1);
+}
+
+window.sortAdminUsers = (field) => {
+    if (adminSortField === field) { adminSortOrder = adminSortOrder === 'asc' ? 'desc' : 'asc'; } 
+    else { adminSortField = field; adminSortOrder = 'asc'; }
+    
+    // Cập nhật icon chỉ dẫn
+    document.querySelectorAll('.sort-icon').forEach(i => i.className = 'fas fa-sort sort-icon');
+    const activeHeader = document.getElementById(`th-${field}`);
+    if(activeHeader) {
+        const icon = activeHeader.querySelector('.sort-icon');
+        if(icon) icon.className = `fas fa-sort-${adminSortOrder === 'asc' ? 'up' : 'down'} sort-icon`;
+    }
+    filterAdminUsers();
+}
+
+window.changeAdminPage = (delta) => {
+    adminPage += delta;
+    filterAdminUsers();
+}
+
 window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
 window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
 window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
 window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
 window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
 async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
-window.updateProfile = async (e) => { e.preventDefault(); const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const b = document.getElementById('edit-bio').value; if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, bio: b }); alert("Đã lưu!"); }
+window.updateProfile = async (e) => { 
+    e.preventDefault(); 
+    const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const d = document.getElementById('edit-dob').value; const b = document.getElementById('edit-bio').value; 
+    if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } 
+    const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; 
+    
+    await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, dob: d, bio: b }); 
+    
+    // CẬP NHẬT NGAY LẬP TỨC BIẾN currentUser ĐỂ MỞ KHÓA
+    currentUser.displayName = f; currentUser.customID = cid; currentUser.class = c; currentUser.dob = d; currentUser.bio = b;
+    
+    alert("Đã lưu hồ sơ thành công! Bạn có thể sử dụng web bình thường."); 
+    if(currentUser.class && currentUser.customID && currentUser.dob) { showPage('home'); window.location.hash = 'home'; }
+}
 
 // --- ROUTING LOGIC ---
 function handleRoute() {
@@ -461,6 +890,14 @@ window.addEventListener('load', handleRoute);
 window.showPage = (id) => {
     const validPages = ['home', 'greenclass', 'contest', 'archive', 'activities', 'guide', 'profile', 'admin'];
     let targetId = validPages.includes(id) ? id : 'home';
+
+    // CHẶN ĐIỀU HƯỚNG NẾU THIẾU THÔNG TIN (BẮT BUỘC)
+    if (currentUser && (!currentUser.class || !currentUser.customID || !currentUser.dob) && targetId !== 'profile') {
+        alert("⚠️ Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh) để tiếp tục sử dụng!");
+        targetId = 'profile';
+        window.location.hash = 'profile';
+    }
+
     if (targetId === 'admin') {
         if (!currentUser) { alert("Vui lòng đăng nhập quyền Admin trước!"); targetId = 'profile'; window.location.hash = 'profile'; } 
         else if (!isAdmin(currentUser.email)) { alert("⛔ Bạn không có quyền truy cập khu vực này!"); targetId = 'home'; window.location.hash = 'home'; }
@@ -485,3 +922,99 @@ window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); defe
 async function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; document.getElementById('btn-install-pc').style.display = 'none'; document.getElementById('btn-install-mob').style.display = 'none'; }
 document.getElementById('btn-install-pc').addEventListener('click', installPWA); document.getElementById('btn-install-mob').addEventListener('click', installPWA);
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered!', reg)).catch(err => console.log('SW Error:', err)); }); }
+
+// --- SEASONAL EFFECT LOGIC ---
+let effectCtx, effectCanvas, effectParticles = [], effectAnimationId;
+let effectConfig = { active: true, type: 'snow', img: new Image() };
+
+window.initSeasonalEffect = () => {
+    const mode = localStorage.getItem('seasonal_mode') || 'auto';
+    const canvas = document.getElementById('seasonal-canvas');
+    const icon = document.getElementById('effect-icon');
+    
+    if (mode === 'off') { 
+        effectConfig.active = false; 
+        canvas.style.display = 'none'; 
+        icon.className = 'fas fa-ban'; 
+        if(effectAnimationId) cancelAnimationFrame(effectAnimationId);
+        effectAnimationId = null;
+        return; 
+    }
+
+    effectConfig.active = true;
+    canvas.style.display = 'block';
+    
+    let type = 'snow';
+    if (mode === 'auto') {
+        const month = new Date().getMonth() + 1;
+        if (month >= 2 && month <= 4) type = 'spring';
+        else if (month >= 5 && month <= 7) type = 'summer';
+        else if (month >= 8 && month <= 10) type = 'autumn';
+        else type = 'winter';
+    } else { type = mode; }
+
+    // Cập nhật ảnh và icon theo mùa
+    if (type === 'spring') { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/5904/5904292.png'; icon.className = 'fas fa-seedling'; } // Hoa đào hồng
+    else if (type === 'summer') { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/403/403543.png'; icon.className = 'fas fa-leaf'; } // Lá xanh tươi
+    else if (type === 'autumn') { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/2913/2913520.png'; icon.className = 'fab fa-canadian-maple-leaf'; } // Lá phong cam
+    else { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/642/642000.png'; icon.className = 'fas fa-snowflake'; } // Tuyết tinh thể
+
+    effectCanvas = document.getElementById('seasonal-canvas');
+    effectCtx = effectCanvas.getContext('2d');
+    
+    if (!effectAnimationId) {
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        createParticles();
+        animateEffect();
+    }
+}
+
+function resizeCanvas() { effectCanvas.width = window.innerWidth; effectCanvas.height = window.innerHeight; }
+
+function createParticles() {
+    effectParticles = [];
+    const count = window.innerWidth < 768 ? 20 : 35; // Giảm số lượng vì ảnh nặng hơn nét vẽ
+    for (let i = 0; i < count; i++) {
+        effectParticles.push({
+            x: Math.random() * effectCanvas.width, y: Math.random() * effectCanvas.height,
+            size: Math.random() * 15 + 15, // Kích thước 15px - 30px để nhìn rõ ảnh
+            d: Math.random() * count,
+            speed: Math.random() * 1 + 1, // Rơi nhanh hơn xíu cho tự nhiên
+            swing: Math.random() * 2,
+            rotation: Math.random() * 360, // Góc xoay ban đầu
+            rotationSpeed: Math.random() * 2 - 1 // Tốc độ xoay (-1 đến 1 độ mỗi khung hình)
+        });
+    }
+}
+
+function animateEffect() {
+    if (!effectConfig.active) return;
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    
+    if (effectConfig.img.complete) { // Chỉ vẽ khi ảnh đã tải xong
+        for (let i = 0; i < effectParticles.length; i++) {
+            const p = effectParticles[i];
+            
+            // Lưu trạng thái canvas, dịch chuyển tới tâm hạt, xoay, vẽ, rồi khôi phục
+            effectCtx.save();
+            effectCtx.translate(p.x + p.size/2, p.y + p.size/2);
+            effectCtx.rotate(p.rotation * Math.PI / 180);
+            effectCtx.drawImage(effectConfig.img, -p.size/2, -p.size/2, p.size, p.size);
+            effectCtx.restore();
+            
+            p.y += p.speed; p.x += Math.sin(p.d) * 0.5; p.d += 0.02; 
+            p.rotation += p.rotationSpeed; // Cập nhật góc xoay
+            if (p.y > effectCanvas.height) { p.y = -40; p.x = Math.random() * effectCanvas.width; } 
+        }
+    }
+    effectAnimationId = requestAnimationFrame(animateEffect);
+}
+
+window.toggleSeasonalMenu = () => { document.getElementById('effect-menu').classList.toggle('active'); }
+
+window.setEffectMode = (mode) => {
+    localStorage.setItem('seasonal_mode', mode);
+    document.getElementById('effect-menu').classList.remove('active');
+    initSeasonalEffect();
+}
