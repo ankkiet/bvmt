@@ -57,10 +57,6 @@
         <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
     </div>
 
-    <div class="dark-mode-toggle" onclick="toggleDarkMode()" title="Chế độ tối">
-        <i class="fas fa-moon" id="dark-icon"></i>
-    </div>
-
     <div class="header-bell" onclick="toggleNotifDropdown()">
         <i class="fas fa-bell"></i>
         <div class="bell-dot" id="nav-bell-dot"></div>
@@ -74,10 +70,6 @@
         <div class="notif-list" id="notif-list-ui">
             <div class="empty-notif">Không có thông báo mới</div>
         </div>
-    </div>
-
-    <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
-        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" alt="AI" style="padding:5px;">
     </div>
 
     <div class="ai-chat-window" id="ai-window">
@@ -99,17 +91,27 @@
         </form>
     </div>
 
-    <div class="music-fab" onclick="toggleMusic()" title="Bật/Tắt Nhạc">
-        <i class="fas fa-compact-disc music-icon" id="music-icon-display"></i>
-        <div class="music-note-badge">🎵</div>
-    </div>
     <div id="player" style="display:none;"></div>
 
     <audio id="fireworks-audio" src="https://www.soundjay.com/misc/sounds/magic-chime-01.mp3" preload="auto"></audio>
 
     <canvas id="seasonal-canvas"></canvas>
-    <div class="effect-toggle" onclick="toggleSeasonalMenu()" title="Chỉnh hiệu ứng mùa">
-        <i class="fas fa-snowflake" id="effect-icon"></i>
+
+    <!-- NÚT CHAT AI (ĐỘC LẬP) -->
+    <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" alt="AI">
+    </div>
+
+    <!-- MENU TIỆN ÍCH TỔNG HỢP (FAB GROUP) -->
+    <div class="fab-container" id="fab-group">
+        <div class="fab-items">
+            <div class="fab-btn" onclick="toggleMusic()" title="Nhạc"><i class="fas fa-compact-disc" id="music-icon-display"></i><div class="music-note-badge" style="top:-2px; right:-2px;">🎵</div></div>
+            <div class="fab-btn" onclick="toggleSeasonalMenu()" title="Hiệu ứng"><i class="fas fa-snowflake" id="effect-icon"></i></div>
+            <div class="fab-btn" onclick="toggleDarkMode()" title="Chế độ tối"><i class="fas fa-moon" id="dark-icon"></i></div>
+        </div>
+        <button class="fab-main-btn" onclick="toggleFabGroup()">
+            <i class="fas fa-cog" id="fab-main-icon"></i>
+        </button>
     </div>
     <div class="effect-menu" id="effect-menu">
         <div onclick="setEffectMode('auto')">🔄 Tự động</div>
