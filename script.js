@@ -6,6 +6,7 @@ import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, 
 const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
 const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
 const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
+let dynamicAdminEmails = [...ADMIN_EMAILS]; // Sử dụng biến động cho Admin
 
 // KHO ẢNH MINH HỌA CHO BOT
 const BOT_IMAGES = {
@@ -23,6 +24,9 @@ let adminPage = 1;
 const adminItemsPerPage = 10;
 let adminSortField = 'displayName';
 let adminSortOrder = 'asc';
+const PAGE_SIZE = 12;
+const gridLimits = { gallery: PAGE_SIZE, contest: PAGE_SIZE };
+const gridParams = {};
 
 // Multi-Key AI Logic (FAIL-OVER)
 let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; 
@@ -47,11 +51,14 @@ KIẾN THỨC VỀ WEBSITE (Cần nhớ kỹ):
 7. 👤 **Tài Khoản (Profile)**: Đổi avatar, tên hiển thị, xem lớp.
 
 HƯỚNG DẪN TRẢ LỜI:
-- **Hỏi cách đăng ảnh**: "Cậu vào mục 'Góc Xanh' hoặc 'Thi Đua', bấm nút Camera 📷 màu xanh lá to đùng nhé!"
-- **Hỏi về phân loại rác**: "Cậu thử tính năng 'AI Soi Rác' ở mục Góc Xanh xem, hoặc vào mục 'Tra Cứu' để xem danh sách nhé!"
-- **Hỏi Admin là ai**: "Là bạn Kiệt đẹp trai (Admin_xinhxinh) chứ ai! 😎"
+- **QUAN TRỌNG**: Khi nhắc đến các tính năng chính, từ khóa quan trọng hoặc tên mục (ví dụ: **AI Soi Rác**, **Góc Xanh**, **Thi Đua**...), hãy **in đậm** chúng bằng dấu **...**.
+- Nếu từ khóa đó quan trọng, hãy giải thích ngắn gọn công dụng hoặc lợi ích của nó ngay sau đó để người dùng hiểu rõ hơn.
+- Dùng *in nghiêng* cho các lưu ý nhỏ hoặc tên riêng.
+- **Hỏi cách đăng ảnh**: "Cậu vào mục **Góc Xanh** hoặc **Thi Đua**, bấm nút Camera 📷 màu xanh lá to đùng nhé!"
+- **Hỏi về phân loại rác**: "Cậu thử tính năng **AI Soi Rác** ở mục **Góc Xanh** xem, nó giúp nhận diện rác bằng AI đấy! Hoặc vào mục **Tra Cứu** để xem danh sách nhé!"
+- **Hỏi Admin là ai**: "Là bạn **Kiệt đẹp trai** (Admin_xinhxinh) chứ ai! 😎"
 - **Nếu không biết câu trả lời**: "Câu này khó quá, tớ chưa được học. Cậu hỏi Admin thử xem sao? 😅"
-- **Luôn trả lời ngắn gọn, đi thẳng vào vấn đề, không dài dòng.**
+- **Luôn trả lời ngắn gọn, súc tích nhưng đầy đủ thông tin.**
 - **CUỐI CÙNG**: Hãy gợi ý 3 câu hỏi ngắn gọn liên quan mà người dùng có thể hỏi tiếp theo.
 - **HÌNH ẢNH**: Nếu nội dung cần minh họa, hãy thêm mã {{IMAGE:keyword}} vào cuối câu.
   (Keyword hỗ trợ: logo, rac_thai, trong_cay, phan_loai, admin).
@@ -61,16 +68,21 @@ HƯỚNG DẪN TRẢ LỜI:
 const getSystemPrompt = () => {
     let p = BASE_SYSTEM_PROMPT;
     if(currentUser) {
-        p += `\n\nTHÔNG TIN NGƯỜI DÙNG ĐANG CHAT VỚI BẠN:\n- Tên: ${currentUser.displayName}\n- ID: ${currentUser.customID}\n- Lớp: ${currentUser.class}\n- Ngày sinh: ${currentUser.dob}\n=> Hãy xưng hô thân mật bằng tên của họ và trả lời phù hợp với ngữ cảnh lớp học của họ.`;
+        const role = (typeof isAdmin === 'function' && isAdmin(currentUser.email)) ? "Quản trị viên (Admin)" : "Thành viên";
+        p += `\n\n--- THÔNG TIN NGƯỜI DÙNG HIỆN TẠI ---\n- Tên: ${currentUser.displayName}\n- Email: ${currentUser.email}\n- ID: ${currentUser.customID}\n- Lớp: ${currentUser.class}\n- Vai trò: ${role}\n\n--- CHỈ DẪN GIAO TIẾP ---\n1. Hãy xưng hô bằng tên "${currentUser.displayName}" để thân thiện.\n2. Nếu họ hỏi về lớp, hãy nhắc đến lớp "${currentUser.class}".\n3. Ghi nhớ thông tin này trong suốt cuộc trò chuyện.`;
+    } else {
+        p += `\n\n--- TRẠNG THÁI NGƯỜI DÙNG ---\nNgười dùng chưa đăng nhập (Khách). Hãy khuyến khích họ đăng nhập để lưu dữ liệu.`;
     }
     return p;
 };
 
-chatHistory.push({ role: "user", parts: [{ text: getSystemPrompt() }] });
-chatHistory.push({ role: "model", parts: [{ text: "Okie, tớ nhớ rồi! Tớ là chuyên gia về web A2K41 đây! 🌱" }] });
+window.refreshChatContext = () => {
+    chatHistory = [{ role: "user", parts: [{ text: getSystemPrompt() }] }, { role: "model", parts: [{ text: "Okie, tớ đã cập nhật thông tin người dùng! Sẵn sàng hỗ trợ! 🌱" }] }];
+};
+window.refreshChatContext();
 
 let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
-const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
+const isAdmin=(e)=>dynamicAdminEmails.includes(e);
 const State = { unsubscribes: {} };
 
 // --- UTILS ---
@@ -78,6 +90,14 @@ const Utils = {
     loader: (show, text="Đang xử lý...") => {
         document.getElementById('upload-overlay').style.display = show ? 'flex' : 'none';
         document.getElementById('upload-loading-text').innerText = text;
+    },
+    debounce: (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => { clearTimeout(timeout); func(...args); };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 };
 
@@ -276,7 +296,10 @@ window.addAIKey = async () => {
 }
 
 window.removeAIKey = async (name, val) => { if(confirm(`Xóa Key "${name}"?`)) { await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayRemove({name, val}) }); } }
-window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
+window.toggleAIChat = () => { 
+    document.getElementById('ai-window').classList.toggle('active'); 
+}
+
 window.fillChat = (text) => { document.getElementById('ai-input').value = text; window.sendMessageToAI(new Event('submit')); }
 
 window.sendMessageToAI = async (e) => {
@@ -292,12 +315,19 @@ window.sendMessageToAI = async (e) => {
         guestChatCount++;
     }
 
-    const msgList = document.getElementById('ai-messages'); msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; 
+    const msgList = document.getElementById('ai-messages'); 
+    msgList.innerHTML += `<div class="chat-row user"><div class="chat-bubble user">${msg}</div></div>`; 
     input.value = ""; msgList.scrollTop = msgList.scrollHeight;
     const loadingId = "ai-loading-" + Date.now(); 
-    msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`; msgList.scrollTop = msgList.scrollHeight;
+    
+    // Hiệu ứng loading mới (Avatar + Dots)
+    msgList.innerHTML += `<div class="chat-row bot"><div class="chat-avatar"><img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png"></div><div class="chat-content"><div class="chat-bubble bot" id="${loadingId}"><div class="ai-loading-dots"><span></span><span></span><span></span></div></div></div></div>`;
+    msgList.scrollTop = msgList.scrollHeight;
+    
     try { 
-        const rawResponse = await callGeminiAPI(msg); 
+        // INJECT CONTEXT (Trang hiện tại)
+        const currentPage = window.location.hash.slice(1) || 'home';
+        const rawResponse = await callGeminiAPI(`[Ngữ cảnh: Đang xem trang '${currentPage}'] ${msg}`); 
         // Tách phần trả lời và phần gợi ý
         const parts = rawResponse.split('---SUGGESTIONS---');
         const mainAnswer = parts[0].trim();
@@ -338,11 +368,12 @@ async function typeNode(parent, node, speed) {
     if (node.nodeType === Node.TEXT_NODE) {
         const textNode = document.createTextNode("");
         parent.appendChild(textNode);
-        for (let i = 0; i < node.textContent.length; i++) {
-            textNode.textContent += node.textContent[i];
+        const text = node.textContent;
+        for (let i = 0; i < text.length; i++) {
+            textNode.nodeValue += text[i];
             const list = document.getElementById('ai-messages');
             if(list) list.scrollTop = list.scrollHeight;
-            if(node.textContent[i] !== ' ') await new Promise(r => setTimeout(r, speed));
+            if(text[i] !== ' ') await new Promise(r => setTimeout(r, speed));
         }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node.cloneNode(false);
@@ -379,6 +410,7 @@ window.deleteSong = async (name, id) => { if(confirm("Xóa bài này?")) await u
 onSnapshot(doc(db, "settings", "config"), (docSnap) => {
     if(docSnap.exists()) {
         const cfg = docSnap.data();
+        if(cfg.adminEmails && Array.isArray(cfg.adminEmails)) { dynamicAdminEmails = [...new Set([...ADMIN_EMAILS, ...cfg.adminEmails])]; }
         if(cfg.aiKeys && cfg.aiKeys.length > 0) { aiKeys = cfg.aiKeys; const list = document.getElementById('ai-key-list'); if(list) { list.innerHTML = ""; aiKeys.forEach(k => { list.innerHTML += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`; }); } }
         if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
         if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
@@ -410,11 +442,24 @@ onAuthStateChanged(auth, async(u)=>{
 
     if(u){
         const r=doc(db,"users",u.uid), s=await getDoc(r); let userData;
-        if(s.exists()){ const d=s.data(); if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;} userData = { ...d, loginCount: (d.loginCount || 0) + 1 }; await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) }); } 
+        if(s.exists()){ 
+            const d=s.data(); if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;} 
+            userData = { ...d, loginCount: (d.loginCount || 0) + 1 }; 
+            
+            // TỰ ĐỘNG SỬA HỒ SƠ ADMIN (Để hiện màu đỏ)
+            if(isAdmin(u.email)) {
+                if(d.class !== 'Admin' || d.displayName !== 'Admin_xinhxinh' || d.photoURL !== u.photoURL) {
+                    await updateDoc(r, { class: 'Admin', displayName: 'Admin_xinhxinh', photoURL: u.photoURL });
+                    userData.class = 'Admin'; userData.displayName = 'Admin_xinhxinh'; userData.photoURL = u.photoURL;
+                }
+            }
+            await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) }); 
+        } 
         else { userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 }; await setDoc(r,userData); }
         currentUser=userData; syncToGoogleSheet(currentUser);
         listenToMyNotifications(u.uid);
         handleRoute(); // Redirect to Admin if needed
+        refreshChatContext(); // Cập nhật ngữ cảnh AI với thông tin user mới
 
         // KIỂM TRA THÔNG TIN CÁ NHÂN (BẮT BUỘC)
         if(!currentUser.class || !currentUser.customID || !currentUser.dob) {
@@ -426,13 +471,19 @@ onAuthStateChanged(auth, async(u)=>{
         }
 
         document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none'; document.getElementById('home-login-area').style.display='none';
-        document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
+        const pAvt = document.getElementById('p-avatar'); pAvt.src = currentUser.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c'; pAvt.onerror = function(){this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'};
+        document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:#d32f2f;font-weight:bold">Admin_xinhxinh <i class="fas fa-check-circle" style="color:#2e7d32"></i></span>`:currentUser.displayName;
         document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id"; document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-dob').value=currentUser.dob||""; document.getElementById('edit-bio').value=currentUser.bio||"";
-        if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
+        if(isAdmin(currentUser.email)){ 
+            document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; 
+            const cs = document.getElementById('edit-class');
+            if(cs) { cs.disabled = true; if(![...cs.options].some(o=>o.value==='Admin')){const o=document.createElement('option');o.value='Admin';o.text='Admin';cs.add(o);} cs.value='Admin'; }
+        } else { const cs = document.getElementById('edit-class'); if(cs) cs.disabled = false; }
         updateGreeting(); // Cập nhật lại lời chào khi đã có tên user
     }else{ 
         currentUser=null; 
         if(notifUnsub) notifUnsub(); 
+        refreshChatContext(); // Reset ngữ cảnh AI về khách
         document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
     }
 });
@@ -471,11 +522,17 @@ const optimizeUrl = (url, width) => {
 };
 
 function renderGrid(col, elId, uR, cR) {
+    gridParams[col] = { elId, uR, cR };
     if(State.unsubscribes[col]) State.unsubscribes[col]();
-    const unsub = onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
+    
+    // Query phân trang: Lọc archived -> Sort archived (bắt buộc) -> Sort createdAt -> Limit
+    const q = query(collection(db, col), where("archived", "!=", true), orderBy("archived"), orderBy("createdAt", "desc"), limit(gridLimits[col]));
+
+    const unsub = onSnapshot(q, (snap) => {
         const g = document.getElementById(elId); if(!g) return;
         let htmlBuffer = ""; let uS={}, cS={}, docs=[];
-        snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        snap.forEach(d=>docs.push({id:d.id,...d.data()})); 
+        // docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)); // Đã sort bằng Query
         
         if(col === 'gallery') {
             latestGalleryDocs = docs;
@@ -494,13 +551,30 @@ function renderGrid(col, elId, uR, cR) {
             // Load ảnh siêu nhỏ (w=50) làm placeholder, ảnh thật (w=400) để trong data-src
             const tinyUrl = optimizeUrl(d.url, 50);
             const realUrl = optimizeUrl(d.url, 400);
-            htmlBuffer += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${tinyUrl}" data-src="${realUrl}" class="gallery-img lazy-blur"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+            const isAdm = d.className === 'Admin' || d.authorName === 'Admin_xinhxinh';
+            const admBadge = isAdm ? ' <i class="fas fa-check-circle" style="color:#2e7d32; font-size:0.8em;" title="Admin"></i>' : '';
+            const nameStyle = isAdm ? 'color:#d32f2f;font-weight:bold' : '';
+            htmlBuffer += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${tinyUrl}" data-src="${realUrl}" class="gallery-img lazy-blur"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://lh3.googleusercontent.com/a/default-user=s96-c'}" class="post-avatar" onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'"> <span style="${nameStyle}">${d.authorID||d.authorName}${admBadge}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
         });
+        
+        if(snap.docs.length >= gridLimits[col]) {
+            htmlBuffer += `<div style="grid-column:1/-1;text-align:center;margin-top:10px"><button class="btn btn-outline" onclick="loadMore('${col}')">Xem thêm</button></div>`;
+        }
+
         g.innerHTML = htmlBuffer;
         lazyLoadImages(); // Kích hoạt observer sau khi render
         renderRank(uR.id, uS); renderRank(cR.id, cS);
+    }, (error) => {
+        console.error("RenderGrid Error:", error);
+        if(error.code === 'failed-precondition') alert("⚠️ Admin cần tạo Index Firestore (archived + createdAt) để phân trang hoạt động! Xem Console để lấy link tạo.");
     });
     State.unsubscribes[col] = unsub;
+}
+
+window.loadMore = (col) => {
+    gridLimits[col] += PAGE_SIZE;
+    const p = gridParams[col];
+    if(p) renderGrid(col, p.elId, p.uR, p.cR);
 }
 
 // --- FEATURED POST LOGIC (PIN & TOP 1) ---
@@ -580,8 +654,13 @@ window.openLightbox = async (c, i) => {
     const s=await getDoc(doc(db,c,i)); const d=s.data(); 
     const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); 
     const imgEl = document.getElementById('lb-img'); imgEl.style.transform = "scale(1)"; 
-    imgEl.src=optimizeUrl(d.url, 1200); // Load ảnh chất lượng cao (w=1200) khi xem chi tiết
-    document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
+    imgEl.src=optimizeUrl(d.url, 1200); 
+    const avt = document.getElementById('lb-author-avatar'); avt.src=d.authorAvatar||'https://lh3.googleusercontent.com/a/default-user=s96-c'; avt.onerror = function(){this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'};
+    const nameEl = document.getElementById('lb-author-name'); 
+    const isAdm = d.className === 'Admin' || d.authorName === 'Admin_xinhxinh';
+    nameEl.innerHTML = d.authorName + (isAdm ? ' <i class="fas fa-check-circle" style="color:#2e7d32; margin-left:5px;" title="Admin"></i>' : '');
+    nameEl.style.color = isAdm ? '#d32f2f' : ''; nameEl.style.fontWeight = isAdm ? 'bold' : '';
+    document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
     const btn = document.getElementById('lb-like-btn'); 
     if(currentUser && d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='var(--text-sec)'; } 
     const controls = document.getElementById('lb-owner-controls');
@@ -654,7 +733,10 @@ function renderComments(arr) {
     const l=document.getElementById('lb-comments-list'); l.innerHTML=""; 
     arr.forEach((c, index)=>{ 
         const delBtn = (currentUser && (isAdmin(currentUser.email) || currentUser.uid === c.uid)) ? `<span onclick="deleteComment(${index})" style="color:#d32f2f; cursor:pointer; margin-left:8px; font-size:0.8rem;" title="Xóa">✕</span>` : '';
-        l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div>${delBtn}</div></div>`; 
+        const isAdm = c.name === 'Admin_xinhxinh';
+        const admBadge = isAdm ? ' <i class="fas fa-check-circle" style="color:#2e7d32; font-size:0.8em;"></i>' : '';
+        const nameStyle = isAdm ? 'color:#d32f2f;font-weight:bold' : '';
+        l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://lh3.googleusercontent.com/a/default-user=s96-c'}" class="lb-comment-avatar" onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user" style="${nameStyle}">${c.name}${admBadge}</span><span class="lb-comment-text">${c.text}</span></div>${delBtn}</div></div>`; 
     }); l.scrollTop = l.scrollHeight; 
 }
 
@@ -797,7 +879,7 @@ window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{loc
 window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
 window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
 window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); const sn=await getDocs(q); const docs = []; sn.forEach(d => docs.push(d.data())); docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0)); docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); }
-window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }
+window.loadArchiveGrid = Utils.debounce(async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }, 300);
 window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
 
 window.loadAdminData = async () => { 
@@ -879,12 +961,12 @@ window.updateProfile = async (e) => {
     e.preventDefault(); 
     const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const d = document.getElementById('edit-dob').value; const b = document.getElementById('edit-bio').value; 
     if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } 
-    const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; 
+    const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; const finalClass = isAdmin(currentUser.email) ? "Admin" : c;
     
-    await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, dob: d, bio: b }); 
+    await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: finalClass, dob: d, bio: b }); 
     
     // CẬP NHẬT NGAY LẬP TỨC BIẾN currentUser ĐỂ MỞ KHÓA
-    currentUser.displayName = f; currentUser.customID = cid; currentUser.class = c; currentUser.dob = d; currentUser.bio = b;
+    currentUser.displayName = f; currentUser.customID = cid; currentUser.class = finalClass; currentUser.dob = d; currentUser.bio = b;
     
     alert("Đã lưu hồ sơ thành công! Bạn có thể sử dụng web bình thường."); 
     if(currentUser.class && currentUser.customID && currentUser.dob) { showPage('home'); window.location.hash = 'home'; }
@@ -924,7 +1006,7 @@ window.showPage = (id) => {
 }
 
 const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
-window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
+window.filterTrash = Utils.debounce(() => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }, 200); window.filterTrash();
 document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
 const mainLoginBtn = document.getElementById('main-login-btn'); if(mainLoginBtn) { mainLoginBtn.addEventListener('click', () => { console.log("Login clicked"); signInWithPopup(auth, provider); }); }
 
@@ -1115,3 +1197,68 @@ function showFloatingText(x, y, text) {
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 800);
 }
+
+// --- HÀM CỨU HỘ DỮ LIỆU (CHẠY 1 LẦN) ---
+window.fixOldData = async () => {
+    if(!currentUser || !isAdmin(currentUser.email)) return alert("Cần quyền Admin!");
+
+    // BƯỚC 1: Quét kiểm tra trước (Không sửa ngay)
+    Utils.loader(true, "Đang quét dữ liệu cũ...");
+    const cols = ['gallery', 'contest'];
+    let docsToFix = [];
+
+    for (const colName of cols) {
+        const q = query(collection(db, colName)); 
+        const snap = await getDocs(q);
+        
+        snap.forEach(d => {
+            const data = d.data();
+            // Chỉ ghi nhận những ảnh THIẾU trường archived
+            if (data.archived === undefined) {
+                docsToFix.push({ col: colName, id: d.id });
+            }
+        });
+    }
+    
+    Utils.loader(false);
+
+    // BƯỚC 2: Báo cáo số lượng và hỏi xác nhận
+    if(docsToFix.length === 0) return alert("✅ Dữ liệu sạch! Không có ảnh nào bị ẩn.");
+
+    const confirmFix = confirm(`⚠️ Tìm thấy ${docsToFix.length} ảnh cũ đang bị ẩn do cập nhật mới.\n\nBạn có muốn hiển thị lại chúng không?\n(Yên tâm: Ảnh đã xóa sẽ không quay lại).`);
+    if(!confirmFix) return;
+
+    // BƯỚC 3: Thực hiện sửa lỗi
+    Utils.loader(true, `Đang khôi phục ${docsToFix.length} ảnh...`);
+    const updates = docsToFix.map(item => updateDoc(doc(db, item.col, item.id), { archived: false }));
+    
+    await Promise.all(updates);
+    
+    Utils.loader(false);
+    alert(`✅ Đã khôi phục ${docsToFix.length} ảnh thành công!\nHãy tải lại trang.`);
+    location.reload();
+}
+/*
+    for (const colName of cols) {
+        // Lấy tất cả ảnh (không dùng bộ lọc để tìm được ảnh cũ)
+        const q = query(collection(db, colName)); 
+        const snap = await getDocs(q);
+        const updates = [];
+        
+        snap.forEach(d => {
+            const data = d.data();
+            // Nếu ảnh chưa có trường archived, thêm vào
+            if (data.archived === undefined) {
+                updates.push(updateDoc(doc(db, colName, d.id), { archived: false }));
+            }
+        });
+        
+        await Promise.all(updates);
+        count += updates.length;
+    }
+    
+    Utils.loader(false);
+    alert(`✅ Đã khôi phục thành công ${count} ảnh cũ!\nHãy tải lại trang để kiểm tra.`);
+    location.reload();
+} 
+*/
