@@ -359,7 +359,18 @@ function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|
 const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 let player; window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
 function onPlayerStateChange(event) { const icon = document.getElementById('music-icon-display'); if(event.data == YT.PlayerState.PLAYING) { icon.classList.add('playing'); icon.style.color = 'var(--primary)'; } else { icon.classList.remove('playing'); icon.style.color = 'var(--text)'; } }
-window.toggleMusic = () => { try { if(player && player.getPlayerState() == YT.PlayerState.PLAYING) player.pauseVideo(); else if(player) player.playVideo(); } catch(e){} }
+
+window.toggleMusic = () => { 
+    try { 
+        if(!player || !player.getPlayerState) {
+            alert("⏳ Nhạc đang tải, vui lòng đợi 2 giây rồi thử lại!");
+            return;
+        }
+        if(player.getPlayerState() == YT.PlayerState.PLAYING) player.pauseVideo(); 
+        else player.playVideo(); 
+    } catch(e){ console.error(e); } 
+}
+
 window.addNewSong = async () => { const name = document.getElementById('new-song-name').value; let url = document.getElementById('new-song-url').value; if(!name || !url) return alert("Nhập đủ tên và link!"); const id = getYoutubeID(url); await updateDoc(doc(db, "settings", "config"), { playlist: arrayUnion({name, id}) }); alert("Đã thêm bài hát!"); }
 window.playSong = async (id) => { await updateDoc(doc(db, "settings", "config"), { musicId: id }); alert("Đã phát bài này!"); }
 window.deleteSong = async (name, id) => { if(confirm("Xóa bài này?")) await updateDoc(doc(db, "settings", "config"), { playlist: arrayRemove({name, id}) }); }
@@ -1009,6 +1020,12 @@ function animateEffect() {
         }
     }
     effectAnimationId = requestAnimationFrame(animateEffect);
+}
+
+window.toggleFabGroup = () => {
+    document.getElementById('fab-group').classList.toggle('open');
+    document.querySelector('.fab-main-btn').classList.toggle('active');
+    document.getElementById('effect-menu').classList.remove('active'); // Đóng menu mùa nếu đang mở
 }
 
 window.toggleSeasonalMenu = () => { document.getElementById('effect-menu').classList.toggle('active'); }
