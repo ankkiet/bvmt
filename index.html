@@ -13,7 +13,7 @@
     <meta property="og:title" content="A2K41 - Green School">
     <meta property="og:image" content="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg">
     
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -73,7 +73,7 @@
     </div>
 
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>🤖 Green Bot (Chuyên Gia)</span> <span onclick="toggleAIChat()" style="cursor:pointer">X</span></div>
+        <div class="ai-header"><span>✨ Green Bot AI</span> <span onclick="toggleAIChat()" style="cursor:pointer; font-size:1.2rem">×</span></div>
         
         <div class="chat-suggestions">
             <div class="chat-chip" onclick="fillChat('Web này có chức năng gì?')">Chức năng web?</div>
@@ -83,11 +83,16 @@
         </div>
 
         <div class="ai-body" id="ai-messages">
-            <div class="ai-msg bot">Xin chào! Tớ là Green Bot - Chuyên gia về website A2K41 đây! 🌱<br>Cậu cần tìm tài liệu, đăng ảnh rác hay xem điểm thi đua thì cứ hỏi tớ nhé!</div>
+            <div class="chat-row bot">
+                <div class="chat-avatar"><img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png"></div>
+                <div class="chat-content">
+                    <div class="chat-bubble bot">Xin chào! Tớ là <b>Green Bot</b> - Chuyên gia về website A2K41 đây! 🌱<br>Cậu cần tìm tài liệu, đăng ảnh rác hay xem điểm thi đua thì cứ hỏi tớ nhé!</div>
+                </div>
+            </div>
         </div>
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
-            <input id="ai-input" required placeholder="Hỏi tớ về web..." style="flex:1">
-            <button class="btn btn-sm btn-ai">Gửi</button>
+            <input id="ai-input" required placeholder="Hỏi Green Bot bất cứ điều gì..." style="flex:1">
+            <button class="btn-ai-send"><i class="fas fa-paper-plane"></i></button>
         </form>
     </div>
 
@@ -362,6 +367,12 @@
                     <div><label>Góc Xanh:</label><input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('gallery')">📦 Lưu trữ</button></div>
                     <div><label>Thi Đua:</label><input type="datetime-local" id="time-contest" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('contest')">📦 Lưu trữ</button></div>
                 </div>
+            </div>
+
+            <div class="card" style="border-left: 5px solid #ff5722;">
+                <h3>🚑 Cứu Hộ Dữ Liệu</h3>
+                <p>Sử dụng khi ảnh cũ bị ẩn do cập nhật tính năng mới (thiếu trường archived).</p>
+                <button class="btn btn-sm btn-danger" onclick="fixOldData()"><i class="fas fa-first-aid"></i> Khôi phục ảnh cũ</button>
             </div>
 
             <div class="card" style="border-left: 5px solid #0288d1;">
