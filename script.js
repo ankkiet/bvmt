@@ -1,409 +1,1020 @@
-/* --- 1. CORE STYLES & VARIABLES --- */
-:root { 
-    /* Giao diện Sáng (Mặc định) */
-    --primary: #2e7d32; 
-    --primary-dark: #1b5e20;
-    --accent: #ffca28; 
-    --danger: #d32f2f; 
-    --info: #0288d1;
-    --bg: #f8f9fa; 
-    --text: #333; 
-    --text-sec: #666;
-    --white: #ffffff;
-    --card-bg: #ffffff;
-    --border: #e0e0e0;
-    --input-bg: #fafafa;
-    --admin-color: #c62828; 
-    --archive-color: #4e342e;
-    --nav-height: 65px;
-    --ai-color: #6200ea;
-    --shadow: rgba(0,0,0,0.05);
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// CONFIG
+const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
+const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
+const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
+
+// KHO ẢNH MINH HỌA CHO BOT
+const BOT_IMAGES = {
+    "logo": "https://placehold.co/300x200/2e7d32/ffffff.png?text=Green+School",
+    "rac_thai": "https://cdn-icons-png.flaticon.com/512/3299/3299935.png",
+    "trong_cay": "https://cdn-icons-png.flaticon.com/512/628/628283.png",
+    "phan_loai": "https://cdn-icons-png.flaticon.com/512/8634/8634075.png",
+    "admin": "https://cdn-icons-png.flaticon.com/512/2942/2942813.png"
+};
+
+let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
+let pinnedSettings = null, latestGalleryDocs = []; // Biến lưu trạng thái ghim và danh sách ảnh
+let adminUsersCache = []; // Cache danh sách thành viên cho Admin
+let adminPage = 1;
+const adminItemsPerPage = 10;
+let adminSortField = 'displayName';
+let adminSortOrder = 'asc';
+
+// Multi-Key AI Logic (FAIL-OVER)
+let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; 
+
+// --- CHAT HISTORY (MEMORY) ---
+let chatHistory = [];
+
+const BASE_SYSTEM_PROMPT = `
+NHẬP VAI:
+Bạn là **Green Bot** 🤖 - Trợ lý AI siêu cấp vip pro của trường THPT **Nguyễn Văn Cừ** và dự án **Green School**.
+- Tính cách: Thân thiện, hài hước, năng động (Gen Z), hay dùng emoji (🌱, 🌿, ✨, 😂, 🥰).
+- Xưng hô: 'Tớ' (Green Bot) và 'Cậu' (Người dùng).
+- Nhiệm vụ: Hỗ trợ giải đáp thắc mắc về website, hướng dẫn phân loại rác, và trò chuyện vui vẻ.
+
+KIẾN THỨC VỀ WEBSITE (Cần nhớ kỹ):
+1. 🏠 **Trang Chủ (Home)**: Xem thông báo mới, bảng xếp hạng thi đua, và ảnh "Top 1 Trending".
+2. 📸 **Góc Xanh (Green Class)**: Nơi đăng ảnh hoạt động môi trường (trồng cây, dọn rác). Đặc biệt có nút **"AI Soi Rác"** để nhận diện rác tự động.
+3. 🏆 **Thi Đua (Contest)**: Nơi các tổ nộp minh chứng thành tích để cộng điểm.
+4. 📂 **Lưu Trữ (Archive)**: Kho ảnh kỷ niệm của các mùa trước.
+5. 📅 **Hoạt Động (Activities)**: Lịch sự kiện (Đổi giấy lấy cây, Tình nguyện...).
+6. 🔍 **Tra Cứu (Guide)**: Từ điển rác (Vỏ sữa, pin, nhựa...).
+7. 👤 **Tài Khoản (Profile)**: Đổi avatar, tên hiển thị, xem lớp.
+
+HƯỚNG DẪN TRẢ LỜI:
+- **Hỏi cách đăng ảnh**: "Cậu vào mục 'Góc Xanh' hoặc 'Thi Đua', bấm nút Camera 📷 màu xanh lá to đùng nhé!"
+- **Hỏi về phân loại rác**: "Cậu thử tính năng 'AI Soi Rác' ở mục Góc Xanh xem, hoặc vào mục 'Tra Cứu' để xem danh sách nhé!"
+- **Hỏi Admin là ai**: "Là bạn Kiệt đẹp trai (Admin_xinhxinh) chứ ai! 😎"
+- **Nếu không biết câu trả lời**: "Câu này khó quá, tớ chưa được học. Cậu hỏi Admin thử xem sao? 😅"
+- **Luôn trả lời ngắn gọn, đi thẳng vào vấn đề, không dài dòng.**
+- **CUỐI CÙNG**: Hãy gợi ý 3 câu hỏi ngắn gọn liên quan mà người dùng có thể hỏi tiếp theo.
+- **HÌNH ẢNH**: Nếu nội dung cần minh họa, hãy thêm mã {{IMAGE:keyword}} vào cuối câu.
+  (Keyword hỗ trợ: logo, rac_thai, trong_cay, phan_loai, admin).
+- Định dạng trả về: [Nội dung trả lời] ---SUGGESTIONS--- [Gợi ý 1] | [Gợi ý 2] | [Gợi ý 3]
+`;
+
+const getSystemPrompt = () => {
+    let p = BASE_SYSTEM_PROMPT;
+    if(currentUser) {
+        p += `\n\nTHÔNG TIN NGƯỜI DÙNG ĐANG CHAT VỚI BẠN:\n- Tên: ${currentUser.displayName}\n- ID: ${currentUser.customID}\n- Lớp: ${currentUser.class}\n- Ngày sinh: ${currentUser.dob}\n=> Hãy xưng hô thân mật bằng tên của họ và trả lời phù hợp với ngữ cảnh lớp học của họ.`;
+    }
+    return p;
+};
+
+chatHistory.push({ role: "user", parts: [{ text: getSystemPrompt() }] });
+chatHistory.push({ role: "model", parts: [{ text: "Okie, tớ nhớ rồi! Tớ là chuyên gia về web A2K41 đây! 🌱" }] });
+
+let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
+const isAdmin=(e)=>ADMIN_EMAILS.includes(e);
+const State = { unsubscribes: {} };
+
+// --- UTILS ---
+const Utils = {
+    loader: (show, text="Đang xử lý...") => {
+        document.getElementById('upload-overlay').style.display = show ? 'flex' : 'none';
+        document.getElementById('upload-loading-text').innerText = text;
+    }
+};
+
+// --- DARK MODE LOGIC (NEW) ---
+window.toggleDarkMode = () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    const icon = document.getElementById('dark-icon');
+    icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
 
-/* Giao diện Tối (Dark Mode) */
-body.dark-mode {
-    --primary: #66bb6a; /* Xanh sáng hơn cho nền tối */
-    --primary-dark: #81c784;
-    --bg: #121212;
-    --text: #e0e0e0;
-    --text-sec: #b0b0b0;
-    --white: #1e1e1e;
-    --card-bg: #1e1e1e;
-    --border: #333333;
-    --input-bg: #2c2c2c;
-    --shadow: rgba(0,0,0,0.5);
+window.addEventListener('load', () => {
+    // Check Theme
+    if (localStorage.getItem('theme') === 'dark') {
+        window.toggleDarkMode();
+    }
+    
+    // Check WebView
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    if ((ua.indexOf('Instagram') > -1) || (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1)) {
+        document.getElementById('webview-warning').style.display = 'flex';
+    }
+    
+    // Init Router
+    handleRoute();
+    updateGreeting(); // Gọi hàm chào khi web tải xong
+    initSeasonalEffect(); // Khởi chạy hiệu ứng mùa
+});
+
+// --- PULL TO REFRESH LOGIC ---
+let startY = 0;
+const ptrElement = document.getElementById('ptr-loader');
+const ptrIcon = ptrElement.querySelector('.ptr-icon');
+
+window.addEventListener('touchstart', (e) => {
+    if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+    }
+}, {passive: true});
+
+window.addEventListener('touchmove', (e) => {
+    const y = e.touches[0].clientY;
+    const diff = y - startY;
+    if (window.scrollY === 0 && diff > 0) {
+        if (diff < 250) { 
+            ptrElement.style.top = (diff / 2.5 - 70) + 'px'; 
+            ptrIcon.style.transform = `rotate(${diff * 2}deg)`;
+        }
+    }
+}, {passive: false});
+
+window.addEventListener('touchend', (e) => {
+    const top = parseInt(ptrElement.style.top || '-70');
+    if (top > 10) { 
+        ptrElement.style.top = '10px';
+        ptrIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+        setTimeout(() => { location.reload(); }, 800);
+    } else {
+        ptrElement.style.top = '-70px'; 
+    }
+});
+
+// --- NOTIFICATION SYSTEM ---
+function listenForNotifications() {
+    onSnapshot(doc(db, "settings", "notifications"), (doc) => {
+        if (doc.exists()) {
+            const data = doc.data();
+            const lastMsg = localStorage.getItem('last_notif_id');
+            if (data.id && data.id !== lastMsg && data.text) {
+                showNotification(data.text);
+                localStorage.setItem('last_notif_id', data.id);
+            }
+        }
+    });
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-body { 
-    font-family: 'Nunito', sans-serif; margin: 0; padding: 0; 
-    background-color: var(--bg); color: var(--text); padding-bottom: 90px;
-    overscroll-behavior-y: contain; 
-    transition: background-color 0.3s, color 0.3s; /* Hiệu ứng chuyển màu mượt */
+window.showNotification = (text) => {
+    const popup = document.getElementById('notification-popup');
+    const content = document.getElementById('notif-text');
+    if(popup && content) {
+        content.innerText = text;
+        popup.classList.add('show');
+        setTimeout(() => { popup.classList.remove('show'); }, 8000);
+    }
 }
 
-/* --- SEASONAL EFFECT --- */
-#seasonal-canvas {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; /* Cho phép click xuyên qua */
-    z-index: 999; /* Nằm trên nội dung nền nhưng dưới các popup */
-}
-.effect-toggle { position: fixed; bottom: 25px; left: 25px; width: 45px; height: 45px; border-radius: 50%; background: var(--card-bg); box-shadow: 0 5px 15px var(--shadow); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary); transition: 0.3s; color: var(--primary); font-size: 1.2rem; }
-.effect-toggle:hover { transform: scale(1.1); }
-
-.effect-menu {
-    position: fixed; bottom: 80px; left: 25px;
-    background: var(--card-bg); border-radius: 12px;
-    box-shadow: 0 5px 20px var(--shadow);
-    border: 1px solid var(--border);
-    z-index: 2000; display: none; overflow: hidden;
-    animation: slideUp 0.3s ease-out;
-    min-width: 140px;
-}
-.effect-menu.active { display: block; }
-.effect-menu div { padding: 10px 15px; cursor: pointer; font-size: 0.9rem; color: var(--text); border-bottom: 1px solid var(--border); transition: 0.2s; }
-.effect-menu div:last-child { border-bottom: none; }
-.effect-menu div:hover { background: var(--input-bg); color: var(--primary); }
-@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- WEBVIEW WARNING --- */
-#webview-warning {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg); 
-    z-index: 999999;
-    flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 30px;
-}
-.wv-icon { font-size: 5rem; color: #ff9800; margin-bottom: 20px; animation: float 2s infinite ease-in-out; }
-.wv-title { font-size: 1.6rem; color: var(--text); margin-bottom: 15px; font-weight: 800; font-family: 'Quicksand', sans-serif; }
-.wv-desc { color: var(--text-sec); margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6; max-width: 500px; }
-.wv-arrow { font-size: 3rem; color: var(--primary); animation: bounce 1.5s infinite; position: absolute; top: 20px; right: 20px; }
-@keyframes float { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-10px);} }
-@keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(20px);} 60% {transform: translateY(10px);} }
-
-/* --- MAINTENANCE OVERLAY --- */
-#maintenance-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: var(--bg);
-    z-index: 99999;
-    flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; padding: 20px;
-}
-#maintenance-overlay h1 { font-size: 2.2rem; margin-bottom: 10px; color: var(--primary); border: none; }
-#maintenance-overlay p { font-size: 1.1rem; color: var(--text-sec); margin-bottom: 30px; max-width: 600px; }
-#maintenance-overlay i.fa-hammer { font-size: 6rem; color: #ffa000; margin-bottom: 20px; animation: hammer 2s infinite; }
-@keyframes hammer { 0% {transform: rotate(0);} 20% {transform: rotate(-15deg);} 40% {transform: rotate(10deg);} 60% {transform: rotate(-5deg);} 100% {transform: rotate(0);} }
-
-/* --- NOTIFICATION POPUP (GLOBAL ADMIN) --- */
-#notification-popup {
-    position: fixed; top: 20px; right: 20px; z-index: 10000;
-    background: var(--card-bg); width: 300px; padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px var(--shadow);
-    border-left: 5px solid var(--primary);
-    display: flex; align-items: flex-start; gap: 12px;
-    transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    opacity: 0; visibility: hidden; border: 1px solid var(--border);
-}
-#notification-popup.show { transform: translateX(0); opacity: 1; visibility: visible; }
-.notif-icon { color: var(--primary); font-size: 1.5rem; margin-top: 2px; }
-.notif-content h4 { margin: 0 0 5px 0; font-size: 1rem; color: var(--text); }
-.notif-content p { margin: 0; font-size: 0.9rem; color: var(--text-sec); line-height: 1.4; }
-.notif-close { position: absolute; top: 5px; right: 10px; cursor: pointer; color: var(--text-sec); font-size: 0.8rem; }
-
-/* --- BELL & DROPDOWN (PERSONAL) --- */
-.header-bell {
-    position: fixed; top: 15px; right: 15px; z-index: 1001;
-    width: 42px; height: 42px; 
-    background: var(--card-bg); backdrop-filter: blur(5px);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 15px var(--shadow); border: 1px solid var(--border);
-    cursor: pointer; transition: all 0.3s; color: var(--text);
-}
-.header-bell:hover { transform: scale(1.1); }
-.bell-dot { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; background: #ff1744; border-radius: 50%; border: 2px solid var(--card-bg); display: none; }
-
-/* DARK MODE TOGGLE BTN */
-.dark-mode-toggle {
-    position: fixed; top: 15px; right: 70px; z-index: 1001;
-    width: 42px; height: 42px;
-    background: var(--card-bg);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 15px var(--shadow); border: 1px solid var(--border);
-    cursor: pointer; transition: all 0.3s; color: var(--text);
-}
-.dark-mode-toggle:hover { transform: scale(1.1); }
-
-.notif-dropdown {
-    position: fixed; top: 70px; right: 20px; width: 320px;
-    background: var(--card-bg); border-radius: 12px;
-    box-shadow: 0 10px 40px var(--shadow);
-    z-index: 1002; display: none; overflow: hidden;
-    border: 1px solid var(--border);
-    animation: slideDown 0.3s ease-out;
-}
-.notif-dropdown.active { display: block; }
-.notif-header {
-    padding: 12px 15px; border-bottom: 1px solid var(--border);
-    font-weight: bold; color: var(--primary);
-    display: flex; justify-content: space-between; align-items: center; background: var(--card-bg);
-}
-.notif-list { max-height: 350px; overflow-y: auto; background: var(--card-bg); }
-.notif-item {
-    padding: 12px 15px; border-bottom: 1px solid var(--border);
-    display: flex; gap: 10px; align-items: flex-start;
-    cursor: pointer; transition: 0.2s; position: relative;
-}
-.notif-item:hover { background: var(--input-bg); }
-.notif-item.unread { background: rgba(46, 125, 50, 0.1); } 
-.notif-item.unread::after {
-    content: ''; position: absolute; top: 15px; right: 10px;
-    width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
-}
-.notif-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
-.notif-body { flex: 1; }
-.notif-body p { margin: 0; font-size: 0.9rem; color: var(--text); line-height: 1.3; }
-.notif-time { font-size: 0.75rem; color: var(--text-sec); margin-top: 4px; display: block; }
-.empty-notif { text-align: center; padding: 20px; color: var(--text-sec); font-size: 0.9rem; }
-
-@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- PULL TO REFRESH --- */
-#ptr-loader {
-    position: fixed; top: -70px; left: 0; width: 100%; height: 70px;
-    display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px;
-    z-index: 9998; transition: top 0.2s ease-out; pointer-events: none;
-}
-.ptr-icon {
-    font-size: 20px; color: var(--primary); background: var(--card-bg); 
-    width: 45px; height: 45px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 15px var(--shadow); transition: transform 0.2s;
-    border: 2px solid var(--primary);
+window.closeNotification = () => {
+    const popup = document.getElementById('notification-popup');
+    if(popup) popup.classList.remove('show');
 }
 
-/* --- NAVIGATION --- */
-nav.pc-nav { background: linear-gradient(to right, var(--primary), var(--primary-dark)); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; padding-right: 60px; }
-nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 10px; }
-nav.pc-nav ul li a { color: #ffffff; text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 10px 20px; font-size: 0.9rem; border-radius: 30px; transition: 0.3s; cursor: pointer; }
-nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); transform: translateY(-2px); }
-
-nav.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
-.mobile-nav-inner { display: flex; justify-content: space-around; align-items: center; height: var(--nav-height); }
-.nav-item { flex: 1; text-align: center; color: var(--text-sec); text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; cursor: pointer; }
-.nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
-.nav-item.active-menu { color: var(--primary); font-weight: 800; }
-.nav-item.active-menu i { color: var(--primary); transform: translateY(-3px); }
-
-/* --- LAYOUT --- */
-.container { max-width: 1200px; width: 95%; margin: 25px auto; background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px var(--shadow); min-height: 80vh; border: 1px solid var(--border); }
-.page-section { display: none; animation: fadeIn 0.4s ease-out; }
-.page-section.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-.locked-overlay { text-align: center; padding: 60px 20px; background: rgba(255, 253, 231, 0.1); border: 2px dashed var(--accent); border-radius: 15px; color: var(--accent); margin-bottom: 30px; }
-h1 { font-family: 'Quicksand', sans-serif; color: var(--primary); text-align: center; border-bottom: 4px solid var(--accent); display: inline-block; padding-bottom: 8px; margin-bottom: 35px; position: relative; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 2rem; }
-h2 { color: var(--primary-dark); margin-top: 0; font-size: 1.4rem; border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; }
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px var(--shadow); transition: 0.3s; }
-
-/* --- BUTTONS & INPUTS --- */
-.btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-.btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
-.btn-danger { background: var(--danger); } 
-.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-.btn-sm { padding: 6px 14px; font-size: 0.85rem; border-radius: 6px; }
-.btn-ghost-danger { background: transparent; color: var(--text-sec); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
-.btn-ghost-danger:hover { background: rgba(211, 47, 47, 0.1); color: var(--danger); border-color: var(--danger); }
-.btn-ai { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; border: none; box-shadow: 0 4px 10px rgba(98, 0, 234, 0.3); }
-.btn-ai:hover { transform: scale(1.05); }
-
-input, textarea, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 1rem; transition: 0.3s; background: var(--input-bg); color: var(--text); }
-input:focus, textarea:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
-
-/* --- EXTRAS & MUSIC --- */
-.countdown-container { background: linear-gradient(135deg, #d32f2f, #c62828); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(211, 47, 47, 0.3); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
-.timer-display { font-size: 2rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; margin-top: 5px; }
-
-.music-fab { position: fixed; bottom: 90px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--card-bg); box-shadow: 0 5px 25px var(--shadow); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 3px solid var(--primary); transition: 0.3s; }
-.music-fab:active { transform: scale(0.95); }
-.music-icon { font-size: 35px; color: var(--text); transition: 0.5s; }
-.music-icon.playing { animation: spin 3s linear infinite; color: var(--primary); }
-.music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #333; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-/* --- AI CHATBOT UI --- */
-.ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; overflow: hidden; }
-.ai-fab:hover { transform: scale(1.1); }
-.ai-fab img { width: 100%; height: 100%; object-fit: cover; }
-
-.ai-chat-window { position: fixed; bottom: 230px; right: 25px; width: 350px; height: 450px; background: var(--card-bg); border-radius: 15px; box-shadow: 0 10px 40px var(--shadow); z-index: 2001; display: none; flex-direction: column; overflow: hidden; border: 1px solid var(--border); }
-.ai-header { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-.ai-body { flex: 1; padding: 15px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
-.ai-msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 0.9rem; line-height: 1.4; }
-.ai-msg.bot { background: var(--card-bg); border: 1px solid var(--border); align-self: flex-start; color: var(--text); }
-.ai-msg.user { background: #6200ea; color: white; align-self: flex-end; }
-.ai-input-area { padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 5px; background: var(--card-bg); }
-.ai-input-area input { margin: 0; padding: 8px; font-size: 0.9rem; }
-.chat-suggestions { display: flex; gap: 8px; padding: 10px; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid var(--border); background: var(--card-bg); scrollbar-width: none; }
-.chat-suggestions::-webkit-scrollbar { display: none; }
-.chat-chip { padding: 6px 12px; background: var(--input-bg); color: #6200ea; border: 1px solid #e1bee7; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-weight: 600; }
-.chat-chip:hover { background: #6200ea; color: white; }
-.ai-msg-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 10px 0; padding-left: 5px; animation: fadeIn 0.5s ease-out; }
-.suggestion-chip { background: var(--card-bg); border: 1px solid var(--primary); color: var(--primary); padding: 5px 10px; border-radius: 15px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
-.suggestion-chip:hover { background: var(--primary); color: white; }
-
-/* --- GALLERY & RANKING --- */
-.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-.gallery-item { position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 10px var(--shadow); background: var(--card-bg); border: 1px solid var(--border); transition: 0.3s; }
-.gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px var(--shadow); }
-.gallery-img-container { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: #f0f0f0; }
-.gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s, filter 0.3s, opacity 0.3s; opacity: 0; }
-.gallery-img.loaded { opacity: 1; }
-.gallery-img.lazy-blur { filter: blur(10px); }
-.gallery-item:hover .gallery-img { transform: scale(1.1); }
-.gallery-info { padding: 12px; background: var(--card-bg); }
-.gallery-title { font-weight: bold; font-size: 0.95rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
-.gallery-meta { font-size: 0.8rem; color: var(--text-sec); display: flex; justify-content: space-between; align-items: center; }
-.post-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); margin-right: 6px; vertical-align: middle; }
-.grid-actions { display:flex; gap:10px; margin-top:5px; padding-top:5px; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text-sec); }
-.grid-act-btn { cursor:pointer; background:none; border:none; color:var(--text-sec); transition:0.2s; }
-.grid-act-btn:hover { color:var(--primary); }
-.owner-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; }
-.ctrl-btn { background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-
-.featured-section { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 2px solid var(--primary); border-radius: 20px; padding: 25px; margin-bottom: 30px; display: flex; gap: 25px; align-items: center; position: relative; overflow: hidden; }
-.featured-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #333; padding: 5px 20px; font-weight: 800; border-bottom-right-radius: 15px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
-.featured-img { width: 160px; height: 160px; object-fit: cover; border-radius: 15px; border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-.featured-content h3 { font-size: 1.5rem; margin: 0 0 10px 0; color: var(--primary-dark); }
-
-/* --- ANIMATIONS FOR FEATURED POSTS --- */
-/* 1. Hiệu ứng Radar Pulse cho Bài Ghim (Gây chú ý mạnh) */
-@keyframes pinPulse {
-    0% { box-shadow: 0 0 0 0 rgba(255, 160, 0, 0.7); transform: scale(1); }
-    70% { box-shadow: 0 0 0 12px rgba(255, 160, 0, 0); transform: scale(1.01); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 160, 0, 0); transform: scale(1); }
-}
-#pinned-post { animation: pinPulse 2s infinite; }
-
-/* 2. Hiệu ứng Breathing Glow cho Top 1 (Nhẹ nhàng, vinh danh) */
-@keyframes topGlow {
-    0% { box-shadow: 0 5px 15px rgba(46, 125, 50, 0.2); border-color: var(--primary); }
-    50% { box-shadow: 0 10px 30px rgba(46, 125, 50, 0.6); border-color: #66bb6a; }
-    100% { box-shadow: 0 5px 15px rgba(46, 125, 50, 0.2); border-color: var(--primary); }
-}
-#featured-post { animation: topGlow 3s infinite alternate ease-in-out; }
-
-.ranking-wrapper { display: flex; gap: 25px; flex-wrap: wrap; margin-top: 30px; }
-.ranking-card { flex: 1; min-width: 320px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 5px 15px var(--shadow); }
-.ranking-header { background: var(--primary); color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; }
-.ranking-header.class-rank { background: var(--info); }
-.rank-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-.rank-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); color: var(--text); }
-.rank-top-1 { background: rgba(255, 253, 231, 0.3); font-weight: bold; color: #f9a825; }
-.rank-num { display: inline-flex; width: 26px; height: 26px; background: var(--input-bg); border-radius: 50%; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: var(--text-sec); margin-right: 8px; }
-.rank-top-1 .rank-num { background: #fbc02d; color: white; }
-
-.archive-controls { display: flex; gap: 10px; margin-bottom: 20px; background: var(--input-bg); padding: 15px; border-radius: 10px; overflow-x: auto; }
-.archive-tab { cursor: pointer; padding: 10px 20px; background: var(--border); border-radius: 20px; font-weight: bold; font-size: 0.9rem; white-space: nowrap; color: var(--text-sec); transition: 0.2s; }
-.archive-tab.active { background: var(--archive-color); color: white; box-shadow: 0 4px 10px var(--shadow); }
-
-/* --- LIGHTBOX & COMMENTS --- */
-.modal { display: none; position: fixed; z-index: 9999; top:0; left:0; width:100%; height:100%; background: #000; overflow: hidden; }
-.lb-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; position: relative; }
-.lb-image-area { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; position: relative; cursor: grab; padding: 0; margin: 0; }
-.lb-image-area img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.2s ease-out; transform-origin: center; }
-.lb-image-area img.zoomed { cursor: grab; transform: scale(2.5); }
-.lb-overlay-top { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); display: flex; justify-content: flex-end; align-items: center; z-index: 100; pointer-events: none; }
-.lb-overlay-top * { pointer-events: auto; }
-.lb-close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-.lb-toggle-details-btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 0.9rem; backdrop-filter: blur(5px); cursor: pointer; z-index: 50; display: flex; align-items: center; gap: 8px; transition: opacity 0.3s; }
-.lb-details { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--card-bg); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; display: flex; flex-direction: column; height: 60vh; z-index: 60; box-shadow: 0 -5px 50px rgba(0,0,0,0.5); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.lb-details.open { transform: translateY(0); }
-.lb-drag-handle { width: 40px; height: 5px; background: var(--border); border-radius: 5px; margin: -10px auto 15px auto; }
-.lb-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-shrink: 0; }
-.lb-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
-.lb-meta { flex: 1; }
-.lb-meta h4 { margin: 0; font-size: 1rem; color: var(--text); }
-.lb-meta span { font-size: 0.85rem; color: var(--text-sec); display:block; }
-.lb-controls { display:flex; gap:10px; margin-left:auto; }
-.lb-btn-icon { background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-sec); width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; }
-.lb-btn-icon:hover { background:var(--input-bg); }
-.lb-btn-pin { color:#ffa000; }
-.lb-btn-edit { color:#1976d2; }
-.lb-btn-delete { color:#d32f2f; }
-.lb-desc { font-size: 0.95rem; margin-bottom: 15px; max-height: 60px; overflow-y: auto; color: var(--text); flex-shrink: 0; }
-.lb-stats { display: flex; gap: 20px; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-shrink: 0; }
-.lb-stat-item { color: var(--text-sec); font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-.lb-stat-item.active { color: #e53935; }
-.lb-comments-list { flex: 1; overflow-y: auto; margin-bottom: 15px; background: var(--bg); padding: 10px; border-radius: 10px; }
-.lb-comment-item { margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; }
-.lb-comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
-.lb-comment-bubble { background: var(--card-bg); padding: 8px 12px; border-radius: 15px; display: inline-block; box-shadow: 0 1px 3px var(--shadow); font-size: 0.9rem; }
-.quick-replies-container { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; display: flex; gap: 10px; flex-shrink: 0; -ms-overflow-style: none; scrollbar-width: none; }
-.quick-replies-container::-webkit-scrollbar { display: none; }
-.quick-chip { background: rgba(46, 125, 50, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 10px 18px; border-radius: 25px; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-.quick-chip:active { background: var(--primary); color: white; transform: scale(0.95); }
-
-/* --- ADMIN & MOBILE --- */
-.admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
-.admin-table th { text-align: left; padding: 12px; background: var(--input-bg); color: var(--text-sec); }
-.admin-table td { padding: 12px; border-bottom: 1px solid var(--border); }
-.switch { position: relative; display: inline-block; width: 46px; height: 24px; vertical-align: middle; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--primary); }
-input:checked + .slider:before { transform: translateX(22px); }
-
-#home-login-area { margin-top: 20px; text-align: center; }
-.home-login-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 12px 35px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); font-size: 1.1rem; z-index: 100; position: relative; }
-.home-login-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
-
-.key-item { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--border); }
-.key-name { font-weight: bold; font-size: 0.9rem; }
-.key-val { font-size: 0.8rem; color: var(--text-sec); margin-left: 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* --- SETTINGS PAGE STYLES (NEW) --- */
-.settings-group { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-.settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border); background: var(--card-bg); transition: 0.2s; }
-.settings-item:last-child { border-bottom: none; }
-.settings-item:hover { background: var(--input-bg); }
-.settings-label { display: flex; align-items: center; gap: 15px; font-size: 1rem; color: var(--text); font-weight: 600; }
-.settings-icon-box { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; }
-.toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.slider-round { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-.slider-round:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider-round { background-color: var(--primary); }
-input:checked + .slider-round:before { transform: translateX(24px); }
-
-/* --- CONFESSIONS STYLE (NEW) --- */
-.confession-container { max-height: 400px; overflow-y: auto; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
-.confess-item { background: var(--input-bg); border-radius: 10px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); position: relative; }
-.confess-content { font-size: 0.95rem; color: var(--text); margin-bottom: 5px; font-style: italic; }
-.confess-meta { font-size: 0.75rem; color: var(--text-sec); display: flex; justify-content: space-between; align-items: center; }
-.confess-delete { color: var(--danger); cursor: pointer; font-weight: bold; font-size: 0.7rem; }
-
-@media (min-width: 769px) {
-    .lb-container { flex-direction: row; max-width: 1100px; height: 90vh; border-radius: 12px; margin: 5vh auto; background: black; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-    .lb-image-area { flex: 2; height: 100%; border-right: 1px solid #333; border-radius: 12px 0 0 12px; }
-    .lb-details { position: static; flex: 1; height: 100%; max-height: 100%; border-radius: 0 12px 12px 0; transform: none; box-shadow: none; }
-    .lb-overlay-top { display: none; } 
-    .lb-close-btn { position: absolute; top: 15px; right: 15px; z-index: 100; background: rgba(0,0,0,0.6); }
-    .lb-toggle-details-btn { display: none; } 
-    .lb-drag-handle { display: none; }
+window.sendAdminNotification = async () => {
+    const text = document.getElementById('admin-notif-msg').value;
+    if(!text) return;
+    await setDoc(doc(db, "settings", "notifications"), { text: text, id: Date.now().toString(), createdAt: serverTimestamp() });
+    alert("Đã gửi thông báo!");
+    document.getElementById('admin-notif-msg').value = "";
 }
 
-@media (max-width: 768px) {
-    .container { margin: 0; border-radius: 0; padding: 20px 15px 100px 15px; box-shadow: none; width: 100%; border: none; }
-    nav.pc-nav { display: none; }
-    nav.mobile-nav { display: block; }
-    .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .featured-section { flex-direction: column; text-align: center; }
-    .music-fab { bottom: 80px; right: 15px; width: 50px; height: 50px; }
-    .ai-fab { bottom: 140px; right: 15px; width: 50px; height: 50px; }
-    .ai-chat-window { width: 90%; right: 5%; bottom: 200px; height: 400px; }
-    h1 { font-size: 1.6rem; }
+// --- PERSONAL NOTIFICATIONS ---
+let notifUnsub = null;
+function listenToMyNotifications(uid) {
+    if (notifUnsub) notifUnsub(); 
+    const q = query(collection(db, "notifications"), where("recipientUid", "==", uid), limit(50));
+    notifUnsub = onSnapshot(q, (snap) => {
+        const list = document.getElementById('notif-list-ui');
+        const dot = document.getElementById('nav-bell-dot');
+        let unreadCount = 0; let html = ""; let notifs = [];
+        if (snap.empty) {
+            list.innerHTML = '<div class="empty-notif">Chưa có thông báo nào</div>';
+            dot.style.display = 'none'; return;
+        }
+        snap.forEach(d => { notifs.push({ id: d.id, ...d.data() }); });
+        notifs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        notifs.forEach(data => {
+            if (!data.isRead) unreadCount++;
+            html += `<div class="notif-item ${data.isRead ? '' : 'unread'}" onclick="clickNotification('${data.id}', '${data.collectionRef}', '${data.link}')"><img src="${data.senderAvatar || 'https://via.placeholder.com/30'}" class="notif-avatar"><div class="notif-body"><p>${data.message}</p><span class="notif-time">${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</span></div></div>`;
+        });
+        list.innerHTML = html;
+        dot.style.display = unreadCount > 0 ? 'block' : 'none';
+    });
+}
+
+async function pushNotification(recipientId, type, message, linkId, colRef) {
+    if (!currentUser || recipientId === currentUser.uid) return; 
+    try {
+        await addDoc(collection(db, "notifications"), { recipientUid: recipientId, senderName: currentUser.displayName, senderAvatar: currentUser.photoURL, type: type, message: message, link: linkId, collectionRef: colRef, isRead: false, createdAt: serverTimestamp() });
+    } catch (e) { console.error("Lỗi gửi thông báo:", e); }
+}
+
+window.clickNotification = async (notifId, col, postId) => {
+    await updateDoc(doc(db, "notifications", notifId), { isRead: true });
+    if(col && postId && col !== 'undefined') window.openLightbox(col, postId);
+    document.getElementById('notif-dropdown').classList.remove('active');
+}
+
+window.toggleNotifDropdown = () => { document.getElementById('notif-dropdown').classList.toggle('active'); }
+window.markAllRead = async () => {
+   const list = document.querySelectorAll('.notif-item.unread');
+   list.forEach(item => item.classList.remove('unread'));
+   document.getElementById('nav-bell-dot').style.display='none';
+}
+
+// --- GREETING LOGIC ---
+window.updateGreeting = () => {
+    const h = new Date().getHours();
+    let g = "Xin chào";
+    if (h >= 5 && h < 11) g = "Chào buổi sáng ☀️";
+    else if (h >= 11 && h < 14) g = "Chào buổi trưa 🍚";
+    else if (h >= 14 && h < 18) g = "Chào buổi chiều 🌇";
+    else g = "Chào buổi tối 🌙";
+    
+    const name = currentUser ? currentUser.displayName : "bạn mới";
+    const el = document.getElementById('greeting-msg');
+    if(el) el.innerText = `${g}, ${name}! Chúc bạn một ngày năng lượng! 🌿`;
+}
+
+// --- GEMINI AI ---
+async function callGeminiAPI(prompt, imageBase64 = null) {
+    let requestContents = [];
+    if (imageBase64) {
+        requestContents = [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }] }];
+    } else {
+        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+        requestContents = chatHistory;
+    }
+    for (let i = 0; i < aiKeys.length; i++) {
+        const keyObj = aiKeys[i];
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
+            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: requestContents }) });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
+            if (!imageBase64) {
+                chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                if (chatHistory.length > 20) chatHistory = chatHistory.slice(chatHistory.length - 20);
+            }
+            return aiText;
+        } catch (e) { if (i === aiKeys.length - 1) return "Tất cả Key AI đều bận hoặc lỗi."; }
+    }
+}
+
+window.testAIConnection = async () => {
+    const btn = document.querySelector('.btn-ai'); const originalText = btn.innerText; btn.innerText = "Đang test...";
+    try { const result = await callGeminiAPI("Chào Green Bot!"); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); }
+    btn.innerText = originalText;
+}
+
+window.addAIKey = async () => {
+    const name = document.getElementById('new-key-name').value.trim(); const val = document.getElementById('new-key-val').value.trim();
+    if(!name || !val) return alert("Nhập đủ tên và Key!");
+    await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayUnion({name, val}) });
+    document.getElementById('new-key-name').value = ""; document.getElementById('new-key-val').value = ""; alert("Đã thêm Key mới!");
+}
+
+window.removeAIKey = async (name, val) => { if(confirm(`Xóa Key "${name}"?`)) { await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayRemove({name, val}) }); } }
+window.toggleAIChat = () => { const w = document.getElementById('ai-window'); w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; }
+window.fillChat = (text) => { document.getElementById('ai-input').value = text; window.sendMessageToAI(new Event('submit')); }
+
+window.sendMessageToAI = async (e) => {
+    e.preventDefault(); const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
+    
+    // GIỚI HẠN CHAT CHO KHÁCH
+    if (!currentUser) {
+        if (guestChatCount >= 3) {
+            alert("🔒 Bạn đã hết 3 lượt chat miễn phí!\nVui lòng Đăng nhập/Đăng ký để tiếp tục trò chuyện với Green Bot nhé! 🌱");
+            showPage('profile'); // Chuyển hướng đến trang đăng nhập
+            return;
+        }
+        guestChatCount++;
+    }
+
+    const msgList = document.getElementById('ai-messages'); msgList.innerHTML += `<div class="ai-msg user">${msg}</div>`; 
+    input.value = ""; msgList.scrollTop = msgList.scrollHeight;
+    const loadingId = "ai-loading-" + Date.now(); 
+    msgList.innerHTML += `<div class="ai-msg bot" id="${loadingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`; msgList.scrollTop = msgList.scrollHeight;
+    try { 
+        const rawResponse = await callGeminiAPI(msg); 
+        // Tách phần trả lời và phần gợi ý
+        const parts = rawResponse.split('---SUGGESTIONS---');
+        const mainAnswer = parts[0].trim();
+        const suggestions = parts[1] ? parts[1].split('|') : [];
+
+        const formatted = mainAnswer.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/\*(.*?)\*/g, '<i>$1</i>')
+            .replace(/(?:^|\n)[-*] (.*?)(?=\n|$)/g, '<div style="display:flex; align-items:flex-start; gap:6px; margin:4px 0;"><span style="color:var(--primary); font-weight:bold; flex-shrink:0; margin-top:2px;">•</span><span>$1</span></div>')
+            .replace(/{{IMAGE:(.*?)}}/g, (match, key) => {
+                const url = BOT_IMAGES[key.trim()];
+                return url ? `<img src="${url}" style="max-width:150px; border-radius:10px; margin:10px 0; border:1px solid #eee; display:block;">` : "";
+            })
+            .replace(/\n/g, '<br>');
+        await typeWriterEffect(document.getElementById(loadingId), formatted);
+
+        // Hiển thị gợi ý nếu có
+        if (suggestions.length > 0) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'ai-msg-actions';
+            actionsDiv.innerHTML = suggestions.map(s => `<button class="suggestion-chip" onclick="fillChat('${s.trim()}')">${s.trim()}</button>`).join('');
+            msgList.appendChild(actionsDiv);
+        }
+    } 
+    catch(err) { document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`; }
+    msgList.scrollTop = msgList.scrollHeight;
+}
+
+async function typeWriterEffect(element, html, speed = 10) {
+    element.innerHTML = "";
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    const nodes = Array.from(tempDiv.childNodes);
+    for (const node of nodes) await typeNode(element, node, speed);
+}
+
+async function typeNode(parent, node, speed) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        const textNode = document.createTextNode("");
+        parent.appendChild(textNode);
+        for (let i = 0; i < node.textContent.length; i++) {
+            textNode.textContent += node.textContent[i];
+            const list = document.getElementById('ai-messages');
+            if(list) list.scrollTop = list.scrollHeight;
+            if(node.textContent[i] !== ' ') await new Promise(r => setTimeout(r, speed));
+        }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node.cloneNode(false);
+        parent.appendChild(el);
+        if (node.tagName === 'BR') await new Promise(r => setTimeout(r, speed));
+        for (const child of Array.from(node.childNodes)) await typeNode(el, child, speed);
+    }
+}
+
+function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
+
+// --- YOUTUBE ID & MUSIC ---
+function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
+const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+let player; window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
+function onPlayerStateChange(event) { const icon = document.getElementById('music-icon-display'); if(event.data == YT.PlayerState.PLAYING) { icon.classList.add('playing'); icon.style.color = 'var(--primary)'; } else { icon.classList.remove('playing'); icon.style.color = 'var(--text)'; } }
+window.toggleMusic = () => { try { if(player && player.getPlayerState() == YT.PlayerState.PLAYING) player.pauseVideo(); else if(player) player.playVideo(); } catch(e){} }
+window.addNewSong = async () => { const name = document.getElementById('new-song-name').value; let url = document.getElementById('new-song-url').value; if(!name || !url) return alert("Nhập đủ tên và link!"); const id = getYoutubeID(url); await updateDoc(doc(db, "settings", "config"), { playlist: arrayUnion({name, id}) }); alert("Đã thêm bài hát!"); }
+window.playSong = async (id) => { await updateDoc(doc(db, "settings", "config"), { musicId: id }); alert("Đã phát bài này!"); }
+window.deleteSong = async (name, id) => { if(confirm("Xóa bài này?")) await updateDoc(doc(db, "settings", "config"), { playlist: arrayRemove({name, id}) }); }
+
+// --- GLOBAL LISTENER ---
+onSnapshot(doc(db, "settings", "config"), (docSnap) => {
+    if(docSnap.exists()) {
+        const cfg = docSnap.data();
+        if(cfg.aiKeys && cfg.aiKeys.length > 0) { aiKeys = cfg.aiKeys; const list = document.getElementById('ai-key-list'); if(list) { list.innerHTML = ""; aiKeys.forEach(k => { list.innerHTML += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`; }); } }
+        if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
+        if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
+        const plDiv = document.getElementById('music-playlist-container'); if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:rgba(46, 125, 50, 0.1); border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border); ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
+        const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
+        applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities); applyLock('guide',cfg.locks?.guide); applyLock('archive',cfg.locks?.archive);
+        handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
+        if(currentUser && isAdmin(currentUser.email)) {
+            document.getElementById('cfg-maintenance').checked=cfg.maintenance; document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
+            document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
+            if(cfg.googleSheetUrl) { document.getElementById('cfg-sheet-url').value = cfg.googleSheetUrl; }
+        }
+    }
+});
+
+function applyLock(s,l){const o=document.getElementById(`locked-${s}`), c=document.getElementById(`content-${s}`); if(l&&(!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';}}
+let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const d=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${d}d ${h}h ${m}p`;}},1000);}
+
+// --- AUTH ---
+window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
+window.checkAdminLogin=()=>signInWithPopup(auth,provider);
+async function syncToGoogleSheet(user) { if (!googleSheetUrl) return; try { const payload = { displayName: user.displayName || "Chưa đặt tên", email: user.email, customID: user.customID || "", createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'), classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp", lastActive: new Date().toLocaleString('vi-VN'), loginCount: user.loginCount || 1, uid: user.uid }; await fetch(googleSheetUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); console.log("Synced to Google Sheet"); } catch (e) { console.error("Sync Error:", e); } }
+
+onAuthStateChanged(auth, async(u)=>{
+    renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
+    renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
+    
+    listenForNotifications();
+
+    if(u){
+        const r=doc(db,"users",u.uid), s=await getDoc(r); let userData;
+        if(s.exists()){ const d=s.data(); if(d.banned){alert("Bạn đã bị khóa!");signOut(auth);return;} userData = { ...d, loginCount: (d.loginCount || 0) + 1 }; await updateDoc(r, { lastActive: serverTimestamp(), loginCount: increment(1) }); } 
+        else { userData = { uid:u.uid, email:u.email, displayName:isAdmin(u.email)?"Admin_xinhxinh":u.displayName, photoURL:u.photoURL, role:isAdmin(u.email)?'admin':'member', status:'active', class:"", customID:"@"+u.uid.slice(0,5), createdAt: serverTimestamp(), lastActive: serverTimestamp(), loginCount: 1 }; await setDoc(r,userData); }
+        currentUser=userData; syncToGoogleSheet(currentUser);
+        listenToMyNotifications(u.uid);
+        handleRoute(); // Redirect to Admin if needed
+
+        // KIỂM TRA THÔNG TIN CÁ NHÂN (BẮT BUỘC)
+        if(!currentUser.class || !currentUser.customID || !currentUser.dob) {
+            if(window.location.hash !== '#profile') {
+                alert("Chào bạn mới! Vui lòng cập nhật đầy đủ thông tin (Lớp, Ngày sinh, ID) để tiếp tục hoạt động nhé! 🌱");
+                showPage('profile');
+                window.location.hash = 'profile';
+            }
+        }
+
+        document.getElementById('profile-in').style.display='block'; document.getElementById('profile-out').style.display='none'; document.getElementById('home-login-area').style.display='none';
+        document.getElementById('p-avatar').src=currentUser.photoURL; document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:red;font-weight:bold">Admin_xinhxinh ✅</span>`:currentUser.displayName;
+        document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id"; document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-dob').value=currentUser.dob||""; document.getElementById('edit-bio').value=currentUser.bio||"";
+        if(isAdmin(currentUser.email)){ document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; }
+        updateGreeting(); // Cập nhật lại lời chào khi đã có tên user
+    }else{ 
+        currentUser=null; 
+        if(notifUnsub) notifUnsub(); 
+        document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
+    }
+});
+
+window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
+window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash') ? 'gallery' : c; document.getElementById('file-input').click(); }
+
+window.executeUpload = async (i) => { 
+    const f = i.files[0]; if(!f) return; const isTrash = (window.uploadMode === 'trash'); 
+    let aiPrompt = isTrash ? "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn." : "Đóng vai một học sinh lớp A2K41 đăng ảnh lên mạng xã hội của lớp. Hãy viết 3 dòng trạng thái (caption) ngắn gọn, tự nhiên, xưng hô 'mình' hoặc 'lớp tớ' về bức ảnh này. Gợi ý 1: Vui vẻ. Gợi ý 2: Ý nghĩa. Gợi ý 3: Hài hước. Mỗi gợi ý 1 dòng gạch đầu dòng."; 
+    let description = ""; 
+    if(!isTrash) { const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI gợi ý caption):"); if(d === null) return; description = d; } 
+    document.getElementById('upload-loading-text').innerText = isTrash ? "AI đang soi rác..." : "AI đang viết caption..."; document.getElementById('upload-overlay').style.display='flex'; 
+    try { 
+        const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
+        const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); 
+        if(j.secure_url) { 
+            if(isTrash || !description) { 
+                try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); if(isTrash) { alert(`🤖 AI Kết luận:\n${aiResult}`); description = aiResult; } else { description = aiResult; } } catch(err) { console.error(err); if(isTrash) alert("AI lỗi, không thể phân loại."); } 
+            } 
+            await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: description || "Không có mô tả", uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, type: window.uploadMode, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
+            if(!isTrash) alert("Đăng ảnh thành công!\n(AI đã tự viết caption cho bạn nếu bạn để trống)"); 
+        } 
+    } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } 
+    document.getElementById('upload-overlay').style.display='none'; i.value=""; 
+}
+
+// --- OPTIMIZE IMAGE & RENDER GRID ---
+const optimizeUrl = (url, width) => {
+    if (url.includes('cloudinary.com')) {
+        let params = 'f_auto,q_auto';
+        if (width) params += `,w_${width}`;
+        return url.replace('/upload/', `/upload/${params}/`);
+    }
+    return url;
+};
+
+function renderGrid(col, elId, uR, cR) {
+    if(State.unsubscribes[col]) State.unsubscribes[col]();
+    const unsub = onSnapshot(query(collection(db, col), where("archived", "!=", true)), (snap) => {
+        const g = document.getElementById(elId); if(!g) return;
+        let htmlBuffer = ""; let uS={}, cS={}, docs=[];
+        snap.forEach(d=>docs.push({id:d.id,...d.data()})); docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        
+        if(col === 'gallery') {
+            latestGalleryDocs = docs;
+            updateFeaturedUI();
+        }
+
+        docs.forEach(d => {
+            const l = d.likes?d.likes.length:0; if(!uS[d.authorName])uS[d.authorName]=0; uS[d.authorName]+=l; const cl=d.className||"Khác"; if(!cS[cl])cS[cl]=0; cS[cl]+=l;
+            let ctrls=""; 
+            if(currentUser && (currentUser.uid===d.uid || isAdmin(currentUser.email))){ ctrls=`<div class="owner-controls"><button class="ctrl-btn" onclick="event.stopPropagation();editPost('${col}','${d.id}','${d.desc}')"><i class="fas fa-pen"></i></button><button class="ctrl-btn" onclick="event.stopPropagation();deletePost('${col}','${d.id}')" style="color:red;margin-left:5px"><i class="fas fa-trash"></i></button></div>`; }
+            let badge = "";
+            if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
+            else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
+            
+            // LAZY LOADING + OPTIMIZED URL
+            // Load ảnh siêu nhỏ (w=50) làm placeholder, ảnh thật (w=400) để trong data-src
+            const tinyUrl = optimizeUrl(d.url, 50);
+            const realUrl = optimizeUrl(d.url, 400);
+            htmlBuffer += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${tinyUrl}" data-src="${realUrl}" class="gallery-img lazy-blur"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://via.placeholder.com/20'}" class="post-avatar"> <span>${d.authorID||d.authorName}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+        });
+        g.innerHTML = htmlBuffer;
+        lazyLoadImages(); // Kích hoạt observer sau khi render
+        renderRank(uR.id, uS); renderRank(cR.id, cS);
+    });
+    State.unsubscribes[col] = unsub;
+}
+
+// --- FEATURED POST LOGIC (PIN & TOP 1) ---
+onSnapshot(doc(db, "settings", "featured"), (snap) => {
+    pinnedSettings = snap.exists() ? snap.data() : null;
+    updateFeaturedUI();
+});
+
+async function updateFeaturedUI() {
+    // 1. Xử lý Bài Ghim (Pinned Post)
+    const pinSection = document.getElementById('pinned-post');
+    if (pinSection) {
+        let pinnedPost = null;
+        if (pinnedSettings && pinnedSettings.id) {
+            if (pinnedSettings.col === 'gallery') pinnedPost = latestGalleryDocs.find(d => d.id === pinnedSettings.id);
+            if (!pinnedPost) { 
+                try { const s = await getDoc(doc(db, pinnedSettings.col, pinnedSettings.id)); if(s.exists()) pinnedPost = {id:s.id, ...s.data()}; } catch(e){}
+            }
+        }
+        if (pinnedPost) {
+            pinSection.style.display = 'flex';
+            document.getElementById('pin-img').src = optimizeUrl(pinnedPost.url, 400);
+            document.getElementById('pin-desc').innerText = pinnedPost.desc;
+            document.getElementById('pin-author').innerText = "— " + pinnedPost.authorName;
+        } else {
+            pinSection.style.display = 'none';
+        }
+    }
+
+    // 2. Xử lý Top 1 (Top Trending)
+    const featSection = document.getElementById('featured-post');
+    if (featSection && latestGalleryDocs.length > 0) {
+        const topPost = [...latestGalleryDocs].sort((a,b) => (b.likes?b.likes.length:0) - (a.likes?a.likes.length:0))[0];
+        if (topPost) {
+        featSection.style.display = 'flex';
+            document.getElementById('feat-img').src = optimizeUrl(topPost.url, 400);
+            document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH";
+            document.getElementById('feat-desc').innerText = topPost.desc;
+            document.getElementById('feat-author').innerText = "— " + topPost.authorName;
+            if (currentUser && topPost.uid === currentUser.uid) triggerFireworks();
+        } else {
+            featSection.style.display = 'none';
+        }
+    } else {
+        featSection.style.display = 'none';
+    }
+}
+
+function lazyLoadImages() {
+    const imgObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.onload = () => {
+                    img.classList.remove('lazy-blur');
+                    img.classList.add('loaded');
+                };
+                observer.unobserve(img);
+            }
+        });
+    });
+    document.querySelectorAll('img.lazy-blur').forEach(img => imgObserver.observe(img));
+}
+
+function renderRank(eid, obj) { 
+    const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); 
+    const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; 
+    s.forEach((i,x)=>{ 
+        b.innerHTML+=`<tr class="${x===0?'rank-top-1':''}" onclick="${x===0?'triggerFireworks()':''}" style="${x===0?'cursor:pointer':''}"><td><span class="rank-num">${x+1}</span> ${i[0]}</td><td style="text-align:right;font-weight:bold;color:var(--primary)">${i[1]} <i class="fas fa-heart"></i></td></tr>`; 
+    }); 
+    if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; 
+}
+
+window.openLightbox = async (c, i) => { 
+    currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
+    const s=await getDoc(doc(db,c,i)); const d=s.data(); 
+    const imgArea = document.getElementById('lb-zoom-area'); imgArea.classList.remove('zoomed'); 
+    const imgEl = document.getElementById('lb-img'); imgEl.style.transform = "scale(1)"; 
+    imgEl.src=optimizeUrl(d.url, 1200); // Load ảnh chất lượng cao (w=1200) khi xem chi tiết
+    document.getElementById('lb-author-avatar').src=d.authorAvatar||'https://via.placeholder.com/35'; document.getElementById('lb-author-name').innerHTML=d.authorName; document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
+    const btn = document.getElementById('lb-like-btn'); 
+    if(currentUser && d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='var(--text-sec)'; } 
+    const controls = document.getElementById('lb-owner-controls');
+    if(currentUser && (currentUser.uid === d.uid || isAdmin(currentUser.email))) { 
+        controls.style.display = 'flex'; 
+        const pinBtn = document.querySelector('.lb-btn-pin');
+        if(isAdmin(currentUser.email)) {
+            pinBtn.style.display = 'block';
+            const isPinned = pinnedSettings && pinnedSettings.id === i && pinnedSettings.col === c;
+            pinBtn.innerHTML = isPinned ? '<i class="fas fa-times-circle"></i>' : '<i class="fas fa-thumbtack"></i>';
+            pinBtn.onclick = isPinned ? window.unpinPost : window.pinPost;
+            pinBtn.title = isPinned ? "Bỏ ghim" : "Ghim";
+            pinBtn.style.color = isPinned ? '#d32f2f' : '#ffa000';
+        } else { pinBtn.style.display = 'none'; }
+    } else { controls.style.display = 'none'; }
+    document.getElementById('lb-details-sheet').classList.remove('open'); renderComments(d.comments||[]); 
+}
+
+window.closeLightbox = () => { document.getElementById('lightbox').style.display='none'; document.getElementById('lb-details-sheet').classList.remove('open'); }
+window.toggleDetails = () => { document.getElementById('lb-details-sheet').classList.toggle('open'); }
+
+let lastTap = 0; const imgEl = document.getElementById('lb-img'); const zoomArea = document.getElementById('lb-zoom-area');
+zoomArea.addEventListener('touchend', (e) => { const currentTime = new Date().getTime(); const tapLength = currentTime - lastTap; if (tapLength < 300 && tapLength > 0) { toggleZoom(e); e.preventDefault(); } lastTap = currentTime; });
+zoomArea.addEventListener('dblclick', toggleZoom);
+function toggleZoom(e) { if (zoomArea.classList.contains('zoomed')) { zoomArea.classList.remove('zoomed'); imgEl.style.transform = "scale(1)"; } else { zoomArea.classList.add('zoomed'); let clientX, clientY; if (e.changedTouches && e.changedTouches.length > 0) { clientX = e.changedTouches[0].clientX; clientY = e.changedTouches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; } const rect = zoomArea.getBoundingClientRect(); const x = clientX - rect.left; const y = clientY - rect.top; imgEl.style.transformOrigin = `${x}px ${y}px`; imgEl.style.transform = "scale(2.5)"; } }
+
+window.quickReply = async (text) => {
+    if (!currentUser) return alert("Vui lòng đăng nhập!");
+    const list = document.getElementById('lb-comments-list');
+    const fakeDiv = document.createElement('div'); fakeDiv.className = 'lb-comment-item';
+    fakeDiv.innerHTML = `<img src="${currentUser.photoURL}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${currentUser.displayName}</span><span class="lb-comment-text">${text}</span></div></div>`;
+    list.appendChild(fakeDiv); list.scrollTop = list.scrollHeight;
+    const c = { uid: currentUser.uid, name: currentUser.displayName, avatar: currentUser.photoURL, text: text, time: Date.now() };
+    await updateDoc(doc(db, currentCollection, currentImgId), { comments: arrayUnion(c) });
+    const postSnap = await getDoc(doc(db, currentCollection, currentImgId));
+    if(postSnap.exists()){ const ownerId = postSnap.data().uid; pushNotification(ownerId, 'comment', `<b>${currentUser.displayName}</b> đã bình luận: "${text}"`, currentImgId, currentCollection); }
+}
+
+window.pinPost = async () => { 
+    await setDoc(doc(db, "settings", "featured"), { col: currentCollection, id: currentImgId }); 
+    // Gửi thông báo Global
+    await setDoc(doc(db, "settings", "notifications"), { text: "📌 Một bài viết mới vừa được ghim lên Trang Chủ! Xem ngay!", id: Date.now().toString(), createdAt: serverTimestamp() });
+    alert("Đã ghim và gửi thông báo!"); 
+    const pinBtn = document.querySelector('.lb-btn-pin');
+    if(pinBtn) { pinBtn.innerHTML = '<i class="fas fa-times-circle"></i>'; pinBtn.onclick = window.unpinPost; pinBtn.title = "Bỏ ghim"; pinBtn.style.color = '#d32f2f'; }
+}
+
+window.unpinPost = async () => {
+    if(confirm("Bỏ ghim bài viết này?")) {
+        await deleteDoc(doc(db, "settings", "featured"));
+        alert("Đã bỏ ghim!");
+        const pinBtn = document.querySelector('.lb-btn-pin');
+        if(pinBtn) { pinBtn.innerHTML = '<i class="fas fa-thumbtack"></i>'; pinBtn.onclick = window.pinPost; pinBtn.title = "Ghim"; pinBtn.style.color = '#ffa000'; }
+    }
+}
+
+window.deletePostFromLB = async () => { if(confirm("Bạn chắc chắn muốn xóa bài viết này chứ?")) { await deleteDoc(doc(db, currentCollection, currentImgId)); closeLightbox(); alert("Đã xóa bài viết!"); } }
+window.editPostFromLB = async () => { const newDesc = prompt("Nhập mô tả mới:"); if(newDesc) { await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc }); document.getElementById('lb-desc').innerText = newDesc; } }
+
+window.handleLike = async () => { 
+    if(!currentUser) return alert("Vui lòng đăng nhập để thả tim!"); 
+    const btn = document.getElementById('lb-like-btn'); const countSpan = document.getElementById('lb-like-count');
+    let currentCount = parseInt(countSpan.innerText); const isLiked = btn.classList.contains('liked');
+    if (isLiked) { btn.classList.remove('liked'); btn.style.color = 'var(--text-sec)'; countSpan.innerText = Math.max(0, currentCount - 1); await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayRemove(currentUser.uid) }); } 
+    else { btn.classList.add('liked'); btn.style.color = '#e53935'; countSpan.innerText = currentCount + 1; await updateDoc(doc(db, currentCollection, currentImgId), { likes: arrayUnion(currentUser.uid) });
+    const postSnap = await getDoc(doc(db, currentCollection, currentImgId)); if(postSnap.exists()){ const ownerId = postSnap.data().uid; pushNotification(ownerId, 'like', `<b>${currentUser.displayName}</b> đã thả tim ảnh của bạn ❤️`, currentImgId, currentCollection); } }
+}
+
+function renderComments(arr) { 
+    const l=document.getElementById('lb-comments-list'); l.innerHTML=""; 
+    arr.forEach((c, index)=>{ 
+        const delBtn = (currentUser && (isAdmin(currentUser.email) || currentUser.uid === c.uid)) ? `<span onclick="deleteComment(${index})" style="color:#d32f2f; cursor:pointer; margin-left:8px; font-size:0.8rem;" title="Xóa">✕</span>` : '';
+        l.innerHTML+=`<div class="lb-comment-item"><img src="${c.avatar||'https://via.placeholder.com/30'}" class="lb-comment-avatar"><div class="lb-comment-content"><div class="lb-comment-bubble"><span class="lb-comment-user">${c.name}</span><span class="lb-comment-text">${c.text}</span></div>${delBtn}</div></div>`; 
+    }); l.scrollTop = l.scrollHeight; 
+}
+
+window.deleteComment = async (index) => {
+    if(!confirm("Xóa bình luận này?")) return;
+    const docRef = doc(db, currentImgCollection, currentImgId);
+    const snap = await getDoc(docRef);
+    if(snap.exists()) {
+        const comments = snap.data().comments || [];
+        if(index >= 0 && index < comments.length) {
+            const newComments = [...comments];
+            newComments.splice(index, 1);
+            await updateDoc(docRef, { comments: newComments });
+            renderComments(newComments);
+        }
+    }
+}
+
+window.exportExcel = async (type) => { 
+    if(!currentUser || !isAdmin(currentUser.email)) return; 
+    Utils.loader(true, "Đang tạo file Excel chuẩn..."); const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('DuLieu'); 
+    if (type === 'users') { 
+        sheet.columns = [ { header: 'STT', key: 'stt', width: 6 }, { header: 'Tên người dùng', key: 'name', width: 25 }, { header: 'Ngày sinh', key: 'dob', width: 15 }, { header: 'Email', key: 'email', width: 30 }, { header: 'ID', key: 'id', width: 15 }, { header: 'Ngày đăng ký', key: 'created', width: 20 }, { header: 'Lớp', key: 'class', width: 15 }, { header: 'Hoạt động cuối', key: 'active', width: 20 }, { header: 'Số lần đăng nhập', key: 'count', width: 15 } ]; 
+        const snap = await getDocs(collection(db, "users")); let i=1; snap.forEach(d => { const u = d.data(); sheet.addRow({ stt: i++, name: u.displayName || '', dob: u.dob || '', email: u.email || '', id: u.customID || '', created: u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleString('vi-VN') : '', class: u.class || '', active: u.lastActive ? new Date(u.lastActive.seconds * 1000).toLocaleString('vi-VN') : '', count: u.loginCount || 1 }); }); 
+    } else { 
+        sheet.columns = [ { header: 'STT', key: 'stt', width: 6 }, { header: 'Người đăng', key: 'author', width: 25 }, { header: 'ID', key: 'uid', width: 15 }, { header: 'Lớp', key: 'class', width: 10 }, { header: 'Mô tả', key: 'desc', width: 40 }, { header: 'Tim', key: 'likes', width: 10 }, { header: 'Link ảnh', key: 'url', width: 40 }, { header: 'Ngày đăng', key: 'date', width: 20 } ]; 
+        const snap = await getDocs(collection(db, type)); let i=1; snap.forEach(d => { const p = d.data(); sheet.addRow({ stt: i++, author: p.authorName, uid: p.authorID || '', class: p.className || '', desc: p.desc || '', likes: p.likes ? p.likes.length : 0, url: p.url, date: p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleString('vi-VN') : '' }); }); 
+    } 
+    const headerRow = sheet.getRow(1); headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 }; headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } }; headerRow.alignment = { vertical: 'middle', horizontal: 'center' }; headerRow.height = 30; 
+    sheet.eachRow((row, rowNumber) => { row.eachCell((cell) => { cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }; cell.alignment = { vertical: 'middle', wrapText: true }; }); }); 
+    const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }); saveAs(blob, `GreenSchool_${type}_${new Date().toISOString().slice(0,10)}.xlsx`); Utils.loader(false); 
+}
+
+// --- PDF EXPORT LOGIC ---
+window.exportPDF = async (type) => {
+    if(!currentUser || !isAdmin(currentUser.email)) return;
+    Utils.loader(true, "Đang tạo PDF...");
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Tiêu đề
+    doc.setFontSize(18);
+    doc.text("BAO CAO THI DUA - GREEN SCHOOL A2K41", 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Ngay xuat: ${new Date().toLocaleString('vi-VN')}`, 14, 30);
+
+    // Lấy dữ liệu
+    const snap = await getDocs(collection(db, type));
+    let bodyData = [];
+    snap.forEach(d => {
+        const p = d.data();
+        // Lưu ý: jsPDF mặc định không hỗ trợ tiếng Việt có dấu tốt nếu không nhúng font.
+        // Ở đây ta dùng toLocaleString để format ngày, và lấy các trường cơ bản.
+        bodyData.push([p.className || '', p.authorName, p.desc || '', p.likes ? p.likes.length : 0, p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleDateString('vi-VN') : '']);
+    });
+
+    // Tạo bảng
+    doc.autoTable({
+        head: [['Lop', 'Nguoi Dang', 'Mo Ta', 'Tim', 'Ngay']],
+        body: bodyData,
+        startY: 40,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [46, 125, 50] } // Màu xanh Green School
+    });
+
+    doc.save(`BaoCao_${type}_${Date.now()}.pdf`);
+    Utils.loader(false);
+}
+
+// --- CHART JS LOGIC ---
+window.drawClassChart = async () => {
+    if(!currentUser || !isAdmin(currentUser.email)) return;
+    Utils.loader(true, "Đang tổng hợp dữ liệu...");
+    const filter = document.getElementById('chart-filter').value;
+    const now = new Date();
+    
+    // Lấy dữ liệu từ cả 2 bộ sưu tập
+    const gallerySnap = await getDocs(collection(db, 'gallery'));
+    const contestSnap = await getDocs(collection(db, 'contest'));
+    
+    let stats = {};
+    const process = (snap) => {
+        snap.forEach(doc => {
+            const d = doc.data();
+            
+            // Logic lọc thời gian
+            if (d.createdAt) {
+                const docDate = new Date(d.createdAt.seconds * 1000);
+                if (filter === 'month' && (docDate.getMonth() !== now.getMonth() || docDate.getFullYear() !== now.getFullYear())) return;
+                if (filter === 'week') {
+                    const oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                    if (docDate < oneWeekAgo) return;
+                }
+            }
+
+            const c = d.className || "Chưa cập nhật";
+            if(!stats[c]) stats[c] = 0;
+            stats[c]++;
+        });
+    };
+    process(gallerySnap);
+    process(contestSnap);
+
+    const labels = Object.keys(stats).sort();
+    const data = labels.map(k => stats[k]);
+
+    const ctx = document.getElementById('classChart');
+    if(window.myClassChart) window.myClassChart.destroy(); // Xóa biểu đồ cũ nếu có
+
+    window.myClassChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Số lượng bài đăng', data: data, backgroundColor: '#2e7d32', borderColor: '#1b5e20', borderWidth: 1 }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+    Utils.loader(false);
+}
+
+// --- FIREWORKS EFFECT ---
+window.triggerFireworks = () => {
+    const duration = 3000; const end = Date.now() + duration;
+    // Phát nhạc
+    const audio = document.getElementById('fireworks-audio');
+    if(audio) { audio.currentTime = 0; audio.play().catch(e => console.log("Audio play failed (Autoplay policy):", e)); }
+    (function frame() {
+        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+        if (Date.now() < end) requestAnimationFrame(frame);
+    }());
+}
+
+window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
+window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
+window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
+window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
+window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
+window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
+window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); const sn=await getDocs(q); const docs = []; sn.forEach(d => docs.push(d.data())); docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0)); docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); }
+window.loadArchiveGrid = async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }
+window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
+
+window.loadAdminData = async () => { 
+    if(!currentUser||!isAdmin(currentUser.email))return; 
+    const b=document.getElementById('user-table-body'); b.innerHTML="<tr><td colspan='6' style='text-align:center'>Đang tải dữ liệu...</td></tr>"; 
+    const s=await getDocs(collection(db,"users")); 
+    adminUsersCache = []; s.forEach(d => adminUsersCache.push({id: d.id, ...d.data()}));
+    adminPage = 1; // Reset về trang 1 khi tải lại
+    filterAdminUsers();
+}
+
+window.filterAdminUsers = () => {
+    const k = document.getElementById('admin-user-search').value.toLowerCase();
+    const b = document.getElementById('user-table-body'); b.innerHTML = "";
+    
+    // 1. Lọc dữ liệu
+    let filtered = adminUsersCache.filter(u => (u.displayName||"").toLowerCase().includes(k) || (u.email||"").toLowerCase().includes(k) || (u.customID||"").toLowerCase().includes(k) || (u.class||"").toLowerCase().includes(k));
+
+    // 2. Sắp xếp
+    filtered.sort((a, b) => {
+        let valA = (a[adminSortField] || "").toString().toLowerCase();
+        let valB = (b[adminSortField] || "").toString().toLowerCase();
+        if (valA < valB) return adminSortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return adminSortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    // 3. Phân trang
+    const totalPages = Math.ceil(filtered.length / adminItemsPerPage);
+    if (adminPage > totalPages) adminPage = totalPages || 1;
+    if (adminPage < 1) adminPage = 1;
+    
+    const start = (adminPage - 1) * adminItemsPerPage;
+    const paginatedItems = filtered.slice(start, start + adminItemsPerPage);
+
+    paginatedItems.forEach((u, index) => {
+        const realIndex = start + index + 1;
+        const btn = u.banned ? `<button onclick="togBan('${u.id}',0)">Mở</button>` : `<button onclick="togBan('${u.id}',1)" style="color:red">Khóa</button>`; 
+        b.innerHTML+=`<tr><td>${realIndex}</td><td>${u.displayName}</td><td>${u.email}</td><td>${u.class||'-'}</td><td>${u.banned?'KHÓA':'Active'}</td><td>${btn}</td></tr>`;
+    });
+
+    if(filtered.length === 0) b.innerHTML = "<tr><td colspan='6' style='text-align:center'>Không tìm thấy thành viên nào.</td></tr>";
+
+    // Cập nhật UI phân trang
+    const pageInfo = document.getElementById('admin-page-info');
+    if(pageInfo) pageInfo.innerText = `Trang ${adminPage} / ${totalPages || 1}`;
+    const btnPrev = document.getElementById('btn-prev-page');
+    const btnNext = document.getElementById('btn-next-page');
+    if(btnPrev) btnPrev.disabled = adminPage === 1;
+    if(btnNext) btnNext.disabled = adminPage >= (totalPages || 1);
+}
+
+window.sortAdminUsers = (field) => {
+    if (adminSortField === field) { adminSortOrder = adminSortOrder === 'asc' ? 'desc' : 'asc'; } 
+    else { adminSortField = field; adminSortOrder = 'asc'; }
+    
+    // Cập nhật icon chỉ dẫn
+    document.querySelectorAll('.sort-icon').forEach(i => i.className = 'fas fa-sort sort-icon');
+    const activeHeader = document.getElementById(`th-${field}`);
+    if(activeHeader) {
+        const icon = activeHeader.querySelector('.sort-icon');
+        if(icon) icon.className = `fas fa-sort-${adminSortOrder === 'asc' ? 'up' : 'down'} sort-icon`;
+    }
+    filterAdminUsers();
+}
+
+window.changeAdminPage = (delta) => {
+    adminPage += delta;
+    filterAdminUsers();
+}
+
+window.togBan = async (id, st) => { if(confirm("Xác nhận?")) { await updateDoc(doc(db, "users", id), { banned: !!st }); loadAdminData(); } }
+window.deletePost = async (c, i) => { if(confirm("Xóa bài?")) await deleteDoc(doc(db, c, i)); }
+window.editPost = async (c, i, o) => { const n = prompt("Sửa:", o); if(n) await updateDoc(doc(db, c, i), { desc: n }); }
+window.requestDeleteAccount = async () => { if(confirm("Xóa tk?")) { await updateDoc(doc(db, "users", currentUser.uid), { status: 'deleted' }); location.reload(); } }
+window.restoreAccount = async () => { await updateDoc(doc(db, "users", currentUser.uid), { status: 'active' }); location.reload(); }
+async function checkUniqueID(id) { const q = query(collection(db, "users"), where("customID", "==", id)); const snap = await getDocs(q); return snap.empty; }
+window.updateProfile = async (e) => { 
+    e.preventDefault(); 
+    const n = document.getElementById('edit-name').value; const cid = document.getElementById('edit-custom-id').value; const c = document.getElementById('edit-class').value; const d = document.getElementById('edit-dob').value; const b = document.getElementById('edit-bio').value; 
+    if(cid !== currentUser.customID) { const isUnique = await checkUniqueID(cid); if(!isUnique) return alert("ID này đã có người dùng!"); } 
+    const f = isAdmin(currentUser.email) ? "Admin_xinhxinh" : n; 
+    
+    await updateDoc(doc(db, "users", currentUser.uid), { displayName: f, customID: cid, class: c, dob: d, bio: b }); 
+    
+    // CẬP NHẬT NGAY LẬP TỨC BIẾN currentUser ĐỂ MỞ KHÓA
+    currentUser.displayName = f; currentUser.customID = cid; currentUser.class = c; currentUser.dob = d; currentUser.bio = b;
+    
+    alert("Đã lưu hồ sơ thành công! Bạn có thể sử dụng web bình thường."); 
+    if(currentUser.class && currentUser.customID && currentUser.dob) { showPage('home'); window.location.hash = 'home'; }
+}
+
+// --- ROUTING LOGIC ---
+function handleRoute() {
+    const hash = window.location.hash.slice(1) || 'home';
+    showPage(hash);
+}
+window.addEventListener('hashchange', handleRoute);
+window.addEventListener('load', handleRoute);
+
+window.showPage = (id) => {
+    const validPages = ['home', 'greenclass', 'contest', 'archive', 'activities', 'guide', 'profile', 'admin'];
+    let targetId = validPages.includes(id) ? id : 'home';
+
+    // CHẶN ĐIỀU HƯỚNG NẾU THIẾU THÔNG TIN (BẮT BUỘC)
+    if (currentUser && (!currentUser.class || !currentUser.customID || !currentUser.dob) && targetId !== 'profile') {
+        alert("⚠️ Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh) để tiếp tục sử dụng!");
+        targetId = 'profile';
+        window.location.hash = 'profile';
+    }
+
+    if (targetId === 'admin') {
+        if (!currentUser) { alert("Vui lòng đăng nhập quyền Admin trước!"); targetId = 'profile'; window.location.hash = 'profile'; } 
+        else if (!isAdmin(currentUser.email)) { alert("⛔ Bạn không có quyền truy cập khu vực này!"); targetId = 'home'; window.location.hash = 'home'; }
+    }
+    document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+    const section = document.getElementById(targetId); if(section) section.classList.add('active');
+    document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu'));
+    if(document.getElementById('menu-pc-'+targetId)) document.getElementById('menu-pc-'+targetId).classList.add('active-menu');
+    if(document.getElementById('mob-'+targetId)) document.getElementById('mob-'+targetId).classList.add('active-menu');
+    if(targetId === 'archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); }
+    const titles = { 'home': 'Trang Chủ', 'greenclass': 'Góc Xanh', 'contest': 'Thi Đua', 'archive': 'Lưu Trữ', 'activities': 'Hoạt Động', 'guide': 'Tra Cứu', 'profile': 'Hồ Sơ', 'admin': '🛠 Quản Trị Hệ Thống' };
+    document.title = `Green School - ${titles[targetId] || 'A2K41'}`;
+}
+
+const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
+window.filterTrash = () => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }; window.filterTrash();
+document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
+const mainLoginBtn = document.getElementById('main-login-btn'); if(mainLoginBtn) { mainLoginBtn.addEventListener('click', () => { console.log("Login clicked"); signInWithPopup(auth, provider); }); }
+
+let deferredPrompt; const pcMenu = document.querySelector('nav.pc-nav ul'); const installLi = document.createElement('li'); installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>'; pcMenu.appendChild(installLi); const mobNav = document.querySelector('.mobile-nav-inner'); const installMob = document.createElement('a'); installMob.className = 'nav-item'; installMob.id = 'btn-install-mob'; installMob.style.display = 'none'; installMob.innerHTML = '<i class="fas fa-download"></i><span>TảiApp</span>'; mobNav.insertBefore(installMob, mobNav.firstChild);
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('btn-install-pc').style.display = 'inline-block'; document.getElementById('btn-install-mob').style.display = 'flex'; });
+async function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; document.getElementById('btn-install-pc').style.display = 'none'; document.getElementById('btn-install-mob').style.display = 'none'; }
+document.getElementById('btn-install-pc').addEventListener('click', installPWA); document.getElementById('btn-install-mob').addEventListener('click', installPWA);
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered!', reg)).catch(err => console.log('SW Error:', err)); }); }
+
+// --- SEASONAL EFFECT LOGIC ---
+let effectCtx, effectCanvas, effectParticles = [], effectAnimationId;
+let effectConfig = { active: true, type: 'snow', img: new Image() };
+
+window.initSeasonalEffect = () => {
+    const mode = localStorage.getItem('seasonal_mode') || 'auto';
+    const canvas = document.getElementById('seasonal-canvas');
+    const icon = document.getElementById('effect-icon');
+    
+    if (mode === 'off') { 
+        effectConfig.active = false; 
+        canvas.style.display = 'none'; 
+        icon.className = 'fas fa-ban'; 
+        if(effectAnimationId) cancelAnimationFrame(effectAnimationId);
+        effectAnimationId = null;
+        return; 
+    }
+
+    effectConfig.active = true;
+    canvas.style.display = 'block';
+    
+    let type = 'snow';
+    if (mode === 'auto') {
+        const month = new Date().getMonth() + 1;
+        if (month >= 2 && month <= 4) type = 'spring';
+        else if (month >= 5 && month <= 7) type = 'summer';
+        else if (month >= 8 && month <= 10) type = 'autumn';
+        else type = 'winter';
+    } else { type = mode; }
+
+    // Cập nhật ảnh và icon theo mùa
+    if (type === 'spring') { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/5904/5904292.png'; icon.className = 'fas fa-seedling'; } // Hoa đào hồng
+    else if (type === 'summer') { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/403/403543.png'; icon.className = 'fas fa-leaf'; } // Lá xanh tươi
+    else if (type === 'autumn') { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/2913/2913520.png'; icon.className = 'fab fa-canadian-maple-leaf'; } // Lá phong cam
+    else { effectConfig.img.src = 'https://cdn-icons-png.flaticon.com/512/642/642000.png'; icon.className = 'fas fa-snowflake'; } // Tuyết tinh thể
+
+    effectCanvas = document.getElementById('seasonal-canvas');
+    effectCtx = effectCanvas.getContext('2d');
+    
+    if (!effectAnimationId) {
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        createParticles();
+        animateEffect();
+    }
+}
+
+function resizeCanvas() { effectCanvas.width = window.innerWidth; effectCanvas.height = window.innerHeight; }
+
+function createParticles() {
+    effectParticles = [];
+    const count = window.innerWidth < 768 ? 20 : 35; // Giảm số lượng vì ảnh nặng hơn nét vẽ
+    for (let i = 0; i < count; i++) {
+        effectParticles.push({
+            x: Math.random() * effectCanvas.width, y: Math.random() * effectCanvas.height,
+            size: Math.random() * 15 + 15, // Kích thước 15px - 30px để nhìn rõ ảnh
+            d: Math.random() * count,
+            speed: Math.random() * 1 + 1, // Rơi nhanh hơn xíu cho tự nhiên
+            swing: Math.random() * 2,
+            rotation: Math.random() * 360, // Góc xoay ban đầu
+            rotationSpeed: Math.random() * 2 - 1 // Tốc độ xoay (-1 đến 1 độ mỗi khung hình)
+        });
+    }
+}
+
+function animateEffect() {
+    if (!effectConfig.active) return;
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    
+    if (effectConfig.img.complete) { // Chỉ vẽ khi ảnh đã tải xong
+        for (let i = 0; i < effectParticles.length; i++) {
+            const p = effectParticles[i];
+            
+            // Lưu trạng thái canvas, dịch chuyển tới tâm hạt, xoay, vẽ, rồi khôi phục
+            effectCtx.save();
+            effectCtx.translate(p.x + p.size/2, p.y + p.size/2);
+            effectCtx.rotate(p.rotation * Math.PI / 180);
+            effectCtx.drawImage(effectConfig.img, -p.size/2, -p.size/2, p.size, p.size);
+            effectCtx.restore();
+            
+            p.y += p.speed; p.x += Math.sin(p.d) * 0.5; p.d += 0.02; 
+            p.rotation += p.rotationSpeed; // Cập nhật góc xoay
+            if (p.y > effectCanvas.height) { p.y = -40; p.x = Math.random() * effectCanvas.width; } 
+        }
+    }
+    effectAnimationId = requestAnimationFrame(animateEffect);
+}
+
+window.toggleSeasonalMenu = () => { document.getElementById('effect-menu').classList.toggle('active'); }
+
+window.setEffectMode = (mode) => {
+    localStorage.setItem('seasonal_mode', mode);
+    document.getElementById('effect-menu').classList.remove('active');
+    initSeasonalEffect();
 }
