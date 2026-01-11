@@ -22,17 +22,22 @@
 
 /* Giao diện Tối (Dark Mode) */
 body.dark-mode {
-    --primary: #66bb6a; /* Xanh sáng hơn cho nền tối */
-    --primary-dark: #81c784;
-    --bg: #121212;
-    --text: #e0e0e0;
+    --primary: #81c784; /* Xanh lá dịu nhẹ */
+    --primary-dark: #66bb6a;
+    --bg: #121212; /* Nền tối sâu */
+    --text: #e0e0e0; /* Chữ trắng xám dịu */
     --text-sec: #b0b0b0;
     --white: #1e1e1e;
-    --card-bg: #1e1e1e;
+    --card-bg: #1e1e1e; /* Card màu xám đen (Material Design) */
     --border: #333333;
-    --input-bg: #2c2c2c;
-    --shadow: rgba(0,0,0,0.5);
+    --input-bg: #2d2d2d;
+    --shadow: rgba(0,0,0,0.6);
 }
+/* Fix màu gradient khi ở Dark Mode để không bị chói */
+body.dark-mode .featured-section { background: linear-gradient(135deg, #1b5e20, #2e7d32); border-color: #43a047; }
+body.dark-mode #pinned-post { background: linear-gradient(135deg, #e65100, #ef6c00); border-color: #ff9800; }
+body.dark-mode .featured-content h3 { color: #fff; }
+body.dark-mode .featured-badge { color: #fff; }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -40,7 +45,7 @@ body {
     font-family: 'Nunito', sans-serif; margin: 0; padding: 0; 
     background-color: var(--bg); color: var(--text); padding-bottom: 90px;
     overscroll-behavior-y: contain; 
-    transition: background-color 0.3s, color 0.3s; /* Hiệu ứng chuyển màu mượt */
+    transition: background-color 0.4s ease, color 0.4s ease; /* Hiệu ứng chuyển màu mượt hơn */
 }
 
 /* --- SEASONAL EFFECT --- */
@@ -49,11 +54,35 @@ body {
     pointer-events: none; /* Cho phép click xuyên qua */
     z-index: 999; /* Nằm trên nội dung nền nhưng dưới các popup */
 }
-.effect-toggle { position: fixed; bottom: 25px; left: 25px; width: 45px; height: 45px; border-radius: 50%; background: var(--card-bg); box-shadow: 0 5px 15px var(--shadow); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary); transition: 0.3s; color: var(--primary); font-size: 1.2rem; }
-.effect-toggle:hover { transform: scale(1.1); }
+
+/* --- FAB GROUP (MENU TIỆN ÍCH) --- */
+.fab-container { 
+    position: fixed; bottom: 90px; right: 20px; z-index: 2000; 
+    display: flex; flex-direction: column; align-items: center; gap: 10px; 
+    pointer-events: none; /* QUAN TRỌNG: Cho phép click xuyên qua vùng trống */
+}
+.fab-main-btn { width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; z-index: 2002; pointer-events: auto; /* Bật lại click cho nút chính */ }
+.fab-main-btn:active { transform: scale(0.9); }
+.fab-main-btn.active { transform: rotate(45deg); background: var(--danger); }
+
+.fab-items { display: flex; flex-direction: column; gap: 12px; opacity: 0; visibility: hidden; transform: translateY(20px); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-bottom: 5px; pointer-events: auto; /* Bật lại click cho các nút con */ }
+.fab-container.open .fab-items { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.fab-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--card-bg); color: var(--text); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s; position: relative; font-size: 1.2rem; }
+.fab-btn:hover { transform: scale(1.1); }
+.fab-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* Label cho các nút con (Tooltip bên trái) */
+.fab-btn::after { content: attr(title); position: absolute; right: 55px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; pointer-events: none; }
+.fab-container.open .fab-btn::after { opacity: 1; visibility: visible; }
+
+/* Điều chỉnh vị trí trên Mobile để không che Nav */
+@media (max-width: 768px) {
+    .fab-container { bottom: 80px; right: 15px; }
+}
 
 .effect-menu {
-    position: fixed; bottom: 80px; left: 25px;
+    position: fixed; bottom: 150px; right: 70px; /* Chỉnh lại vị trí menu mùa */
     background: var(--card-bg); border-radius: 12px;
     box-shadow: 0 5px 20px var(--shadow);
     border: 1px solid var(--border);
@@ -124,18 +153,6 @@ body {
 }
 .header-bell:hover { transform: scale(1.1); }
 .bell-dot { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; background: #ff1744; border-radius: 50%; border: 2px solid var(--card-bg); display: none; }
-
-/* DARK MODE TOGGLE BTN */
-.dark-mode-toggle {
-    position: fixed; top: 15px; right: 70px; z-index: 1001;
-    width: 42px; height: 42px;
-    background: var(--card-bg);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 15px var(--shadow); border: 1px solid var(--border);
-    cursor: pointer; transition: all 0.3s; color: var(--text);
-}
-.dark-mode-toggle:hover { transform: scale(1.1); }
 
 .notif-dropdown {
     position: fixed; top: 70px; right: 20px; width: 320px;
@@ -226,18 +243,25 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); outlin
 .countdown-container { background: linear-gradient(135deg, #d32f2f, #c62828); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(211, 47, 47, 0.3); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
 .timer-display { font-size: 2rem; font-weight: 800; font-family: monospace; letter-spacing: 2px; margin-top: 5px; }
 
-.music-fab { position: fixed; bottom: 90px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--card-bg); box-shadow: 0 5px 25px var(--shadow); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 3px solid var(--primary); transition: 0.3s; }
-.music-fab:active { transform: scale(0.95); }
 .music-icon { font-size: 35px; color: var(--text); transition: 0.5s; }
-.music-icon.playing { animation: spin 3s linear infinite; color: var(--primary); }
+.music-icon.playing { animation: spin 3s linear infinite; color: var(--primary); font-size: 24px; } /* Chỉnh lại size icon trong menu nhỏ */
 .music-note-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #333; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* --- AI CHATBOT UI --- */
-.ai-fab { position: fixed; bottom: 160px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6200ea, #b388ff); box-shadow: 0 5px 25px rgba(98, 0, 234, 0.4); z-index: 2000; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; transition: 0.3s; border: 2px solid white; overflow: hidden; }
-.ai-fab:hover { transform: scale(1.1); }
-.ai-fab img { width: 100%; height: 100%; object-fit: cover; }
+/* --- AI FAB (STANDALONE) --- */
+.ai-fab {
+    position: fixed; bottom: 160px; right: 20px; z-index: 2000;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, #6200ea, #b388ff);
+    box-shadow: 0 5px 25px rgba(98, 0, 234, 0.5);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    border: 3px solid white; transition: 0.3s; animation: floatAI 3s infinite ease-in-out;
+}
+.ai-fab:hover { transform: scale(1.1) rotate(10deg); }
+.ai-fab img { width: 70%; height: 70%; object-fit: contain; }
+@keyframes floatAI { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
+/* --- AI CHATBOT UI --- */
 .ai-chat-window { position: fixed; bottom: 230px; right: 25px; width: 350px; height: 450px; background: var(--card-bg); border-radius: 15px; box-shadow: 0 10px 40px var(--shadow); z-index: 2001; display: none; flex-direction: column; overflow: hidden; border: 1px solid var(--border); }
 .ai-header { background: linear-gradient(135deg, #6200ea, #b388ff); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
 .ai-body { flex: 1; padding: 15px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
@@ -402,8 +426,7 @@ input:checked + .slider-round:before { transform: translateX(24px); }
     nav.mobile-nav { display: block; }
     .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .featured-section { flex-direction: column; text-align: center; }
-    .music-fab { bottom: 80px; right: 15px; width: 50px; height: 50px; }
-    .ai-fab { bottom: 140px; right: 15px; width: 50px; height: 50px; }
+    .ai-fab { bottom: 160px; right: 15px; width: 55px; height: 55px; }
     .ai-chat-window { width: 90%; right: 5%; bottom: 200px; height: 400px; }
     h1 { font-size: 1.6rem; }
 }
