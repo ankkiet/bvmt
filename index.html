@@ -18,6 +18,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -101,6 +105,21 @@
     </div>
     <div id="player" style="display:none;"></div>
 
+    <audio id="fireworks-audio" src="https://www.soundjay.com/misc/sounds/magic-chime-01.mp3" preload="auto"></audio>
+
+    <canvas id="seasonal-canvas"></canvas>
+    <div class="effect-toggle" onclick="toggleSeasonalMenu()" title="Chỉnh hiệu ứng mùa">
+        <i class="fas fa-snowflake" id="effect-icon"></i>
+    </div>
+    <div class="effect-menu" id="effect-menu">
+        <div onclick="setEffectMode('auto')">🔄 Tự động</div>
+        <div onclick="setEffectMode('spring')">🌸 Mùa Xuân</div>
+        <div onclick="setEffectMode('summer')">🌿 Mùa Hạ</div>
+        <div onclick="setEffectMode('autumn')">🍂 Mùa Thu</div>
+        <div onclick="setEffectMode('winter')">❄️ Mùa Đông</div>
+        <div onclick="setEffectMode('off')">🚫 Tắt hiệu ứng</div>
+    </div>
+
     <nav class="pc-nav">
         <ul>
             <li><a href="#home" id="menu-pc-home">Trang Chủ</a></li>
@@ -121,8 +140,18 @@
                 <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg" style="width: 100%; height: 350px; object-fit: cover; object-position: center; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
                     <h1 style="border:none; margin-top: 20px;">A2K41 - Green School</h1>
+                    <h2 id="greeting-msg" style="color:var(--primary); margin-top: -20px; font-size: 1.2rem; font-weight: 600;"></h2>
                     <div id="home-login-area" style="display:none;">
                         <button class="home-login-btn" id="main-login-btn"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
+                    </div>
+                </div>
+                <div id="pinned-post" class="featured-section" style="display: none; border-color: #ffa000; background: linear-gradient(135deg, #fff8e1, #ffecb3);">
+                    <div class="featured-badge" style="background: #ffa000; color: white;">📌 BẢNG TIN NỔI BẬT</div>
+                    <img id="pin-img" src="" class="featured-img" style="border-color: #ffa000;">
+                    <div class="featured-content">
+                        <h3 id="pin-title">Thông Báo Quan Trọng</h3>
+                        <p id="pin-desc">...</p>
+                        <p id="pin-author" style="margin-top: 10px;">— Tác giả: ...</p>
                     </div>
                 </div>
                 <div id="featured-post" class="featured-section" style="display: none;">
@@ -233,6 +262,8 @@
                         <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
                         <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
                         
+                        <label>Ngày sinh:</label><input type="date" id="edit-dob" required>
+                        
                         <label>Lớp:</label>
                         <select id="edit-class" required>
                             <option value="">-- Chọn --</option>
@@ -337,13 +368,45 @@
                     <button class="btn btn-sm btn-outline" onclick="exportExcel('users')">DS Thành viên</button>
                     <button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')">Góc Xanh</button>
                     <button class="btn btn-sm btn-outline" onclick="exportExcel('contest')">Thi Đua</button>
+                    <button class="btn btn-sm btn-outline" style="border-color:#d32f2f; color:#d32f2f" onclick="exportPDF('contest')"><i class="fas fa-file-pdf"></i> PDF Thi Đua</button>
                 </div>
                 <table id="export-table" style="display:none"></table>
             </div>
 
+            <div class="card" style="border-left: 5px solid #ff9800;">
+                <h3>📈 Thống Kê Bài Đăng Theo Lớp</h3>
+                <select id="chart-filter" style="margin-bottom:10px; width:auto; display:inline-block;">
+                    <option value="all">Toàn thời gian</option>
+                    <option value="month">Tháng này</option>
+                    <option value="week">7 ngày qua</option>
+                </select>
+                <canvas id="classChart" style="width:100%; max-height:400px;"></canvas>
+                <button class="btn btn-sm" onclick="drawClassChart()" style="margin-top:10px">Cập nhật biểu đồ</button>
+            </div>
+
             <div class="card">
                 <h3>Danh sách thành viên</h3>
-                <div style="overflow-x:auto;"><table class="admin-table"><tbody id="user-table-body"></tbody></table></div>
+                <input type="text" id="admin-user-search" placeholder="🔍 Tìm theo Tên, ID, Email hoặc Lớp..." onkeyup="filterAdminUsers()" style="margin-bottom:10px">
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th onclick="sortAdminUsers('displayName')" style="cursor:pointer" id="th-displayName">Tên <i class="fas fa-sort sort-icon"></i></th>
+                                <th onclick="sortAdminUsers('email')" style="cursor:pointer" id="th-email">Email <i class="fas fa-sort sort-icon"></i></th>
+                                <th onclick="sortAdminUsers('class')" style="cursor:pointer" id="th-class">Lớp <i class="fas fa-sort sort-icon"></i></th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body"></tbody>
+                    </table>
+                </div>
+                <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:10px;">
+                    <button class="btn btn-sm btn-outline" id="btn-prev-page" onclick="changeAdminPage(-1)">Prev</button>
+                    <span id="admin-page-info" style="font-weight:bold;">Trang 1 / 1</span>
+                    <button class="btn btn-sm btn-outline" id="btn-next-page" onclick="changeAdminPage(1)">Next</button>
+                </div>
                 <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px">Làm mới</button>
             </div>
         </div>
