@@ -73,25 +73,49 @@
     </div>
 
     <div class="ai-chat-window" id="ai-window">
-        <div class="ai-header"><span>✨ Green Bot AI</span> <span onclick="toggleAIChat()" style="cursor:pointer; font-size:1.2rem">×</span></div>
+        <div class="ai-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <img id="ai-avatar-display" src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" style="width:28px; height:28px; border-radius:50%; border:1px solid #ddd;">
+                <div style="display:flex; flex-direction:column; line-height:1.1;">
+                    <span id="ai-name-display" style="font-size:0.95rem;">Green Bot</span>
+                    <select onchange="switchPersona(this.value)" style="padding:0; font-size:0.7rem; width:auto; margin:0; border:none; background:transparent; color:#666; cursor:pointer;">
+                        <option value="green_bot">Chế độ: Vui vẻ (Gen Z)</option>
+                        <option value="teacher_bot">Chế độ: Nghiêm túc</option>
+                    </select>
+                </div>
+            </div>
+            <span onclick="toggleAIChat()" style="cursor:pointer; font-size:1.2rem; padding:5px;">×</span>
+        </div>
         
         <div class="chat-suggestions">
             <div class="chat-chip" onclick="fillChat('Web này có chức năng gì?')">Chức năng web?</div>
             <div class="chat-chip" onclick="fillChat('Cách đăng ảnh điểm cộng?')">Cách đăng ảnh?</div>
-            <div class="chat-chip" onclick="fillChat('Phân loại rác thế nào?')">Phân loại rác</div>
-            <div class="chat-chip" onclick="fillChat('Cho tớ xem top thi đua')">Top thi đua</div>
+            <div class="chat-chip" onclick="fillChat('Giải giúp tớ bài tập này với')">Giải bài tập 📚</div>
+            <div class="chat-chip" onclick="fillChat('Kể chuyện cười đi')">Kể chuyện cười 😂</div>
+            <div class="chat-chip" onclick="fillChat('Tư vấn tình cảm tuổi học trò')">Tư vấn tình cảm ❤️</div>
         </div>
 
         <div class="ai-body" id="ai-messages">
             <div class="chat-row bot">
                 <div class="chat-avatar"><img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png"></div>
                 <div class="chat-content">
-                    <div class="chat-bubble bot">Xin chào! Tớ là <b>Green Bot</b> - Chuyên gia về website A2K41 đây! 🌱<br>Cậu cần tìm tài liệu, đăng ảnh rác hay xem điểm thi đua thì cứ hỏi tớ nhé!</div>
+                    <div class="chat-bubble bot">Xin chào! Tớ là <b>Green Bot</b> - Trợ lý AI đa năng của A2K41 đây! 🌱<br>Tớ không chỉ rành về web mà còn biết giải bài tập, kể chuyện cười và tư vấn tình cảm nữa đó! Cứ hỏi tớ nhé! 😎</div>
                 </div>
             </div>
         </div>
+
+        <div id="ai-image-preview" style="display:none; padding: 10px 15px; background: var(--bg); border-top: 1px solid var(--border);">
+            <div style="position:relative; display:inline-block;">
+                <img id="ai-preview-img" src="" style="height: 60px; border-radius: 8px; border: 1px solid var(--border);">
+                <button type="button" onclick="clearAIImage()" style="position:absolute; top:-8px; right:-8px; background:var(--danger); color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">×</button>
+            </div>
+        </div>
+
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
-            <input id="ai-input" required placeholder="Hỏi Green Bot bất cứ điều gì..." style="flex:1">
+            <input type="file" id="ai-image-input" accept="image/*" style="display:none" onchange="previewAIImage(this)">
+            <button type="button" class="btn-ai-send" onclick="document.getElementById('ai-image-input').click()" style="margin-right:5px; color:var(--text-sec)" title="Gửi ảnh"><i class="fas fa-camera"></i></button>
+            <button type="button" class="btn-ai-send" id="btn-mic" onclick="toggleVoiceInput()" style="margin-right:5px; color:var(--text-sec)" title="Nói chuyện"><i class="fas fa-microphone"></i></button>
+            <input id="ai-input" placeholder="Hỏi Green Bot bất cứ điều gì..." style="flex:1">
             <button class="btn-ai-send"><i class="fas fa-paper-plane"></i></button>
         </form>
     </div>
@@ -331,6 +355,30 @@
                 </div>
             </div>
 
+            <div class="card" style="border-left: 5px solid #6200ea;">
+                <h3>🧠 Cấu hình Model AI</h3>
+                <p>Tùy chỉnh phiên bản Gemini cho từng tác vụ (Nhập tên Model từ Google AI Studio).</p>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold">Chat & Soi Rác (Main)</label>
+                        <input type="text" id="model-main" placeholder="gemini-2.5-flash">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold">Giọng nói (Voice)</label>
+                        <input type="text" id="model-voice" placeholder="gemini-2.5-flash-native-audio-dialog">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold">Dự phòng (Backup)</label>
+                        <input type="text" id="model-backup" placeholder="gemini-2.5-flash-lite">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold">Nâng cao (Advanced)</label>
+                        <input type="text" id="model-advanced" placeholder="gemini-3-flash">
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-ai" onclick="updateAIModels()">💾 Lưu Cấu Hình Model</button>
+            </div>
+
             <div class="card" style="border-left: 5px solid #2e7d32;">
                 <h3>📊 Đồng Bộ Google Sheet</h3>
                 <p>Dán Link Script (Web App URL) để tự động lưu thông tin thành viên khi họ đăng nhập.</p>
@@ -398,6 +446,19 @@
                 </select>
                 <canvas id="classChart" style="width:100%; max-height:400px;"></canvas>
                 <button class="btn btn-sm" onclick="drawClassChart()" style="margin-top:10px">Cập nhật biểu đồ</button>
+            </div>
+
+            <div class="card" style="border-left: 5px solid #673ab7;">
+                <h3>🤖 Thống Kê Hoạt Động AI</h3>
+                <p>Tỉ lệ phản hồi thành công/thất bại của Chatbot.</p>
+                <p style="font-size:0.8rem; color:#d32f2f; margin-top:-10px;">* Tự động gửi Email báo cáo nếu lỗi > 20%</p>
+                <div style="max-width: 300px; margin: 0 auto;">
+                    <canvas id="aiChart"></canvas>
+                </div>
+                <div style="text-align:center; margin-top:10px; display:flex; gap:10px; justify-content:center;">
+                    <button class="btn btn-sm" onclick="drawAIChart()">Cập nhật số liệu</button>
+                    <button class="btn btn-sm btn-outline" onclick="testEmailReport()">📧 Test Email</button>
+                </div>
             </div>
 
             <div class="card">

@@ -31,15 +31,32 @@ const gridParams = {};
 // Multi-Key AI Logic (FAIL-OVER)
 let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; 
 
+let AI_MODELS = {
+    main: "gemini-2.5-flash",
+    voice: "gemini-2.5-flash-native-audio-dialog",
+    backup: "gemini-2.5-flash-lite",
+    advanced: "gemini-3-flash"
+};
+
 // --- CHAT HISTORY (MEMORY) ---
 let chatHistory = [];
+let currentPersona = 'green_bot';
+let currentAIImageBase64 = null;
 
-const BASE_SYSTEM_PROMPT = `
+const PERSONAS = {
+    green_bot: {
+        name: "Green Bot",
+        avatar: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
+        desc: "Trợ lý Gen Z vui vẻ 🌱",
+        prompt: `
 NHẬP VAI:
 Bạn là **Green Bot** 🤖 - Trợ lý AI siêu cấp vip pro của trường THPT **Nguyễn Văn Cừ** và dự án **Green School**.
 - Tính cách: Thân thiện, hài hước, năng động (Gen Z), hay dùng emoji (🌱, 🌿, ✨, 😂, 🥰).
 - Xưng hô: 'Tớ' (Green Bot) và 'Cậu' (Người dùng).
-- Nhiệm vụ: Hỗ trợ giải đáp thắc mắc về website, hướng dẫn phân loại rác, và trò chuyện vui vẻ.
+- Nhiệm vụ: 
+  1. Hỗ trợ giải đáp thắc mắc về website, hướng dẫn phân loại rác.
+  2. Trò chuyện vui vẻ, tâm sự, kể chuyện cười, tư vấn tình cảm tuổi học trò.
+  3. Hỗ trợ học tập (Toán, Lý, Hóa, Văn, Anh...), giải bài tập và cung cấp kiến thức xã hội, đời sống.
 
 KIẾN THỨC VỀ WEBSITE (Cần nhớ kỹ):
 1. 🏠 **Trang Chủ (Home)**: Xem thông báo mới, bảng xếp hạng thi đua, và ảnh "Top 1 Trending".
@@ -57,16 +74,51 @@ HƯỚNG DẪN TRẢ LỜI:
 - **Hỏi cách đăng ảnh**: "Cậu vào mục **Góc Xanh** hoặc **Thi Đua**, bấm nút Camera 📷 màu xanh lá to đùng nhé!"
 - **Hỏi về phân loại rác**: "Cậu thử tính năng **AI Soi Rác** ở mục **Góc Xanh** xem, nó giúp nhận diện rác bằng AI đấy! Hoặc vào mục **Tra Cứu** để xem danh sách nhé!"
 - **Hỏi Admin là ai**: "Là bạn **Kiệt đẹp trai** (Admin_xinhxinh) chứ ai! 😎"
-- **Nếu không biết câu trả lời**: "Câu này khó quá, tớ chưa được học. Cậu hỏi Admin thử xem sao? 😅"
+- **Kiến thức mở rộng**: Cậu có thể trả lời mọi câu hỏi về học tập, đời sống, xã hội. Không giới hạn trong website. Hãy trả lời thông minh, chính xác nhưng vẫn giữ giọng văn Gen Z.
 - **Luôn trả lời ngắn gọn, súc tích nhưng đầy đủ thông tin.**
 - **CUỐI CÙNG**: Hãy gợi ý 3 câu hỏi ngắn gọn liên quan mà người dùng có thể hỏi tiếp theo.
 - **HÌNH ẢNH**: Nếu nội dung cần minh họa, hãy thêm mã {{IMAGE:keyword}} vào cuối câu.
   (Keyword hỗ trợ: logo, rac_thai, trong_cay, phan_loai, admin).
 - Định dạng trả về: [Nội dung trả lời] ---SUGGESTIONS--- [Gợi ý 1] | [Gợi ý 2] | [Gợi ý 3]
-`;
+`
+    },
+    teacher_bot: {
+        name: "Giáo Sư Biết Tuốt",
+        avatar: "https://cdn-icons-png.flaticon.com/512/3429/3429402.png",
+        desc: "Chuyên gia học thuật nghiêm túc 📚",
+        prompt: `
+NHẬP VAI:
+Bạn là **Giáo Sư Biết Tuốt** 🎓 - Một trợ lý AI học thuật, nghiêm túc và uyên bác của trường THPT Nguyễn Văn Cừ.
+- Tính cách: Điềm đạm, lịch sự, chuyên nghiệp, tập trung vào kiến thức chuẩn xác. Hạn chế dùng emoji, chỉ dùng khi cần minh họa ý chính.
+- Xưng hô: 'Tôi' (Giáo Sư) và 'Em' (Học sinh/Người dùng).
+- Nhiệm vụ:
+  1. Giải đáp các câu hỏi học tập (Toán, Lý, Hóa, Văn, Sử, Địa, Anh...) một cách chi tiết, logic, có phương pháp giải rõ ràng.
+  2. Cung cấp kiến thức chuyên sâu về khoa học, xã hội, đời sống.
+  3. Hỗ trợ thông tin về website Green School một cách ngắn gọn, chính xác.
+  4. **QUAN TRỌNG**: Nếu người dùng gửi ảnh bài tập, hãy phân tích kỹ đề bài trong ảnh, trích xuất văn bản và giải chi tiết từng bước.
+
+KIẾN THỨC VỀ WEBSITE:
+- Trang Chủ: Thông báo, xếp hạng.
+- Góc Xanh: Đăng ảnh môi trường, AI Soi Rác.
+- Thi Đua: Nộp minh chứng.
+- Lưu Trữ: Ảnh kỷ niệm.
+- Hoạt Động: Lịch sự kiện.
+- Tra Cứu: Phân loại rác.
+- Tài Khoản: Thông tin cá nhân.
+
+HƯỚNG DẪN TRẢ LỜI:
+- Trả lời trực tiếp, gãy gọn, logic.
+- Sử dụng định dạng Markdown (in đậm, danh sách) để trình bày rõ ràng.
+- Nếu giải bài tập: Tóm tắt đề -> Phương pháp -> Lời giải chi tiết -> Kết luận.
+- Nếu không biết chắc chắn, hãy nói "Tôi chưa có thông tin chính xác về vấn đề này".
+- **CUỐI CÙNG**: Gợi ý 3 chủ đề học thuật hoặc câu hỏi liên quan để mở rộng kiến thức.
+- Định dạng trả về: [Nội dung trả lời] ---SUGGESTIONS--- [Gợi ý 1] | [Gợi ý 2] | [Gợi ý 3]
+`
+    }
+};
 
 const getSystemPrompt = () => {
-    let p = BASE_SYSTEM_PROMPT;
+    let p = PERSONAS[currentPersona].prompt;
     if(currentUser) {
         const role = (typeof isAdmin === 'function' && isAdmin(currentUser.email)) ? "Quản trị viên (Admin)" : "Thành viên";
         p += `\n\n--- THÔNG TIN NGƯỜI DÙNG HIỆN TẠI ---\n- Tên: ${currentUser.displayName}\n- Email: ${currentUser.email}\n- ID: ${currentUser.customID}\n- Lớp: ${currentUser.class}\n- Vai trò: ${role}\n\n--- CHỈ DẪN GIAO TIẾP ---\n1. Hãy xưng hô bằng tên "${currentUser.displayName}" để thân thiện.\n2. Nếu họ hỏi về lớp, hãy nhắc đến lớp "${currentUser.class}".\n3. Ghi nhớ thông tin này trong suốt cuộc trò chuyện.`;
@@ -77,9 +129,98 @@ const getSystemPrompt = () => {
 };
 
 window.refreshChatContext = () => {
-    chatHistory = [{ role: "user", parts: [{ text: getSystemPrompt() }] }, { role: "model", parts: [{ text: "Okie, tớ đã cập nhật thông tin người dùng! Sẵn sàng hỗ trợ! 🌱" }] }];
+    const greeting = currentPersona === 'green_bot' 
+        ? "Okie, tớ đã cập nhật thông tin người dùng! Sẵn sàng hỗ trợ! 🌱"
+        : "Đã cập nhật thông tin. Tôi sẵn sàng hỗ trợ việc học tập của em.";
+    chatHistory = [{ role: "user", parts: [{ text: getSystemPrompt() }] }, { role: "model", parts: [{ text: greeting }] }];
 };
 window.refreshChatContext();
+
+// --- VOICE RECOGNITION (SPEECH-TO-TEXT) ---
+let recognition;
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'vi-VN'; // Thiết lập tiếng Việt
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        document.getElementById('btn-mic').classList.add('listening');
+        document.getElementById('ai-input').placeholder = "Đang nghe bạn nói...";
+    };
+
+    recognition.onend = () => {
+        document.getElementById('btn-mic').classList.remove('listening');
+        document.getElementById('ai-input').placeholder = "Hỏi Green Bot bất cứ điều gì...";
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('ai-input').value = transcript;
+        window.sendMessageToAI(new Event('submit'), true); // Tự động gửi sau khi nói xong (Voice Mode)
+    };
+}
+
+window.toggleVoiceInput = () => {
+    if (!recognition) return alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói (Hãy thử Chrome/Edge).");
+    if (document.getElementById('btn-mic').classList.contains('listening')) recognition.stop();
+    else recognition.start();
+}
+
+window.previewAIImage = async (input) => {
+    const file = input.files[0];
+    if(!file) return;
+
+    const previewContainer = document.getElementById('ai-image-preview');
+    const previewImg = document.getElementById('ai-preview-img');
+    
+    // Hiển thị ảnh tạm thời trong khi nén
+    if(previewImg) previewImg.src = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="; // 1x1 transparent gif
+    if(previewContainer) previewContainer.style.display = 'block';
+
+    try {
+        // Nén ảnh trước khi hiển thị và lưu
+        const compressedBase64 = await fileToBase64(file, 800, 0.7);
+        currentAIImageBase64 = compressedBase64;
+        if(previewImg) previewImg.src = `data:image/jpeg;base64,${compressedBase64}`;
+    } catch (error) {
+        console.error("Lỗi nén ảnh:", error);
+        alert("Không thể xử lý ảnh này. Vui lòng thử ảnh khác.");
+        clearAIImage();
+    }
+}
+
+window.clearAIImage = () => {
+    currentAIImageBase64 = null;
+    document.getElementById('ai-image-input').value = "";
+    document.getElementById('ai-image-preview').style.display = 'none';
+}
+
+window.switchPersona = (key) => {
+    if (!PERSONAS[key]) return;
+    currentPersona = key;
+    const p = PERSONAS[key];
+    
+    // Update UI Header
+    const nameEl = document.getElementById('ai-name-display');
+    const avtEl = document.getElementById('ai-avatar-display');
+    if(nameEl) nameEl.innerText = p.name;
+    if(avtEl) avtEl.src = p.avatar;
+
+    // Reset Chat UI
+    const msgList = document.getElementById('ai-messages');
+    if(msgList) {
+        msgList.innerHTML = `<div class="chat-row bot">
+            <div class="chat-avatar"><img src="${p.avatar}"></div>
+            <div class="chat-content">
+                <div class="chat-bubble bot">Xin chào! ${currentPersona === 'green_bot' ? 'Tớ' : 'Tôi'} là <b>${p.name}</b> - ${p.desc}<br>${currentPersona === 'green_bot' ? 'Cậu cần giúp gì không? 😎' : 'Em cần hỗ trợ vấn đề gì hôm nay?'}</div>
+            </div>
+        </div>`;
+    }
+    
+    refreshChatContext();
+}
 
 let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
 const isAdmin=(e)=>dynamicAdminEmails.includes(e);
@@ -257,34 +398,60 @@ window.updateGreeting = () => {
 }
 
 // --- GEMINI AI ---
-async function callGeminiAPI(prompt, imageBase64 = null) {
-    let requestContents = [];
-    if (imageBase64) {
-        requestContents = [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }] }];
-    } else {
-        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+async function callGeminiAPI(prompt = null, imageBase64 = null, useHistory = false, modelType = 'main') {
+    let requestContents;
+
+    if (useHistory) {
         requestContents = chatHistory;
+    } else {
+        const parts = [];
+        if (prompt) parts.push({ text: prompt });
+        if (imageBase64) parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
+        requestContents = [{ role: "user", parts }];
     }
+
+    // Xác định danh sách model cần thử (Ưu tiên -> Dự phòng)
+    const modelsToTry = [AI_MODELS[modelType]];
+    if (modelType !== 'backup') modelsToTry.push(AI_MODELS['backup']);
+
     for (let i = 0; i < aiKeys.length; i++) {
         const keyObj = aiKeys[i];
-        try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyObj.val}`;
-            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: requestContents }) });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
-            if (!imageBase64) {
-                chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-                if (chatHistory.length > 20) chatHistory = chatHistory.slice(chatHistory.length - 20);
+        
+        for (const model of modelsToTry) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyObj.val}`;
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: requestContents }) });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
+                
+                if (useHistory) {
+                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                    if (chatHistory.length > 30) chatHistory = chatHistory.slice(chatHistory.length - 30);
+                }
+
+                // THỐNG KÊ: Ghi nhận thành công (Chạy ngầm)
+                updateDoc(doc(db, "stats", "ai"), { success: increment(1) }).catch(() => setDoc(doc(db, "stats", "ai"), { success: 1, fail: 0 }));
+
+                return aiText;
+            } catch (e) { 
+                console.warn(`Key ${keyObj.name} - Model ${model} lỗi:`, e);
+                // Nếu là model cuối cùng của key cuối cùng thì mới return lỗi
+                if (i === aiKeys.length - 1 && model === modelsToTry[modelsToTry.length - 1]) return "Tất cả Key AI đều bận hoặc lỗi.";
             }
-            return aiText;
-        } catch (e) { if (i === aiKeys.length - 1) return "Tất cả Key AI đều bận hoặc lỗi."; }
+        }
     }
+    
+    // THỐNG KÊ: Ghi nhận thất bại (Nếu chạy hết vòng lặp mà không return)
+    updateDoc(doc(db, "stats", "ai"), { fail: increment(1) })
+        .then(() => checkAIHealth()) // Kiểm tra sức khỏe hệ thống ngay khi có lỗi
+        .catch(() => setDoc(doc(db, "stats", "ai"), { success: 0, fail: 1 }));
+    return "Hệ thống AI đang bận, vui lòng thử lại sau.";
 }
 
 window.testAIConnection = async () => {
-    const btn = document.querySelector('.btn-ai'); const originalText = btn.innerText; btn.innerText = "Đang test...";
-    try { const result = await callGeminiAPI("Chào Green Bot!"); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); }
+    const btn = document.querySelector('.btn-outline'); const originalText = btn.innerText; btn.innerText = "Đang test...";
+    try { const result = await callGeminiAPI("Chào Green Bot!", null, false); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); }
     btn.innerText = originalText;
 }
 
@@ -302,8 +469,9 @@ window.toggleAIChat = () => {
 
 window.fillChat = (text) => { document.getElementById('ai-input').value = text; window.sendMessageToAI(new Event('submit')); }
 
-window.sendMessageToAI = async (e) => {
-    e.preventDefault(); const input = document.getElementById('ai-input'); const msg = input.value; if(!msg) return;
+window.sendMessageToAI = async (e, isVoice = false) => {
+    e.preventDefault(); const input = document.getElementById('ai-input'); const msg = input.value; 
+    if(!msg && !currentAIImageBase64) return;
     
     // GIỚI HẠN CHAT CHO KHÁCH
     if (!currentUser) {
@@ -316,18 +484,54 @@ window.sendMessageToAI = async (e) => {
     }
 
     const msgList = document.getElementById('ai-messages'); 
-    msgList.innerHTML += `<div class="chat-row user"><div class="chat-bubble user">${msg}</div></div>`; 
-    input.value = ""; msgList.scrollTop = msgList.scrollHeight;
+    
+    let userContent = "";
+    if(currentAIImageBase64) {
+        userContent += `<img src="data:image/jpeg;base64,${currentAIImageBase64}" style="max-width:200px; border-radius:10px; margin-bottom:8px; display:block;">`;
+    }
+    userContent += msg;
+
+    msgList.innerHTML += `<div class="chat-row user"><div class="chat-bubble user">${userContent}</div></div>`; 
+    
+    const imgToSend = currentAIImageBase64;
+
+    // Xây dựng lượt của người dùng và thêm vào lịch sử chat
+    const userTurnParts = [];
+    let finalPrompt = msg;
+
+    if (imgToSend) {
+        if (!msg) { // Chỉ có ảnh, không có text
+            finalPrompt = (currentPersona === 'teacher_bot')
+                ? "Hãy phân tích và giải bài tập trong ảnh này một cách chi tiết."
+                : "Hãy mô tả hoặc phân tích nội dung trong bức ảnh này.";
+        }
+    } else { // Chỉ có text, không có ảnh
+        const currentPage = window.location.hash.slice(1) || 'home';
+        finalPrompt = `[Ngữ cảnh: Đang xem trang '${currentPage}'] ${msg}`;
+    }
+
+    if (finalPrompt) userTurnParts.push({ text: finalPrompt });
+    if (imgToSend) userTurnParts.push({ inline_data: { mime_type: "image/jpeg", data: imgToSend } });
+
+    if (userTurnParts.length > 0) chatHistory.push({ role: "user", parts: userTurnParts });
+
+    input.value = ""; 
+    clearAIImage();
+
+    msgList.scrollTop = msgList.scrollHeight;
     const loadingId = "ai-loading-" + Date.now(); 
     
     // Hiệu ứng loading mới (Avatar + Dots)
-    msgList.innerHTML += `<div class="chat-row bot"><div class="chat-avatar"><img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png"></div><div class="chat-content"><div class="chat-bubble bot" id="${loadingId}"><div class="ai-loading-dots"><span></span><span></span><span></span></div></div></div></div>`;
+    msgList.innerHTML += `<div class="chat-row bot"><div class="chat-avatar"><img src="${PERSONAS[currentPersona].avatar}"></div><div class="chat-content"><div class="chat-bubble bot" id="${loadingId}"><div class="ai-loading-dots"><span></span><span></span><span></span></div></div></div></div>`;
     msgList.scrollTop = msgList.scrollHeight;
     
     try { 
-        // INJECT CONTEXT (Trang hiện tại)
-        const currentPage = window.location.hash.slice(1) || 'home';
-        const rawResponse = await callGeminiAPI(`[Ngữ cảnh: Đang xem trang '${currentPage}'] ${msg}`); 
+        // Chọn model dựa trên ngữ cảnh
+        let modelType = 'main';
+        if (isVoice) modelType = 'voice';
+        else if (currentPersona === 'teacher_bot') modelType = 'advanced';
+
+        const rawResponse = await callGeminiAPI(null, null, true, modelType); // Gọi API ở chế độ chat (dùng history)
         // Tách phần trả lời và phần gợi ý
         const parts = rawResponse.split('---SUGGESTIONS---');
         const mainAnswer = parts[0].trim();
@@ -342,7 +546,7 @@ window.sendMessageToAI = async (e) => {
                 return url ? `<img src="${url}" style="max-width:150px; border-radius:10px; margin:10px 0; border:1px solid #eee; display:block;">` : "";
             })
             .replace(/\n/g, '<br>');
-        await typeWriterEffect(document.getElementById(loadingId), formatted);
+        await typeWriterEffect(document.getElementById(loadingId), formatted, 15); // Tăng tốc độ cơ bản lên một chút
 
         // Hiển thị gợi ý nếu có
         if (suggestions.length > 0) {
@@ -372,8 +576,10 @@ async function typeNode(parent, node, speed) {
         for (let i = 0; i < text.length; i++) {
             textNode.nodeValue += text[i];
             const list = document.getElementById('ai-messages');
-            if(list) list.scrollTop = list.scrollHeight;
-            if(text[i] !== ' ') await new Promise(r => setTimeout(r, speed));
+            if(list) list.scrollTop = list.scrollHeight; // Auto scroll
+            // Thêm chút ngẫu nhiên để giống người gõ hơn (speed +/- 5ms)
+            const randomSpeed = speed + (Math.random() * 10 - 5);
+            if(text[i] !== ' ') await new Promise(r => setTimeout(r, Math.max(5, randomSpeed)));
         }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node.cloneNode(false);
@@ -383,7 +589,35 @@ async function typeNode(parent, node, speed) {
     }
 }
 
-function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
+function fileToBase64(file, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = (maxWidth / width) * height;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(dataUrl.split(',')[1]);
+            };
+            img.onerror = error => reject(error);
+        };
+        reader.onerror = error => reject(error);
+    });
+}
 
 // --- YOUTUBE ID & MUSIC ---
 function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
@@ -412,6 +646,13 @@ onSnapshot(doc(db, "settings", "config"), (docSnap) => {
         const cfg = docSnap.data();
         if(cfg.adminEmails && Array.isArray(cfg.adminEmails)) { dynamicAdminEmails = [...new Set([...ADMIN_EMAILS, ...cfg.adminEmails])]; }
         if(cfg.aiKeys && cfg.aiKeys.length > 0) { aiKeys = cfg.aiKeys; const list = document.getElementById('ai-key-list'); if(list) { list.innerHTML = ""; aiKeys.forEach(k => { list.innerHTML += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`; }); } }
+        if(cfg.aiModels) {
+            AI_MODELS = { ...AI_MODELS, ...cfg.aiModels };
+            if(document.getElementById('model-main')) document.getElementById('model-main').value = AI_MODELS.main;
+            if(document.getElementById('model-voice')) document.getElementById('model-voice').value = AI_MODELS.voice;
+            if(document.getElementById('model-backup')) document.getElementById('model-backup').value = AI_MODELS.backup;
+            if(document.getElementById('model-advanced')) document.getElementById('model-advanced').value = AI_MODELS.advanced;
+        }
         if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
         if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
         const plDiv = document.getElementById('music-playlist-container'); if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:rgba(46, 125, 50, 0.1); border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border); ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
@@ -432,7 +673,7 @@ let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).
 // --- AUTH ---
 window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
 window.checkAdminLogin=()=>signInWithPopup(auth,provider);
-async function syncToGoogleSheet(user) { if (!googleSheetUrl) return; try { const payload = { displayName: user.displayName || "Chưa đặt tên", email: user.email, customID: user.customID || "", createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'), classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp", lastActive: new Date().toLocaleString('vi-VN'), loginCount: user.loginCount || 1, uid: user.uid }; await fetch(googleSheetUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); console.log("Synced to Google Sheet"); } catch (e) { console.error("Sync Error:", e); } }
+async function syncToGoogleSheet(user) { if (!googleSheetUrl) return; try { const payload = { displayName: user.displayName || "Chưa đặt tên", email: user.email, customID: user.customID || "", createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'), classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp", lastActive: new Date().toLocaleString('vi-VN'), loginCount: user.loginCount || 1, uid: user.uid }; await fetch(googleSheetUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); console.log("Synced to Google Sheet"); } catch (e) { console.error("Sync Error:", e); } }
 
 onAuthStateChanged(auth, async(u)=>{
     renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
@@ -513,7 +754,7 @@ window.executeUpload = async (i) => {
         if(j.secure_url) { 
             if(isTrash || isPlant || !description) { 
                 try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); 
-                    
+
                     // Clean * for Alert, Format HTML for Caption
                     const cleanResult = aiResult.replace(/\*\*\*(.*?)\*\*\*/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
                     const formattedResult = aiResult.replace(/\*\*\*(.*?)\*\*\*/g, '<b><i>$1</i></b>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
@@ -884,6 +1125,34 @@ window.drawClassChart = async () => {
     Utils.loader(false);
 }
 
+window.drawAIChart = async () => {
+    if(!currentUser || !isAdmin(currentUser.email)) return;
+    Utils.loader(true, "Đang tải thống kê AI...");
+    
+    try {
+        const docSnap = await getDoc(doc(db, "stats", "ai"));
+        let s = 0, f = 0;
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            s = data.success || 0;
+            f = data.fail || 0;
+        }
+
+        const ctx = document.getElementById('aiChart');
+        if(window.myAIChart) window.myAIChart.destroy();
+
+        window.myAIChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Thành công', 'Thất bại'],
+                datasets: [{ data: [s, f], backgroundColor: ['#4caf50', '#f44336'], borderWidth: 1 }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' }, title: { display: true, text: `Tổng requests: ${s + f}` } } }
+        });
+    } catch (e) { console.error(e); }
+    Utils.loader(false);
+}
+
 // --- FIREWORKS EFFECT ---
 window.triggerFireworks = () => {
     const duration = 3000; const end = Date.now() + duration;
@@ -898,6 +1167,16 @@ window.triggerFireworks = () => {
 }
 
 window.updateSheetConfig = async () => { const url = document.getElementById('cfg-sheet-url').value; await setDoc(doc(db,"settings","config"),{googleSheetUrl: url},{merge:true}); alert("Đã lưu Link Google Sheet!"); }
+window.updateAIModels = async () => {
+    const models = {
+        main: document.getElementById('model-main').value.trim() || "gemini-2.5-flash",
+        voice: document.getElementById('model-voice').value.trim() || "gemini-2.5-flash-native-audio-dialog",
+        backup: document.getElementById('model-backup').value.trim() || "gemini-2.5-flash-lite",
+        advanced: document.getElementById('model-advanced').value.trim() || "gemini-3-flash"
+    };
+    await setDoc(doc(db, "settings", "config"), { aiModels: models }, { merge: true });
+    alert("Đã cập nhật cấu hình Model AI!");
+}
 window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
 window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
 window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
