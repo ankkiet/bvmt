@@ -180,7 +180,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
                     <div>
-                        <button class="btn" style="background:#ff9800; color:white; margin-right:5px" onclick="checkLoginAndUpload('trash')"><i class="fas fa-search"></i> AI Soi Rác</button>
+                        <button class="btn" style="background:#4caf50; color:white; margin-right:5px" onclick="checkLoginAndUpload('plant')"><i class="fas fa-user-md"></i> AI Bác sĩ cây</button>
                         <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
                     </div>
                 </div>
@@ -245,6 +245,9 @@
             <div id="locked-guide" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-guide">
                 <h1>🔍 Tra Cứu Phân Loại Rác</h1>
+                <div style="text-align:center; margin-bottom:20px;">
+                    <button class="btn" style="background:#ff9800; color:white;" onclick="checkLoginAndUpload('trash')"><i class="fas fa-camera"></i> AI Soi Rác (Camera)</button>
+                </div>
                 <div style="max-width:500px; margin:0 auto 20px;"><input type="text" id="trashSearchInput" placeholder="Nhập tên rác (vỏ sữa, pin...)" onkeyup="filterTrash()"></div>
                 <div id="trashContainer" class="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div>
             </div>

@@ -18,7 +18,7 @@ const BOT_IMAGES = {
 };
 
 let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
-let pinnedSettings = null, latestGalleryDocs = []; // Biến lưu trạng thái ghim và danh sách ảnh
+let pinnedSettings = null, latestGalleryDocs = [], lastTopPostId = null; // Biến lưu trạng thái ghim và danh sách ảnh
 let adminUsersCache = []; // Cache danh sách thành viên cho Admin
 let adminPage = 1;
 const adminItemsPerPage = 10;
@@ -489,23 +489,37 @@ onAuthStateChanged(auth, async(u)=>{
 });
 
 window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
-window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash') ? 'gallery' : c; document.getElementById('file-input').click(); }
+window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash' || c === 'plant') ? 'gallery' : c; document.getElementById('file-input').click(); }
 
 window.executeUpload = async (i) => { 
-    const f = i.files[0]; if(!f) return; const isTrash = (window.uploadMode === 'trash'); 
-    let aiPrompt = isTrash ? "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn." : "Đóng vai một học sinh lớp A2K41 đăng ảnh lên mạng xã hội của lớp. Hãy viết 3 dòng trạng thái (caption) ngắn gọn, tự nhiên, xưng hô 'mình' hoặc 'lớp tớ' về bức ảnh này. Gợi ý 1: Vui vẻ. Gợi ý 2: Ý nghĩa. Gợi ý 3: Hài hước. Mỗi gợi ý 1 dòng gạch đầu dòng."; 
+    const f = i.files[0]; if(!f) return; const isTrash = (window.uploadMode === 'trash'); const isPlant = (window.uploadMode === 'plant');
+    
+    let aiPrompt = "";
+    if (isTrash) aiPrompt = "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn.";
+    else if (isPlant) aiPrompt = "Bạn là một chuyên gia nông nghiệp (Bác sĩ cây trồng). Hãy nhìn ảnh này và cho biết: 1. Đây là cây gì? 2. Cây có dấu hiệu bị bệnh, héo hay sâu hại không? 3. Nếu có, hãy đưa ra phác đồ điều trị cụ thể. Nếu cây khỏe mạnh, hãy khen và hướng dẫn cách chăm sóc cơ bản. Trả lời ngắn gọn, súc tích.";
+    else aiPrompt = "Đóng vai một học sinh lớp A2K41 đăng ảnh lên mạng xã hội của lớp. Hãy viết 3 dòng trạng thái (caption) ngắn gọn, tự nhiên, xưng hô 'mình' hoặc 'lớp tớ' về bức ảnh này. Gợi ý 1: Vui vẻ. Gợi ý 2: Ý nghĩa. Gợi ý 3: Hài hước. Mỗi gợi ý 1 dòng gạch đầu dòng."; 
+    
     let description = ""; 
-    if(!isTrash) { const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI gợi ý caption):"); if(d === null) return; description = d; } 
-    document.getElementById('upload-loading-text').innerText = isTrash ? "AI đang soi rác..." : "AI đang viết caption..."; document.getElementById('upload-overlay').style.display='flex'; 
+    if(!isTrash && !isPlant) { const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI gợi ý caption):"); if(d === null) return; description = d; } 
+    
+    let loadingText = "AI đang viết caption...";
+    if(isTrash) loadingText = "AI đang soi rác...";
+    if(isPlant) loadingText = "Bác sĩ cây đang chẩn đoán...";
+
+    document.getElementById('upload-loading-text').innerText = loadingText; document.getElementById('upload-overlay').style.display='flex'; 
     try { 
         const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
         const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); 
         if(j.secure_url) { 
-            if(isTrash || !description) { 
-                try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); if(isTrash) { alert(`🤖 AI Kết luận:\n${aiResult}`); description = aiResult; } else { description = aiResult; } } catch(err) { console.error(err); if(isTrash) alert("AI lỗi, không thể phân loại."); } 
+            if(isTrash || isPlant || !description) { 
+                try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); 
+                    if(isTrash) { alert(`🤖 AI Kết luận:\n${aiResult}`); description = aiResult; } 
+                    else if(isPlant) { alert(`🌿 Bác sĩ cây chẩn đoán:\n${aiResult}`); description = aiResult; }
+                    else { description = aiResult; } 
+                } catch(err) { console.error(err); if(isTrash || isPlant) alert("AI lỗi, không thể phân tích."); } 
             } 
             await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: description || "Không có mô tả", uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, type: window.uploadMode, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
-            if(!isTrash) alert("Đăng ảnh thành công!\n(AI đã tự viết caption cho bạn nếu bạn để trống)"); 
+            if(!isTrash && !isPlant) alert("Đăng ảnh thành công!\n(AI đã tự viết caption cho bạn nếu bạn để trống)"); 
         } 
     } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } 
     document.getElementById('upload-overlay').style.display='none'; i.value=""; 
@@ -546,6 +560,7 @@ function renderGrid(col, elId, uR, cR) {
             let badge = "";
             if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
             else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
+            else if(d.type === 'plant') badge = `<span style="position:absolute; top:10px; left:10px; background:#4caf50; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Bác sĩ cây</span>`;
             
             // LAZY LOADING + OPTIMIZED URL
             // Load ảnh siêu nhỏ (w=50) làm placeholder, ảnh thật (w=400) để trong data-src
@@ -614,12 +629,17 @@ async function updateFeaturedUI() {
             document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH";
             document.getElementById('feat-desc').innerText = topPost.desc;
             document.getElementById('feat-author').innerText = "— " + topPost.authorName;
-            if (currentUser && topPost.uid === currentUser.uid) triggerFireworks();
+            if (currentUser && topPost.uid === currentUser.uid) {
+                if (topPost.id !== lastTopPostId) triggerFireworks();
+            }
+            lastTopPostId = topPost.id;
         } else {
             featSection.style.display = 'none';
+            lastTopPostId = null;
         }
     } else {
         featSection.style.display = 'none';
+        lastTopPostId = null;
     }
 }
 
