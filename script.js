@@ -513,9 +513,14 @@ window.executeUpload = async (i) => {
         if(j.secure_url) { 
             if(isTrash || isPlant || !description) { 
                 try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); 
-                    if(isTrash) { alert(`🤖 AI Kết luận:\n${aiResult}`); description = aiResult; } 
-                    else if(isPlant) { alert(`🌿 Bác sĩ cây chẩn đoán:\n${aiResult}`); description = aiResult; }
-                    else { description = aiResult; } 
+                    
+                    // Clean * for Alert, Format HTML for Caption
+                    const cleanResult = aiResult.replace(/\*\*\*(.*?)\*\*\*/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
+                    const formattedResult = aiResult.replace(/\*\*\*(.*?)\*\*\*/g, '<b><i>$1</i></b>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
+
+                    if(isTrash) { alert(`🤖 AI Kết luận:\n${cleanResult}`); description = formattedResult; } 
+                    else if(isPlant) { alert(`🌿 Bác sĩ cây chẩn đoán:\n${cleanResult}`); description = formattedResult; }
+                    else { description = formattedResult; } 
                 } catch(err) { console.error(err); if(isTrash || isPlant) alert("AI lỗi, không thể phân tích."); } 
             } 
             await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: description || "Không có mô tả", uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, type: window.uploadMode, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
@@ -680,7 +685,7 @@ window.openLightbox = async (c, i) => {
     const isAdm = d.className === 'Admin' || d.authorName === 'Admin_xinhxinh';
     nameEl.innerHTML = d.authorName + (isAdm ? ' <i class="fas fa-check-circle" style="color:#2e7d32; margin-left:5px;" title="Admin"></i>' : '');
     nameEl.style.color = isAdm ? '#d32f2f' : ''; nameEl.style.fontWeight = isAdm ? 'bold' : '';
-    document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerText=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
+    document.getElementById('lb-custom-id').innerText=d.authorID || ""; document.getElementById('lb-desc').innerHTML=d.desc; document.getElementById('lb-like-count').innerText=d.likes?d.likes.length:0; 
     const btn = document.getElementById('lb-like-btn'); 
     if(currentUser && d.likes?.includes(currentUser.uid)) { btn.classList.add('liked'); btn.style.color='#e53935'; } else { btn.classList.remove('liked'); btn.style.color='var(--text-sec)'; } 
     const controls = document.getElementById('lb-owner-controls');
@@ -738,7 +743,7 @@ window.unpinPost = async () => {
 }
 
 window.deletePostFromLB = async () => { if(confirm("Bạn chắc chắn muốn xóa bài viết này chứ?")) { await deleteDoc(doc(db, currentCollection, currentImgId)); closeLightbox(); alert("Đã xóa bài viết!"); } }
-window.editPostFromLB = async () => { const newDesc = prompt("Nhập mô tả mới:"); if(newDesc) { await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc }); document.getElementById('lb-desc').innerText = newDesc; } }
+window.editPostFromLB = async () => { const newDesc = prompt("Nhập mô tả mới:"); if(newDesc) { await updateDoc(doc(db, currentCollection, currentImgId), { desc: newDesc }); document.getElementById('lb-desc').innerHTML = newDesc; } }
 
 window.handleLike = async () => { 
     if(!currentUser) return alert("Vui lòng đăng nhập để thả tim!"); 
