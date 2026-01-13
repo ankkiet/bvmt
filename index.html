@@ -151,6 +151,17 @@
         <div onclick="setEffectMode('off')">🚫 Tắt hiệu ứng</div>
     </div>
 
+    <!-- GEMINI LIVE OVERLAY UI -->
+    <div id="gemini-live-overlay">
+        <div class="live-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" class="live-logo">
+            <span>Green Bot Live</span>
+        </div>
+        <canvas id="live-canvas"></canvas>
+        <div id="live-status">Đang nghe...</div>
+        <button class="btn-live-close" onclick="window.stopGeminiLive()"><i class="fas fa-times"></i></button>
+    </div>
+
     <nav class="pc-nav">
         <ul>
             <li><a href="#home" id="menu-pc-home">Trang Chủ</a></li>

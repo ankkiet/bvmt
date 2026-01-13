@@ -1,6 +1,7 @@
 // e:\A2K41_WEB\web sịn hahahhhahahaha\bvmt\modules\ai.js
 
-import { AI_MODELS } from './constants.js';
+import { AI_MODELS, WEBSOCKET_URL, MODEL_NAME } from './constants.js';
+import { downsampleBuffer, floatTo16BitPCM, base64ToArrayBuffer } from './utils.js';
 import { db, doc, updateDoc, setDoc, increment } from './firebase.js';
 
 /**
@@ -91,4 +92,99 @@ async function typeNode(parent, node, speed) {
         if (node.tagName === 'BR') await new Promise(r => setTimeout(r, speed));
         for (const child of Array.from(node.childNodes)) await typeNode(el, child, speed);
     }
+}
+
+// --- GEMINI LIVE (WEBSOCKET) ---
+let audioContext = null;
+let mediaStream = null;
+let processor = null;
+
+export function connectToGemini(apiKey, onAudioReceived, onClose) {
+    const url = `${WEBSOCKET_URL}?key=${apiKey}`;
+    const ws = new WebSocket(url);
+
+    ws.onopen = () => {
+        console.log("Connected to Gemini Live");
+        const setupMsg = {
+            setup: {
+                model: MODEL_NAME,
+                generation_config: { response_modalities: ["AUDIO"] },
+                system_instruction: { parts: [{ text: "Bạn là trợ lý ảo nói tiếng Việt" }] }
+            }
+        };
+        ws.send(JSON.stringify(setupMsg));
+    };
+
+    ws.onmessage = async (event) => {
+        try {
+            let data;
+            if (event.data instanceof Blob) {
+                data = JSON.parse(await event.data.text());
+            } else {
+                data = JSON.parse(event.data);
+            }
+
+            if (data.serverContent?.modelTurn?.parts) {
+                for (const part of data.serverContent.modelTurn.parts) {
+                    if (part.inlineData?.mimeType?.startsWith('audio/pcm')) {
+                        const audioData = base64ToArrayBuffer(part.inlineData.data);
+                        if (onAudioReceived) onAudioReceived(audioData);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Gemini WS Message Error:", e);
+        }
+    };
+
+    ws.onerror = (err) => console.error("Gemini WS Error:", err);
+    ws.onclose = () => {
+        if (onClose) onClose();
+    };
+
+    return ws;
+}
+
+export async function startRecording(wsInstance) {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(mediaStream);
+    processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+    processor.onaudioprocess = (e) => {
+        if (!wsInstance || wsInstance.readyState !== WebSocket.OPEN) return;
+        
+        const inputData = e.inputBuffer.getChannelData(0);
+        // Downsample về 16kHz
+        const downsampled = downsampleBuffer(inputData, audioContext.sampleRate, 16000);
+        // Convert sang PCM 16-bit
+        const pcm16 = floatTo16BitPCM(downsampled);
+        
+        // Convert sang Base64 để gửi
+        let binary = '';
+        const bytes = new Uint8Array(pcm16.buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+        const base64Audio = window.btoa(binary);
+
+        wsInstance.send(JSON.stringify({
+            realtime_input: {
+                media_chunks: [{
+                    mime_type: "audio/pcm",
+                    data: base64Audio
+                }]
+            }
+        }));
+    };
+
+    source.connect(processor);
+    processor.connect(audioContext.destination);
+
+    return { audioContext, source, mediaStream };
+}
+
+export function stopRecording() {
+    if (processor) { processor.disconnect(); processor = null; }
+    if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+    if (audioContext) { audioContext.close(); audioContext = null; }
 }

@@ -12,6 +12,10 @@ export const BOT_IMAGES = {
     "admin": "https://cdn-icons-png.flaticon.com/512/2942/2942813.png"
 };
 
+export const API_KEY = ""; // Sẽ được lấy động từ script.js
+export const WEBSOCKET_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent";
+export const MODEL_NAME = "models/gemini-2.5-flash-native-audio-dialog";
+
 export const AI_MODELS = {
     main: "gemini-2.5-flash",
     voice: "gemini-2.5-flash-native-audio-dialog",
