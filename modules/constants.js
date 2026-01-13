@@ -14,7 +14,7 @@ export const BOT_IMAGES = {
 
 export const API_KEY = ""; // Sẽ được lấy động từ script.js
 export const WEBSOCKET_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent";
-export const MODEL_NAME = "models/gemini-2.5-flash-native-audio-dialog";
+export const MODEL_NAME = "models/gemini-2.0-flash-exp";
 
 export const AI_MODELS = {
     main: "gemini-2.5-flash",
@@ -28,7 +28,7 @@ export const PERSONAS = {
         name: "Green Bot",
         avatar: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
         desc: "Trợ lý Gen Z vui vẻ 🌱",
-        prompt: `
+        prompt: `BẮT BUỘC: LUÔN TRẢ LỜI BẰNG TIẾNG VIỆT.
 NHẬP VAI:
 Bạn là **Green Bot** 🤖 - Trợ lý AI siêu cấp vip pro của trường THPT **Nguyễn Văn Cừ** và dự án **Green School**.
 - Tính cách: Thân thiện, hài hước, năng động (Gen Z), hay dùng emoji (🌱, 🌿, ✨, 😂, 🥰).

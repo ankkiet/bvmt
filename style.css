@@ -603,6 +603,28 @@ body.dark-mode #gemini-live-overlay { background: rgba(18, 18, 18, 0.98); }
     height: 24px; /* Giữ chỗ tránh nhảy layout */
 }
 
+#btn-live-interrupt {
+    margin-top: 20px;
+    padding: 10px 25px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: none; /* Ẩn mặc định */
+    align-items: center; gap: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.2s;
+    z-index: 10;
+}
+#btn-live-interrupt:hover {
+    background: #ffebee;
+    color: #d32f2f;
+    border-color: #d32f2f;
+    transform: scale(1.05);
+}
+
 .btn-live-close {
     position: absolute; bottom: 50px;
     width: 70px; height: 70px; border-radius: 50%;
@@ -613,3 +635,37 @@ body.dark-mode #gemini-live-overlay { background: rgba(18, 18, 18, 0.98); }
     transition: transform 0.2s;
 }
 .btn-live-close:active { transform: scale(0.9); }
+
+/* --- CSS VISUALIZER FOR HYBRID LIVE --- */
+.live-visualizer-css {
+    width: 100%;
+    max-width: 300px;
+    height: 300px; /* Giữ chiều cao tương tự canvas */
+    display: none; /* Ẩn ban đầu */
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+.live-visualizer-css.speaking {
+    display: flex; /* Hiện khi đang nói */
+}
+.live-visualizer-css .bar {
+    width: 15px;
+    height: 10px;
+    background: var(--primary);
+    border-radius: 8px;
+    animation: speaking-anim 1.2s infinite ease-in-out;
+}
+
+/* Hiệu ứng động cho các thanh */
+@keyframes speaking-anim {
+    0%, 100% { height: 10px; opacity: 0.5; }
+    50% { height: 120px; opacity: 1; }
+}
+
+/* Tạo độ trễ khác nhau cho mỗi thanh để tạo hiệu ứng lượn sóng */
+.live-visualizer-css .bar:nth-child(1) { animation-delay: 0s; }
+.live-visualizer-css .bar:nth-child(2) { animation-delay: 0.2s; }
+.live-visualizer-css .bar:nth-child(3) { animation-delay: 0.4s; }
+.live-visualizer-css .bar:nth-child(4) { animation-delay: 0.1s; }
+.live-visualizer-css .bar:nth-child(5) { animation-delay: 0.3s; }

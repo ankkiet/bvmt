@@ -1,7 +1,7 @@
 // IMPORT TỪ CÁC MODULES
 import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit } from './modules/firebase.js';
 import { CLOUD_NAME, UPLOAD_PRESET, ADMIN_EMAILS, BOT_IMAGES, AI_MODELS, PERSONAS } from './modules/constants.js';
-import { Utils, fileToBase64, optimizeUrl, getYoutubeID } from './modules/utils.js';
+import { Utils, fileToBase64, optimizeUrl, getYoutubeID, speakText, listenOnce } from './modules/utils.js';
 import { callGeminiAPI, typeWriterEffect, connectToGemini, startRecording, stopRecording } from './modules/ai.js';
 
 let dynamicAdminEmails = [...ADMIN_EMAILS]; // Sử dụng biến động cho Admin
@@ -1318,189 +1318,149 @@ window.fixOldData = async () => {
     location.reload();
 }
 
-// --- GEMINI LIVE API (WEBSOCKET STREAMING) ---
-let liveSocket = null, playbackContext = null, nextPlayTime = 0, micAnalyser = null, aiAnalyser = null, visualizerFrame = null;
+// --- GEMINI LIVE API (HYBRID MODE: STT -> API -> TTS) ---
+let isLiveMode = false;
+let currentRecognition = null;
 
-window.toggleGeminiLive = async () => {
+window.toggleGeminiLive = () => {
     const btn = document.getElementById('btn-live-mode');
-    if (liveSocket && liveSocket.readyState === WebSocket.OPEN) {
-        window.stopGeminiLive();
-        return;
+    
+    if (isLiveMode) {
+        // TẮT LIVE
+        isLiveMode = false;
+        window.speechSynthesis.cancel(); // Dừng đọc ngay lập tức
+        if (currentRecognition) {
+            try { currentRecognition.stop(); } catch(e){}
+        }
+        
+        if(btn) {
+            btn.classList.remove('listening');
+            btn.innerHTML = '<i class="fas fa-broadcast-tower"></i>';
+            btn.title = "Chế độ Live (Realtime)";
+        }
+        document.getElementById('ai-input').placeholder = "Hỏi Green Bot bất cứ điều gì...";
+        
+        // Ẩn giao diện Overlay
+        const overlay = document.getElementById('gemini-live-overlay');
+        if(overlay) overlay.style.display = 'none';
+        
+    } else {
+        // BẬT LIVE
+        isLiveMode = true;
+        
+        if(btn) {
+            btn.classList.add('listening');
+            btn.innerHTML = '<i class="fas fa-stop"></i>';
+            btn.title = "Dừng Live";
+        }
+        
+        // Hiển thị giao diện Overlay
+        const overlay = document.getElementById('gemini-live-overlay');
+        if(overlay) {
+            overlay.style.display = 'flex';
+            // Reset trạng thái UI
+            updateLiveStatus("Đang khởi động...");
+        }
+
+        // Tự động chào người dùng bằng giọng nói
+        const name = currentUser ? currentUser.displayName.split(' ').pop() : "bạn";
+        const greeting = `Chào ${name}, tớ có thể giúp gì cho cậu?`;
+
+        updateLiveStatus("Green Bot đang nói...");
+        speakText(greeting, () => {
+            if (isLiveMode) runLiveLoop();
+        });
     }
-    
-    if(btn) btn.classList.add('listening'); 
-    document.getElementById('ai-input').placeholder = "Đang kết nối Gemini Live...";
-    
-    const apiKey = aiKeys[0]?.val;
-    if (!apiKey) { alert("Chưa có API Key!"); window.stopGeminiLive(); return; }
-
-    try {
-        // Khởi tạo AudioContext cho việc phát lại (Playback)
-        playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-
-        // Kết nối WebSocket thông qua module ai.js
-        liveSocket = connectToGemini(
-            apiKey, 
-            (audioData) => handleAudioReceived(audioData), // Callback khi nhận âm thanh
-            () => window.stopGeminiLive() // Callback khi đóng
-        );
-
-        // Đợi kết nối mở thì bắt đầu thu âm
-        liveSocket.onopen = async () => {
-            console.log("WS Connected via Module");
-            // Gửi tin nhắn setup đã được xử lý trong connectToGemini
-            const { audioContext, source } = await startRecording(liveSocket);
-            
-            // 1. Setup Visualizer cho Micro (Input)
-            micAnalyser = audioContext.createAnalyser();
-            micAnalyser.fftSize = 256;
-            source.connect(micAnalyser);
-
-            // 2. Setup Visualizer cho AI (Output) - Khởi tạo trước context
-            if(!playbackContext) playbackContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-            aiAnalyser = playbackContext.createAnalyser();
-            aiAnalyser.fftSize = 256;
-
-            showLiveOverlay(); // Hiển thị giao diện
-        };
-
-    } catch (e) {
-        console.error("Live Error:", e);
-        alert("Không thể kết nối Gemini Live: " + e.message);
-        window.stopGeminiLive();
-    }
-}
-
-function handleAudioReceived(arrayBuffer) {
-    if (!playbackContext) return;
-    
-    const int16 = new Int16Array(arrayBuffer);
-    const float32 = new Float32Array(int16.length);
-    for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768.0;
-
-    const buffer = playbackContext.createBuffer(1, float32.length, 24000); // Gemini Live trả về 24kHz
-    buffer.getChannelData(0).set(float32);
-    
-    const source = playbackContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(playbackContext.destination);
-    
-    // Kết nối vào Analyser để vẽ sóng khi AI nói
-    if(aiAnalyser) source.connect(aiAnalyser);
-    
-    const now = playbackContext.currentTime;
-    if (nextPlayTime < now) nextPlayTime = now;
-    source.start(nextPlayTime);
-    nextPlayTime += buffer.duration;
-    
-    updateLiveStatus("Green Bot đang nói...");
-    source.onended = () => updateLiveStatus("Đang nghe bạn nói...");
 }
 
 window.stopGeminiLive = () => {
-    if (liveSocket) { liveSocket.close(); liveSocket = null; }
-    stopRecording(); // Dừng thu âm từ module ai.js
-    if (playbackContext) { playbackContext.close(); playbackContext = null; }
-    if (visualizerFrame) cancelAnimationFrame(visualizerFrame);
-    
-    const btn = document.getElementById('btn-live-mode');
-    if(btn) btn.classList.remove('listening');
-    document.getElementById('ai-input').placeholder = "Hỏi Green Bot bất cứ điều gì...";
-    
-    // Ẩn giao diện
-    document.getElementById('gemini-live-overlay').style.display = 'none';
+    if (isLiveMode) window.toggleGeminiLive();
+    else {
+        const overlay = document.getElementById('gemini-live-overlay');
+        if(overlay) overlay.style.display = 'none';
+    }
 }
 
-// --- VISUALIZER LOGIC (SÓNG ÂM 2 BÊN) ---
-function showLiveOverlay() {
-    const overlay = document.getElementById('gemini-live-overlay');
-    overlay.style.display = 'flex';
-    drawGeminiVisualizer();
+window.interruptGemini = () => {
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel(); // Ngắt giọng đọc -> onEnd sẽ kích hoạt runLiveLoop lại
+    }
+}
+
+async function runLiveLoop() {
+    if (!isLiveMode) return;
+
+    updateLiveStatus("Đang nghe bạn nói...");
+    let hasSpeech = false;
+
+    currentRecognition = listenOnce(
+        // B1: Khi có kết quả giọng nói
+        async (text) => {
+            hasSpeech = true;
+            if (!isLiveMode) return;
+
+            updateLiveStatus("Đang suy nghĩ...");
+            document.getElementById('ai-input').value = text; // Hiển thị text để user biết
+
+            try {
+                // B2: Gọi API Gemini (dùng model 'voice' hoặc 'main')
+                const response = await callGeminiAPI(text, null, true, 'voice', aiKeys, chatHistory);
+                
+                if (!isLiveMode) return;
+
+                updateLiveStatus("Green Bot đang nói...");
+                
+                // B3: Đọc phản hồi
+                speakText(response, () => {
+                    // B4: Đọc xong -> Tự động lặp lại vòng nghe
+                    if (isLiveMode) runLiveLoop();
+                });
+
+            } catch (e) {
+                console.error("Lỗi Live Loop:", e);
+                speakText("Xin lỗi, mình gặp chút trục trặc.", () => {
+                    if (isLiveMode) runLiveLoop();
+                });
+            }
+        },
+        // Khi kết thúc phiên nghe (onEnd)
+        () => {
+            // Nếu kết thúc mà không có giọng nói (im lặng) -> Tự động nghe lại
+            if (!hasSpeech && isLiveMode) {
+                setTimeout(() => runLiveLoop(), 500);
+            }
+        }
+    );
 }
 
 function updateLiveStatus(text) {
     const el = document.getElementById('live-status');
     if(el) el.innerText = text;
-}
-
-function drawGeminiVisualizer() {
-    const canvas = document.getElementById('live-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const input = document.getElementById('ai-input');
+    if(input) input.placeholder = text;
     
-    // Resize canvas cho sắc nét
-    canvas.width = canvas.clientWidth * 2;
-    canvas.height = canvas.clientHeight * 2;
+    // Điều khiển hiển thị giữa Canvas (chờ) và Visualizer (nói)
+    const canvas = document.getElementById('live-canvas');
+    const visualizer = document.getElementById('live-visualizer-css');
+    const interruptBtn = document.getElementById('btn-live-interrupt');
 
-    const bufferLength = micAnalyser ? micAnalyser.frequencyBinCount : 32;
-    const micData = new Uint8Array(bufferLength);
-    const aiData = new Uint8Array(bufferLength);
-
-    const draw = () => {
-        if (!liveSocket) return;
-        visualizerFrame = requestAnimationFrame(draw);
-
-        if(micAnalyser) micAnalyser.getByteFrequencyData(micData);
-        if(aiAnalyser) aiAnalyser.getByteFrequencyData(aiData);
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        // Tính toán độ rộng bar dựa trên số lượng phần tử (bỏ bớt các tần số quá cao ít dùng)
-        const usableLength = Math.floor(bufferLength * 0.7); 
-        const barWidth = (canvas.width / usableLength) * 0.6; 
-        const gap = barWidth * 0.5;
-
-        for (let i = 0; i < usableLength; i++) {
-            // Kết hợp dữ liệu: Nếu AI nói thì lấy AI, nếu không thì lấy Mic (để tạo hiệu ứng đối thoại)
-            const micVal = micData[i] || 0;
-            const aiVal = aiData[i] || 0;
-            
-            // Lấy giá trị lớn nhất giữa Mic và AI để sóng nhảy dù ai đang nói
-            // Thêm một chút giá trị ngẫu nhiên nhỏ (noise) để sóng luôn "thở" nhẹ khi im lặng
-            let value = Math.max(micVal, aiVal); 
-            if (value < 5) value = Math.random() * 5; 
-
-            // Chiều cao sóng: Tăng cường độ nhạy
-            const barHeight = (value / 255) * (canvas.height * 0.7) + 10; // +10 để luôn hiện chấm tròn nhỏ
-            
-            // MÀU SẮC: Xanh da trời (Gemini Live Style)
-            // Gradient từ Xanh đậm (chân) -> Xanh sáng (đỉnh)
-            // Google Blue: #4285F4 (66, 133, 244) -> Cyan: #00E5FF (0, 229, 255)
-            
-            // Tính độ đậm nhạt dựa trên chiều cao sóng
-            const intensity = value / 255;
-            const r = 66 - (intensity * 60); // Giảm đỏ để xanh hơn
-            const g = 133 + (intensity * 80); // Tăng xanh lá để ra màu Cyan
-            const b = 244; // Giữ nguyên xanh dương
-
-            ctx.fillStyle = `rgb(${Math.round(r)}, ${Math.round(g)}, ${b})`;
-            
-            // Vẽ đối xứng từ tâm ra 2 bên
-            const xRight = centerX + (i * (barWidth + gap));
-            const xLeft = centerX - (i * (barWidth + gap)) - (barWidth + gap);
-            
-            // Vẽ thanh bo tròn
-            roundRect(ctx, xRight, centerY - barHeight / 2, barWidth, barHeight, barWidth/2);
-            roundRect(ctx, xLeft, centerY - barHeight / 2, barWidth, barHeight, barWidth/2);
+    if (text === "Green Bot đang nói...") {
+        if (canvas) canvas.style.display = 'none';
+        if (visualizer) visualizer.classList.add('speaking');
+        if (interruptBtn) interruptBtn.style.display = 'flex';
+    } else {
+        if (visualizer) visualizer.classList.remove('speaking');
+        if (interruptBtn) interruptBtn.style.display = 'none';
+        if (canvas) {
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "#2e7d32";
+            ctx.textAlign = "center";
+            ctx.fillText("🎙️ Hybrid Live Mode", canvas.width/2, canvas.height/2);
         }
-    };
-    draw();
-}
-
-// Hàm vẽ hình chữ nhật bo tròn
-function roundRect(ctx, x, y, w, h, r) {
-    if (w < 2 * r) r = w / 2;
-    if (h < 2 * r) r = h / 2;
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-    ctx.fill();
+    }
 }
 
 // Tự động thêm nút Live vào giao diện Chatbot

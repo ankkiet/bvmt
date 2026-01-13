@@ -14,9 +14,26 @@ import { db, doc, updateDoc, setDoc, increment } from './firebase.js';
  * @param {Array} chatHistory - Mảng lịch sử chat (sẽ được sửa trực tiếp)
  */
 export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, aiKeys, chatHistory) {
-    let requestContents;
+    // Ép buộc nhắc nhở Tiếng Việt vào prompt
+    if (prompt) {
+        prompt = "(Trả lời bằng Tiếng Việt): " + prompt;
+    }
 
+    let requestContents;
     if (useHistory) {
+        // Nếu có prompt (Live Mode), thêm vào history
+        if (prompt) {
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+        } 
+        // Nếu prompt null (Chat Mode), chèn nhắc nhở vào tin nhắn cuối cùng trong history
+        else if (chatHistory.length > 0) {
+            const lastMsg = chatHistory[chatHistory.length - 1];
+            if (lastMsg.role === 'user' && lastMsg.parts?.[0]?.text) {
+                if (!lastMsg.parts[0].text.startsWith("(Trả lời bằng Tiếng Việt):")) {
+                    lastMsg.parts[0].text = "(Trả lời bằng Tiếng Việt): " + lastMsg.parts[0].text;
+                }
+            }
+        }
         requestContents = chatHistory;
     } else {
         const parts = [];
@@ -99,7 +116,7 @@ let audioContext = null;
 let mediaStream = null;
 let processor = null;
 
-export function connectToGemini(apiKey, onAudioReceived, onClose) {
+export function connectToGemini(apiKey, onAudioReceived, onClose, onConnected) {
     const url = `${WEBSOCKET_URL}?key=${apiKey}`;
     const ws = new WebSocket(url);
 
@@ -108,11 +125,20 @@ export function connectToGemini(apiKey, onAudioReceived, onClose) {
         const setupMsg = {
             setup: {
                 model: MODEL_NAME,
-                generation_config: { response_modalities: ["AUDIO"] },
-                system_instruction: { parts: [{ text: "Bạn là trợ lý ảo nói tiếng Việt" }] }
+                generation_config: { 
+                    response_modalities: ["AUDIO"],
+                    speech_config: {
+                        voice_config: {
+                            prebuilt_voice_config: {
+                                voice_name: "Kore"
+                            }
+                        }
+                    }
+                    }
             }
         };
         ws.send(JSON.stringify(setupMsg));
+        if (onConnected) onConnected();
     };
 
     ws.onmessage = async (event) => {

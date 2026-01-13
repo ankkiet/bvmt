@@ -62,6 +62,68 @@ export function getYoutubeID(url) {
     return (match && match[2].length === 11) ? match[2] : url; 
 }
 
+// --- HYBRID LIVE UTILS ---
+
+export function speakText(text, onEnd) {
+    if (!window.speechSynthesis) {
+        console.error("Trình duyệt không hỗ trợ đọc văn bản.");
+        if (onEnd) onEnd();
+        return;
+    }
+    
+    window.speechSynthesis.cancel(); // Dừng các lượt đọc trước
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'vi-VN';
+    utterance.rate = 1.1; // Tốc độ nhanh hơn xíu cho tự nhiên
+
+    // Chọn giọng đọc ưu tiên: Google Tiếng Việt -> Microsoft -> Bất kỳ giọng Việt nào
+    const voices = window.speechSynthesis.getVoices();
+    let viVoice = voices.find(v => v.name === 'Google Tiếng Việt');
+    if (!viVoice) viVoice = voices.find(v => v.name.includes('Microsoft') && v.lang.includes('vi'));
+    if (!viVoice) viVoice = voices.find(v => v.lang.includes('vi'));
+
+    if (viVoice) {
+        utterance.voice = viVoice;
+        console.log("Đã chọn giọng đọc:", viVoice.name);
+    }
+
+    utterance.onend = () => { if (onEnd) onEnd(); };
+    utterance.onerror = (e) => { console.error("Lỗi đọc:", e); if (onEnd) onEnd(); };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+export function listenOnce(onResult, onEnd) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Trình duyệt không hỗ trợ nhận diện giọng nói.");
+        if (onEnd) onEnd();
+        return null;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'vi-VN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        if (onResult) onResult(text);
+    };
+
+    recognition.onend = () => { if (onEnd) onEnd(); };
+    recognition.onerror = (event) => { console.warn("Lỗi nhận diện:", event.error); };
+
+    try {
+        recognition.start();
+    } catch (e) {
+        console.error("Không thể bắt đầu thu âm:", e);
+        if (onEnd) onEnd();
+    }
+    return recognition;
+}
+
 // --- AUDIO UTILS FOR GEMINI LIVE ---
 
 export function downsampleBuffer(buffer, inputSampleRate, outputSampleRate) {
