@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nvc-green-v54-email-fix'; 
+const CACHE_NAME = 'nvc-green-v56-fix-white-screen'; 
 const STATIC_ASSETS = [
     './',
     './index.html',

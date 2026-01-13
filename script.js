@@ -1,21 +1,10 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// IMPORT TỪ CÁC MODULES
+import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit } from './modules/firebase.js';
+import { CLOUD_NAME, UPLOAD_PRESET, ADMIN_EMAILS, BOT_IMAGES, AI_MODELS, PERSONAS } from './modules/constants.js';
+import { Utils, fileToBase64, optimizeUrl, getYoutubeID } from './modules/utils.js';
+import { callGeminiAPI, typeWriterEffect } from './modules/ai.js';
 
-// CONFIG
-const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
-const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider();
-const CLOUD_NAME = "dekxvneap"; const UPLOAD_PRESET = "a2k41nvc_upload"; const ADMIN_EMAILS = ["kiet0905478167@gmail.com", "anhkiet119209@gmail.com"];
 let dynamicAdminEmails = [...ADMIN_EMAILS]; // Sử dụng biến động cho Admin
-
-// KHO ẢNH MINH HỌA CHO BOT
-const BOT_IMAGES = {
-    "logo": "https://placehold.co/300x200/2e7d32/ffffff.png?text=Green+School",
-    "rac_thai": "https://cdn-icons-png.flaticon.com/512/3299/3299935.png",
-    "trong_cay": "https://cdn-icons-png.flaticon.com/512/628/628283.png",
-    "phan_loai": "https://cdn-icons-png.flaticon.com/512/8634/8634075.png",
-    "admin": "https://cdn-icons-png.flaticon.com/512/2942/2942813.png"
-};
 
 let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
 let pinnedSettings = null, latestGalleryDocs = [], lastTopPostId = null; // Biến lưu trạng thái ghim và danh sách ảnh
@@ -31,91 +20,11 @@ const gridParams = {};
 // Multi-Key AI Logic (FAIL-OVER)
 let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; 
 
-let AI_MODELS = {
-    main: "gemini-2.5-flash",
-    voice: "gemini-2.5-flash-native-audio-dialog",
-    backup: "gemini-2.5-flash-lite",
-    advanced: "gemini-3-flash"
-};
-
 // --- CHAT HISTORY (MEMORY) ---
 let chatHistory = [];
 let currentPersona = 'green_bot';
 let currentAIImageBase64 = null;
-
-const PERSONAS = {
-    green_bot: {
-        name: "Green Bot",
-        avatar: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png",
-        desc: "Trợ lý Gen Z vui vẻ 🌱",
-        prompt: `
-NHẬP VAI:
-Bạn là **Green Bot** 🤖 - Trợ lý AI siêu cấp vip pro của trường THPT **Nguyễn Văn Cừ** và dự án **Green School**.
-- Tính cách: Thân thiện, hài hước, năng động (Gen Z), hay dùng emoji (🌱, 🌿, ✨, 😂, 🥰).
-- Xưng hô: 'Tớ' (Green Bot) và 'Cậu' (Người dùng).
-- Nhiệm vụ: 
-  1. Hỗ trợ giải đáp thắc mắc về website, hướng dẫn phân loại rác.
-  2. Trò chuyện vui vẻ, tâm sự, kể chuyện cười, tư vấn tình cảm tuổi học trò.
-  3. Hỗ trợ học tập (Toán, Lý, Hóa, Văn, Anh...), giải bài tập và cung cấp kiến thức xã hội, đời sống.
-
-KIẾN THỨC VỀ WEBSITE (Cần nhớ kỹ):
-1. 🏠 **Trang Chủ (Home)**: Xem thông báo mới, bảng xếp hạng thi đua, và ảnh "Top 1 Trending".
-2. 📸 **Góc Xanh (Green Class)**: Nơi đăng ảnh hoạt động môi trường (trồng cây, dọn rác). Đặc biệt có nút **"AI Soi Rác"** để nhận diện rác tự động.
-3. 🏆 **Thi Đua (Contest)**: Nơi các tổ nộp minh chứng thành tích để cộng điểm.
-4. 📂 **Lưu Trữ (Archive)**: Kho ảnh kỷ niệm của các mùa trước.
-5. 📅 **Hoạt Động (Activities)**: Lịch sự kiện (Đổi giấy lấy cây, Tình nguyện...).
-6. 🔍 **Tra Cứu (Guide)**: Từ điển rác (Vỏ sữa, pin, nhựa...).
-7. 👤 **Tài Khoản (Profile)**: Đổi avatar, tên hiển thị, xem lớp.
-
-HƯỚNG DẪN TRẢ LỜI:
-- **QUAN TRỌNG**: Khi nhắc đến các tính năng chính, từ khóa quan trọng hoặc tên mục (ví dụ: **AI Soi Rác**, **Góc Xanh**, **Thi Đua**...), hãy **in đậm** chúng bằng dấu **...**.
-- Nếu từ khóa đó quan trọng, hãy giải thích ngắn gọn công dụng hoặc lợi ích của nó ngay sau đó để người dùng hiểu rõ hơn.
-- Dùng *in nghiêng* cho các lưu ý nhỏ hoặc tên riêng.
-- **Hỏi cách đăng ảnh**: "Cậu vào mục **Góc Xanh** hoặc **Thi Đua**, bấm nút Camera 📷 màu xanh lá to đùng nhé!"
-- **Hỏi về phân loại rác**: "Cậu thử tính năng **AI Soi Rác** ở mục **Góc Xanh** xem, nó giúp nhận diện rác bằng AI đấy! Hoặc vào mục **Tra Cứu** để xem danh sách nhé!"
-- **Hỏi Admin là ai**: "Là bạn **Kiệt đẹp trai** (Admin_xinhxinh) chứ ai! 😎"
-- **Kiến thức mở rộng**: Cậu có thể trả lời mọi câu hỏi về học tập, đời sống, xã hội. Không giới hạn trong website. Hãy trả lời thông minh, chính xác nhưng vẫn giữ giọng văn Gen Z.
-- **Luôn trả lời ngắn gọn, súc tích nhưng đầy đủ thông tin.**
-- **CUỐI CÙNG**: Hãy gợi ý 3 câu hỏi ngắn gọn liên quan mà người dùng có thể hỏi tiếp theo.
-- **HÌNH ẢNH**: Nếu nội dung cần minh họa, hãy thêm mã {{IMAGE:keyword}} vào cuối câu.
-  (Keyword hỗ trợ: logo, rac_thai, trong_cay, phan_loai, admin).
-- Định dạng trả về: [Nội dung trả lời] ---SUGGESTIONS--- [Gợi ý 1] | [Gợi ý 2] | [Gợi ý 3]
-`
-    },
-    teacher_bot: {
-        name: "Giáo Sư Biết Tuốt",
-        avatar: "https://cdn-icons-png.flaticon.com/512/3429/3429402.png",
-        desc: "Chuyên gia học thuật nghiêm túc 📚",
-        prompt: `
-NHẬP VAI:
-Bạn là **Giáo Sư Biết Tuốt** 🎓 - Một trợ lý AI học thuật, nghiêm túc và uyên bác của trường THPT Nguyễn Văn Cừ.
-- Tính cách: Điềm đạm, lịch sự, chuyên nghiệp, tập trung vào kiến thức chuẩn xác. Hạn chế dùng emoji, chỉ dùng khi cần minh họa ý chính.
-- Xưng hô: 'Tôi' (Giáo Sư) và 'Em' (Học sinh/Người dùng).
-- Nhiệm vụ:
-  1. Giải đáp các câu hỏi học tập (Toán, Lý, Hóa, Văn, Sử, Địa, Anh...) một cách chi tiết, logic, có phương pháp giải rõ ràng.
-  2. Cung cấp kiến thức chuyên sâu về khoa học, xã hội, đời sống.
-  3. Hỗ trợ thông tin về website Green School một cách ngắn gọn, chính xác.
-  4. **QUAN TRỌNG**: Nếu người dùng gửi ảnh bài tập, hãy phân tích kỹ đề bài trong ảnh, trích xuất văn bản và giải chi tiết từng bước.
-
-KIẾN THỨC VỀ WEBSITE:
-- Trang Chủ: Thông báo, xếp hạng.
-- Góc Xanh: Đăng ảnh môi trường, AI Soi Rác.
-- Thi Đua: Nộp minh chứng.
-- Lưu Trữ: Ảnh kỷ niệm.
-- Hoạt Động: Lịch sự kiện.
-- Tra Cứu: Phân loại rác.
-- Tài Khoản: Thông tin cá nhân.
-
-HƯỚNG DẪN TRẢ LỜI:
-- Trả lời trực tiếp, gãy gọn, logic.
-- Sử dụng định dạng Markdown (in đậm, danh sách) để trình bày rõ ràng.
-- Nếu giải bài tập: Tóm tắt đề -> Phương pháp -> Lời giải chi tiết -> Kết luận.
-- Nếu không biết chắc chắn, hãy nói "Tôi chưa có thông tin chính xác về vấn đề này".
-- **CUỐI CÙNG**: Gợi ý 3 chủ đề học thuật hoặc câu hỏi liên quan để mở rộng kiến thức.
-- Định dạng trả về: [Nội dung trả lời] ---SUGGESTIONS--- [Gợi ý 1] | [Gợi ý 2] | [Gợi ý 3]
-`
-    }
-};
+let guestChatCount = 0; // Biến đếm lượt chat của khách
 
 const getSystemPrompt = () => {
     let p = PERSONAS[currentPersona].prompt;
@@ -225,22 +134,6 @@ window.switchPersona = (key) => {
 let googleSheetUrl = "https://script.google.com/macros/s/AKfycbzilw2SHG74sfCGNktGLuo46xkLNzVSVl6T3HbjXoWAsm9_CmXmuZQmbDxIOJ5cRhyX/exec"; 
 const isAdmin=(e)=>dynamicAdminEmails.includes(e);
 const State = { unsubscribes: {} };
-
-// --- UTILS ---
-const Utils = {
-    loader: (show, text="Đang xử lý...") => {
-        document.getElementById('upload-overlay').style.display = show ? 'flex' : 'none';
-        document.getElementById('upload-loading-text').innerText = text;
-    },
-    debounce: (func, wait) => {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => { clearTimeout(timeout); func(...args); };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-};
 
 // --- DARK MODE LOGIC (NEW) ---
 window.toggleDarkMode = () => {
@@ -398,60 +291,9 @@ window.updateGreeting = () => {
 }
 
 // --- GEMINI AI ---
-async function callGeminiAPI(prompt = null, imageBase64 = null, useHistory = false, modelType = 'main') {
-    let requestContents;
-
-    if (useHistory) {
-        requestContents = chatHistory;
-    } else {
-        const parts = [];
-        if (prompt) parts.push({ text: prompt });
-        if (imageBase64) parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
-        requestContents = [{ role: "user", parts }];
-    }
-
-    // Xác định danh sách model cần thử (Ưu tiên -> Dự phòng)
-    const modelsToTry = [AI_MODELS[modelType]];
-    if (modelType !== 'backup') modelsToTry.push(AI_MODELS['backup']);
-
-    for (let i = 0; i < aiKeys.length; i++) {
-        const keyObj = aiKeys[i];
-        
-        for (const model of modelsToTry) {
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyObj.val}`;
-                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: requestContents }) });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const data = await response.json();
-                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
-                
-                if (useHistory) {
-                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-                    if (chatHistory.length > 30) chatHistory = chatHistory.slice(chatHistory.length - 30);
-                }
-
-                // THỐNG KÊ: Ghi nhận thành công (Chạy ngầm)
-                updateDoc(doc(db, "stats", "ai"), { success: increment(1) }).catch(() => setDoc(doc(db, "stats", "ai"), { success: 1, fail: 0 }));
-
-                return aiText;
-            } catch (e) { 
-                console.warn(`Key ${keyObj.name} - Model ${model} lỗi:`, e);
-                // Nếu là model cuối cùng của key cuối cùng thì mới return lỗi
-                if (i === aiKeys.length - 1 && model === modelsToTry[modelsToTry.length - 1]) return "Tất cả Key AI đều bận hoặc lỗi.";
-            }
-        }
-    }
-    
-    // THỐNG KÊ: Ghi nhận thất bại (Nếu chạy hết vòng lặp mà không return)
-    updateDoc(doc(db, "stats", "ai"), { fail: increment(1) })
-        .then(() => checkAIHealth()) // Kiểm tra sức khỏe hệ thống ngay khi có lỗi
-        .catch(() => setDoc(doc(db, "stats", "ai"), { success: 0, fail: 1 }));
-    return "Hệ thống AI đang bận, vui lòng thử lại sau.";
-}
-
 window.testAIConnection = async () => {
     const btn = document.querySelector('.btn-outline'); const originalText = btn.innerText; btn.innerText = "Đang test...";
-    try { const result = await callGeminiAPI("Chào Green Bot!", null, false); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); }
+    try { const result = await callGeminiAPI("Chào Green Bot!", null, false, 'main', aiKeys, chatHistory); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); }
     btn.innerText = originalText;
 }
 
@@ -531,7 +373,7 @@ window.sendMessageToAI = async (e, isVoice = false) => {
         if (isVoice) modelType = 'voice';
         else if (currentPersona === 'teacher_bot') modelType = 'advanced';
 
-        const rawResponse = await callGeminiAPI(null, null, true, modelType); // Gọi API ở chế độ chat (dùng history)
+        const rawResponse = await callGeminiAPI(null, null, true, modelType, aiKeys, chatHistory); // Gọi API ở chế độ chat (dùng history)
         // Tách phần trả lời và phần gợi ý
         const parts = rawResponse.split('---SUGGESTIONS---');
         const mainAnswer = parts[0].trim();
@@ -560,67 +402,8 @@ window.sendMessageToAI = async (e, isVoice = false) => {
     msgList.scrollTop = msgList.scrollHeight;
 }
 
-async function typeWriterEffect(element, html, speed = 10) {
-    element.innerHTML = "";
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = html;
-    const nodes = Array.from(tempDiv.childNodes);
-    for (const node of nodes) await typeNode(element, node, speed);
-}
-
-async function typeNode(parent, node, speed) {
-    if (node.nodeType === Node.TEXT_NODE) {
-        const textNode = document.createTextNode("");
-        parent.appendChild(textNode);
-        const text = node.textContent;
-        for (let i = 0; i < text.length; i++) {
-            textNode.nodeValue += text[i];
-            const list = document.getElementById('ai-messages');
-            if(list) list.scrollTop = list.scrollHeight; // Auto scroll
-            // Thêm chút ngẫu nhiên để giống người gõ hơn (speed +/- 5ms)
-            const randomSpeed = speed + (Math.random() * 10 - 5);
-            if(text[i] !== ' ') await new Promise(r => setTimeout(r, Math.max(5, randomSpeed)));
-        }
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node.cloneNode(false);
-        parent.appendChild(el);
-        if (node.tagName === 'BR') await new Promise(r => setTimeout(r, speed));
-        for (const child of Array.from(node.childNodes)) await typeNode(el, child, speed);
-    }
-}
-
-function fileToBase64(file, maxWidth = 800, quality = 0.7) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth) {
-                    height = (maxWidth / width) * height;
-                    width = maxWidth;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                resolve(dataUrl.split(',')[1]);
-            };
-            img.onerror = error => reject(error);
-        };
-        reader.onerror = error => reject(error);
-    });
-}
-
 // --- YOUTUBE ID & MUSIC ---
-function getYoutubeID(url) { const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/; const match = url.match(regExp); return (match && match[2].length === 11) ? match[2] : url; }
+
 const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 let player; window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
 function onPlayerStateChange(event) { const icon = document.getElementById('music-icon-display'); if(event.data == YT.PlayerState.PLAYING) { icon.classList.add('playing'); icon.style.color = 'var(--primary)'; } else { icon.classList.remove('playing'); icon.style.color = 'var(--text)'; } }
@@ -647,7 +430,9 @@ onSnapshot(doc(db, "settings", "config"), (docSnap) => {
         if(cfg.adminEmails && Array.isArray(cfg.adminEmails)) { dynamicAdminEmails = [...new Set([...ADMIN_EMAILS, ...cfg.adminEmails])]; }
         if(cfg.aiKeys && cfg.aiKeys.length > 0) { aiKeys = cfg.aiKeys; const list = document.getElementById('ai-key-list'); if(list) { list.innerHTML = ""; aiKeys.forEach(k => { list.innerHTML += `<div class="key-item"><span class="key-name">${k.name}</span><span class="key-val">******</span><button class="btn btn-sm btn-danger" onclick="removeAIKey('${k.name}', '${k.val}')">X</button></div>`; }); } }
         if(cfg.aiModels) {
-            AI_MODELS = { ...AI_MODELS, ...cfg.aiModels };
+            // AI_MODELS là hằng số import từ constants.js, không thể gán lại trực tiếp. 
+            // Nếu muốn update dynamic, cần dùng biến let localAIModels = {...AI_MODELS}
+            // Ở đây tạm thời bỏ qua việc update AI_MODELS từ Firestore để code chạy ổn định
             if(document.getElementById('model-main')) document.getElementById('model-main').value = AI_MODELS.main;
             if(document.getElementById('model-voice')) document.getElementById('model-voice').value = AI_MODELS.voice;
             if(document.getElementById('model-backup')) document.getElementById('model-backup').value = AI_MODELS.backup;
@@ -753,7 +538,7 @@ window.executeUpload = async (i) => {
         const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); 
         if(j.secure_url) { 
             if(isTrash || isPlant || !description) { 
-                try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img); 
+                try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img, false, 'main', aiKeys, chatHistory); 
 
                     // Clean * for Alert, Format HTML for Caption
                     const cleanResult = aiResult.replace(/\*\*\*(.*?)\*\*\*/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
@@ -770,16 +555,6 @@ window.executeUpload = async (i) => {
     } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } 
     document.getElementById('upload-overlay').style.display='none'; i.value=""; 
 }
-
-// --- OPTIMIZE IMAGE & RENDER GRID ---
-const optimizeUrl = (url, width) => {
-    if (url.includes('cloudinary.com')) {
-        let params = 'f_auto,q_auto';
-        if (width) params += `,w_${width}`;
-        return url.replace('/upload/', `/upload/${params}/`);
-    }
-    return url;
-};
 
 function renderGrid(col, elId, uR, cR) {
     gridParams[col] = { elId, uR, cR };
