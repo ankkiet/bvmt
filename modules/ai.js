@@ -5,7 +5,7 @@ import { downsampleBuffer, floatTo16BitPCM, base64ToArrayBuffer } from './utils.
 import { db, doc, updateDoc, setDoc, increment } from './firebase.js';
 
 // URL Backend Python của bạn (Thay đổi khi deploy)
-const PYTHON_BACKEND_URL = "http://localhost:8000/api/chat";
+const PYTHON_BACKEND_URL = "https://bvmt-a5gi.onrender.com/api/chat";
 
 /**
  * Hàm gọi API Gemini
@@ -23,7 +23,8 @@ export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, 
             prompt: prompt || null,
             imageBase64: imageBase64 || null,
             history: useHistory ? chatHistory : [], // Gửi history hiện tại sang Python
-            modelType: modelType
+            modelType: modelType,
+            keys: aiKeys.map(k => k.val) // Gửi danh sách Key từ Admin Panel sang
         };
 
         // Nếu dùng history và có prompt mới, ta tạm thời push vào mảng local để UI hiển thị đúng
