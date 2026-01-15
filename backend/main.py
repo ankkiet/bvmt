@@ -45,14 +45,15 @@ MODEL_MAP = {
     "main": "gemini-2.0-flash",
     "voice": "gemini-2.0-flash",
     "backup": "gemini-1.5-flash",
-    "main": "gemini-1.5-flash",
-    "voice": "gemini-1.5-flash",
-    "backup": "gemini-1.5-flash-8b",
     "advanced": "gemini-1.5-pro"
 }
 
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
+    # Kiểm tra dữ liệu đầu vào để tránh lỗi "content argument must not be empty"
+    if not req.prompt and not req.imageBase64:
+        raise HTTPException(status_code=400, detail="Vui lòng nhập nội dung tin nhắn hoặc hình ảnh.")
+
     # Ưu tiên dùng Key từ Frontend gửi lên, nếu không có thì dùng Key mặc định của Server
     keys_to_try = req.keys if req.keys and len(req.keys) > 0 else [GOOGLE_API_KEY]
     

@@ -42,7 +42,15 @@ export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, 
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+        if (!response.ok) {
+            // Cố gắng đọc lỗi chi tiết từ Server Python gửi về
+            let errorMsg = `Server Error: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.detail) errorMsg = errorData.detail;
+            } catch (e) {}
+            throw new Error(errorMsg);
+        }
         
         const data = await response.json();
         const aiText = data.text || "AI không phản hồi.";
@@ -64,7 +72,7 @@ export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, 
         updateDoc(doc(db, "stats", "ai"), { fail: increment(1) })
             .catch(() => setDoc(doc(db, "stats", "ai"), { success: 0, fail: 1 }));
         
-        return "Hệ thống AI đang bận hoặc lỗi kết nối Server.";
+        return `⚠️ Lỗi hệ thống: ${e.message}`;
     }
 }
 
