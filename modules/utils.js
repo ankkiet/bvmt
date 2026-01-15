@@ -73,25 +73,36 @@ export function speakText(text, onEnd) {
     
     window.speechSynthesis.cancel(); // Dừng các lượt đọc trước
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'vi-VN';
-    utterance.rate = 1.1; // Tốc độ nhanh hơn xíu cho tự nhiên
+    const runSpeak = () => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'vi-VN';
+        utterance.rate = 1.1; // Tốc độ nhanh hơn xíu cho tự nhiên
 
-    // Chọn giọng đọc ưu tiên: Google Tiếng Việt -> Microsoft -> Bất kỳ giọng Việt nào
-    const voices = window.speechSynthesis.getVoices();
-    let viVoice = voices.find(v => v.name === 'Google Tiếng Việt');
-    if (!viVoice) viVoice = voices.find(v => v.name.includes('Microsoft') && v.lang.includes('vi'));
-    if (!viVoice) viVoice = voices.find(v => v.lang.includes('vi'));
+        // Chọn giọng đọc ưu tiên: Microsoft (Windows) -> Google (Chrome) -> Bất kỳ giọng Việt nào
+        const voices = window.speechSynthesis.getVoices();
+        let viVoice = voices.find(v => v.name.includes('Microsoft An') || v.name.includes('Microsoft Nam'));
+        if (!viVoice) viVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('vi'));
+        if (!viVoice) viVoice = voices.find(v => v.lang.includes('vi'));
 
-    if (viVoice) {
-        utterance.voice = viVoice;
-        console.log("Đã chọn giọng đọc:", viVoice.name);
+        if (viVoice) {
+            utterance.voice = viVoice;
+            console.log("Đã chọn giọng đọc:", viVoice.name);
+        }
+
+        utterance.onend = () => { if (onEnd) onEnd(); };
+        utterance.onerror = (e) => { console.error("Lỗi đọc:", e); if (onEnd) onEnd(); };
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.onvoiceschanged = null;
+            runSpeak();
+        };
+    } else {
+        runSpeak();
     }
-
-    utterance.onend = () => { if (onEnd) onEnd(); };
-    utterance.onerror = (e) => { console.error("Lỗi đọc:", e); if (onEnd) onEnd(); };
-
-    window.speechSynthesis.speak(utterance);
 }
 
 export function listenOnce(onResult, onEnd) {
