@@ -114,6 +114,7 @@
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
             <input type="file" id="ai-image-input" accept="image/*" style="display:none" onchange="previewAIImage(this)">
             <button type="button" class="btn-ai-send" onclick="document.getElementById('ai-image-input').click()" style="margin-right:5px; color:var(--text-sec)" title="Gửi ảnh"><i class="fas fa-camera"></i></button>
+            <button type="button" class="btn-ai-send" id="btn-live-chat" style="margin-right:5px; color:var(--text-sec)" title="Chat Live (Realtime)"><i class="fas fa-microphone-lines"></i></button>
             <button type="button" class="btn-ai-send" id="btn-mic" onclick="toggleVoiceInput()" style="margin-right:5px; color:var(--text-sec)" title="Nói chuyện"><i class="fas fa-microphone"></i></button>
             <input id="ai-input" placeholder="Hỏi Green Bot bất cứ điều gì..." style="flex:1">
             <button class="btn-ai-send"><i class="fas fa-paper-plane"></i></button>

@@ -3,6 +3,7 @@ import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, colle
 import { CLOUD_NAME, UPLOAD_PRESET, ADMIN_EMAILS, BOT_IMAGES, AI_MODELS, PERSONAS } from './modules/constants.js';
 import { Utils, fileToBase64, optimizeUrl, getYoutubeID, speakText, listenOnce } from './modules/utils.js';
 import { callGeminiAPI, typeWriterEffect, connectToGemini, startRecording, stopRecording } from './modules/ai.js';
+import { toggleLiveChat } from './modules/live.js';
 
 let dynamicAdminEmails = [...ADMIN_EMAILS]; // Sử dụng biến động cho Admin
 
@@ -104,6 +105,12 @@ window.clearAIImage = () => {
     currentAIImageBase64 = null;
     document.getElementById('ai-image-input').value = "";
     document.getElementById('ai-image-preview').style.display = 'none';
+}
+
+// Gán sự kiện cho nút Live Chat mới
+const btnLive = document.getElementById('btn-live-chat');
+if (btnLive) {
+    btnLive.addEventListener('click', () => toggleLiveChat('btn-live-chat', aiKeys));
 }
 
 window.switchPersona = (key) => {
