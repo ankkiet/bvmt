@@ -4,9 +4,6 @@ import { AI_MODELS, WEBSOCKET_URL, MODEL_NAME } from './constants.js';
 import { downsampleBuffer, floatTo16BitPCM, base64ToArrayBuffer } from './utils.js';
 import { db, doc, updateDoc, setDoc, increment } from './firebase.js';
 
-// URL Backend Python của bạn (Thay đổi khi deploy)
-const PYTHON_BACKEND_URL = "https://bvmt-a5gi.onrender.com/api/chat";
-
 /**
  * Hàm gọi API Gemini
  * @param {string} prompt - Câu hỏi (nếu không dùng history)
@@ -17,63 +14,72 @@ const PYTHON_BACKEND_URL = "https://bvmt-a5gi.onrender.com/api/chat";
  * @param {Array} chatHistory - Mảng lịch sử chat (sẽ được sửa trực tiếp)
  */
 export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, aiKeys, chatHistory) {
-    try {
-        // Chuẩn bị payload gửi sang Python
-        const payload = {
-            prompt: prompt || null,
-            imageBase64: imageBase64 || null,
-            history: useHistory ? chatHistory : [], // Gửi history hiện tại sang Python
-            modelType: modelType,
-            keys: aiKeys.map(k => k.val) // Gửi danh sách Key từ Admin Panel sang
-        };
-
-        // Nếu dùng history và có prompt mới, ta tạm thời push vào mảng local để UI hiển thị đúng
-        // (Logic thực tế Python sẽ xử lý việc ghép prompt vào context)
-        if (useHistory && prompt) {
-             // Lưu ý: Việc push vào chatHistory ở đây chỉ để đồng bộ UI client, 
-             // Server Python sẽ tự xử lý logic gọi AI.
-             // Tuy nhiên, để tránh duplicate khi Python trả về, ta không cần push ở đây 
-             // vì script.js đã push user turn vào chatHistory TRƯỚC khi gọi hàm này.
-        }
-
-        const response = await fetch(PYTHON_BACKEND_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            // Cố gắng đọc lỗi chi tiết từ Server Python gửi về
-            let errorMsg = `Server Error: ${response.status}`;
-            try {
-                const errorData = await response.json();
-                if (errorData.detail) errorMsg = errorData.detail;
-            } catch (e) {}
-            throw new Error(errorMsg);
-        }
-        
-        const data = await response.json();
-        const aiText = data.text || "AI không phản hồi.";
-                
-        if (useHistory) {
-            chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-            // Giữ lịch sử không quá 30 tin nhắn
-            while (chatHistory.length > 30) chatHistory.shift();
-        }
-
-        // THỐNG KÊ: Ghi nhận thành công
-        updateDoc(doc(db, "stats", "ai"), { success: increment(1) }).catch(() => setDoc(doc(db, "stats", "ai"), { success: 1, fail: 0 }));
-
-        return aiText;
-
-    } catch (e) {
-        console.error("Lỗi gọi Python Backend:", e);
-        // THỐNG KÊ: Ghi nhận thất bại
-        updateDoc(doc(db, "stats", "ai"), { fail: increment(1) })
-            .catch(() => setDoc(doc(db, "stats", "ai"), { success: 0, fail: 1 }));
-        
-        return `⚠️ Lỗi hệ thống: ${e.message}`;
+    // Ép buộc nhắc nhở Tiếng Việt vào prompt
+    if (prompt) {
+        prompt = "(Trả lời bằng Tiếng Việt): " + prompt;
     }
+
+    let requestContents;
+    if (useHistory) {
+        // Nếu có prompt (Live Mode), thêm vào history
+        if (prompt) {
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+        } 
+        // Nếu prompt null (Chat Mode), chèn nhắc nhở vào tin nhắn cuối cùng trong history
+        else if (chatHistory.length > 0) {
+            const lastMsg = chatHistory[chatHistory.length - 1];
+            if (lastMsg.role === 'user' && lastMsg.parts?.[0]?.text) {
+                if (!lastMsg.parts[0].text.startsWith("(Trả lời bằng Tiếng Việt):")) {
+                    lastMsg.parts[0].text = "(Trả lời bằng Tiếng Việt): " + lastMsg.parts[0].text;
+                }
+            }
+        }
+        requestContents = chatHistory;
+    } else {
+        const parts = [];
+        if (prompt) parts.push({ text: prompt });
+        if (imageBase64) parts.push({ inline_data: { mime_type: "image/jpeg", data: imageBase64 } });
+        requestContents = [{ role: "user", parts }];
+    }
+
+    // Xác định danh sách model cần thử (Ưu tiên -> Dự phòng)
+    const modelsToTry = [AI_MODELS[modelType]];
+    if (modelType !== 'backup') modelsToTry.push(AI_MODELS['backup']);
+
+    for (let i = 0; i < aiKeys.length; i++) {
+        const keyObj = aiKeys[i];
+        
+        for (const model of modelsToTry) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyObj.val}`;
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: requestContents }) });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
+                
+                if (useHistory) {
+                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                    // Giữ lịch sử không quá 30 tin nhắn (Dùng shift để sửa mảng gốc thay vì gán lại)
+                    while (chatHistory.length > 30) chatHistory.shift();
+                }
+
+                // THỐNG KÊ: Ghi nhận thành công (Chạy ngầm)
+                updateDoc(doc(db, "stats", "ai"), { success: increment(1) }).catch(() => setDoc(doc(db, "stats", "ai"), { success: 1, fail: 0 }));
+
+                return aiText;
+            } catch (e) { 
+                console.warn(`Key ${keyObj.name} - Model ${model} lỗi:`, e);
+                // Nếu là model cuối cùng của key cuối cùng thì mới return lỗi
+                if (i === aiKeys.length - 1 && model === modelsToTry[modelsToTry.length - 1]) return "Tất cả Key AI đều bận hoặc lỗi.";
+            }
+        }
+    }
+    
+    // THỐNG KÊ: Ghi nhận thất bại
+    updateDoc(doc(db, "stats", "ai"), { fail: increment(1) })
+        .catch(() => setDoc(doc(db, "stats", "ai"), { success: 0, fail: 1 }));
+    
+    return "Hệ thống AI đang bận, vui lòng thử lại sau.";
 }
 
 // Hiệu ứng gõ chữ (Typewriter)
