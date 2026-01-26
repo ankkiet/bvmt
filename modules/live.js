@@ -1,5 +1,6 @@
-import { PERSONAS } from './constants.js';
-import { base64ToArrayBuffer, floatTo16BitPCM, downsampleBuffer } from './utils.js';
+import { PERSONAS, WEBSOCKET_URL, AI_MODELS } from './constants.js';
+import { base64ToArrayBuffer, floatTo16BitPCM, downsampleBuffer, speakText } from './utils.js';
+import { callGeminiAPI } from './ai.js';
 
 /**
  * Class quản lý kết nối Gemini Live (Multimodal WebSocket)
@@ -16,24 +17,30 @@ class GreenBotLive {
         this.isPlaying = false;
         this.isConnected = false;
         this.currentSource = null;
+        this.connectionError = null; // Lưu lỗi kết nối để hiển thị chính xác hơn
+        this.aiKeys = []; // Lưu keys để dùng cho việc diễn giải lệnh
     }
 
     /**
      * Bắt đầu kết nối WebSocket và Audio
      */
-    async connect(apiKey, systemInstruction) {
+    async connect(aiKeys, systemInstruction) {
+        this.aiKeys = aiKeys;
+        const apiKey = aiKeys[0].val;
+        this.connectionError = null; // Reset lỗi khi kết nối lại
         try {
             // 1. Khởi tạo AudioContext
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
             // 2. Kết nối WebSocket
-            const url = `wss://generativelanguage.googleapis.com/v1alpha/model/gemini-2.0-flash-exp:live?key=${apiKey}`;
+            const url = `${WEBSOCKET_URL}?key=${apiKey}`;
             this.ws = new WebSocket(url);
 
             this.ws.onopen = () => this.handleOpen(systemInstruction);
             this.ws.onmessage = (e) => this.handleMessage(e);
             this.ws.onerror = (e) => {
                 console.error("WebSocket Error:", e);
+                this.connectionError = new Error("Kết nối WebSocket thất bại. Vui lòng kiểm tra API Key hoặc kết nối mạng.");
                 this.disconnect();
             };
             this.ws.onclose = () => {
@@ -49,7 +56,11 @@ class GreenBotLive {
         } catch (error) {
             console.error("Lỗi kết nối Live:", error);
             this.disconnect();
-            throw error;
+            // Bắt lỗi từ chối quyền micro để hiển thị thông báo thân thiện hơn
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                throw new Error("Bạn đã từ chối quyền truy cập Micro.");
+            }
+            throw error; // Ném lại các lỗi khác (bao gồm cả lỗi custom từ race condition)
         }
     }
 
@@ -81,16 +92,19 @@ class GreenBotLive {
     handleOpen(systemInstruction) {
         const setupMsg = {
             setup: {
-                model: "models/gemini-2.0-flash-exp",
+                model: "gemini-2.5-flash-native-audio-preview-12-2025",
                 generation_config: {
                     response_modalities: ["AUDIO"],
                     speech_config: {
                         voice_config: {
                             prebuilt_voice_config: {
-                                voice_name: "Kore" // Giọng nữ (hoặc Fenrir, Puck...)
+                                voice_name: "Orus" // Giọng nữ (hoặc Fenrir, Puck...)
                             }
                         }
-                    }
+                    },
+                    // Kích hoạt tính năng nhận diện văn bản (Transcription) để xử lý lệnh
+                    input_audio_transcription: { model: "google_default_dt" },
+                    output_audio_transcription: { model: "google_default_dt" }
                 },
                 system_instruction: {
                     parts: [{ text: systemInstruction }]
@@ -118,6 +132,19 @@ class GreenBotLive {
                     }
                 }
             }
+
+            // 2. Xử lý Transcription (Lời nói người dùng) -> Diễn giải lệnh
+            if (data.serverContent?.inputTranscription) {
+                const userText = data.serverContent.inputTranscription.text;
+                console.log("User said:", userText);
+                
+                // Hiển thị text lên UI (nếu có input)
+                const inputEl = document.getElementById('ai-input');
+                if(inputEl) inputEl.value = userText;
+
+                // Gọi hàm diễn giải lệnh
+                this.interpretAndExecute(userText);
+            }
             
             // Xử lý sự kiện ngắt lời (Interruption) từ Server
             if (data.serverContent?.interrupted) {
@@ -131,13 +158,91 @@ class GreenBotLive {
         }
     }
 
+    /**
+     * Diễn giải lệnh giọng nói thành hành động trên Website
+     * (Tương tự interpretWorkoutCommand trong mẫu tham khảo)
+     */
+    async interpretAndExecute(transcript) {
+        if (!transcript || !transcript.trim()) return;
+
+        const prompt = `
+        Bạn là trợ lý AI điều khiển website Green School. Phân tích câu lệnh của người dùng và tạo một phản hồi ngắn gọn.
+        Câu lệnh: "${transcript}"
+
+        Trả về một đối tượng JSON duy nhất (không có markdown) với cấu trúc sau:
+        {
+          "command": "navigate" | "scroll" | "action" | "chat",
+          "data": { "page": "..." } | { "dir": "..." } | { "type": "..." } | null,
+          "response": "Một câu trả lời ngắn gọn, thân thiện để xác nhận hành động. Nếu là 'chat', hãy để trống chuỗi này."
+        }
+
+        CÁC LỆNH:
+        1. 'navigate': Chuyển trang. Các page hợp lệ: 'home', 'greenclass', 'contest', 'archive', 'profile', 'guide'.
+        2. 'scroll': Cuộn trang. Các hướng hợp lệ: 'up', 'down', 'top', 'bottom'.
+        3. 'action': Hành động đặc biệt. Các type hợp lệ: 'music' (bật/tắt nhạc), 'dark_mode' (bật/tắt nền tối), 'upload' (mở cửa sổ tải file).
+        4. 'chat': Nếu không phải là lệnh điều khiển, phân loại là 'chat'.
+
+        VÍ DỤ:
+        - Input: "Mở trang thi đua"
+        - Output: {"command":"navigate","data":{"page":"contest"},"response":"Okie, tớ đang mở trang Thi Đua cho cậu đây! 🏆"}
+
+        - Input: "Kéo xuống dưới đi"
+        - Output: {"command":"scroll","data":{"dir":"down"},"response":"Tớ kéo xuống cho cậu xem nhé! 👇"}
+        
+        - Input: "Bật nhạc lên"
+        - Output: {"command":"action","data":{"type":"music"},"response":"Nhạc lên nào! 🎶"}
+
+        - Input: "Chào Green Bot"
+        - Output: {"command":"chat","data":null,"response":""}
+        `;
+
+        try {
+            // Gọi model Flash Lite cho nhanh để phân tích lệnh
+            const res = await callGeminiAPI(prompt, null, false, 'backup', this.aiKeys, []);
+            
+            // Dùng Regex để tìm chuỗi JSON chính xác (tránh lỗi do text dẫn dắt của AI)
+            const jsonMatch = res.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : res.replace(/```json|```/g, '').trim();
+            const cmd = JSON.parse(jsonStr);
+
+            console.log("Command Interpreted:", cmd);
+
+            // Chỉ thực thi nếu đó là một lệnh điều khiển, không phải 'chat'
+            if (cmd.command !== 'chat') {
+                // Ngắt lời bot chính đang phát audio (nếu có) và ngăn nó trả lời
+                this.stopAudio();
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({ interrupt: {} }));
+                }
+
+                // Thực thi lệnh
+                if (cmd.command === 'navigate' && cmd.data?.page) { if (window.showPage) { window.showPage(cmd.data.page); window.location.hash = cmd.data.page; } } 
+                else if (cmd.command === 'scroll') { if (cmd.data.dir === 'down') window.scrollBy({ top: 500, behavior: 'smooth' }); if (cmd.data.dir === 'up') window.scrollBy({ top: -500, behavior: 'smooth' }); if (cmd.data.dir === 'top') window.scrollTo({ top: 0, behavior: 'smooth' }); if (cmd.data.dir === 'bottom') window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); } 
+                else if (cmd.command === 'action') { if (cmd.data.type === 'music' && window.toggleMusic) window.toggleMusic(); if (cmd.data.type === 'dark_mode' && window.toggleDarkMode) window.toggleDarkMode(); if (cmd.data.type === 'upload') document.getElementById('file-input')?.click(); }
+
+                // Dùng TTS của trình duyệt để đọc câu phản hồi xác nhận
+                if (cmd.response) {
+                    speakText(cmd.response, null);
+                }
+            }
+        } catch (e) {
+            console.warn("Lỗi diễn giải lệnh:", e);
+        }
+    }
+
     async startAudioInput() {
-        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({
             audio: {
                 channelCount: 1,
                 sampleRate: this.inputSampleRate
             }
         });
+
+        if (!this.audioContext) {
+            stream.getTracks().forEach(track => track.stop());
+            throw this.connectionError || new Error("Kết nối bị ngắt hoặc lỗi trước khi Micro khởi động.");
+        }
+        this.mediaStream = stream;
 
         const source = this.audioContext.createMediaStreamSource(this.mediaStream);
         this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
@@ -243,10 +348,9 @@ export function toggleLiveChat(btnId, aiKeys) {
             btn.disabled = true;
         }
         
-        const apiKey = aiKeys[0].val;
         const systemPrompt = PERSONAS.green_bot.prompt;
 
-        bot.connect(apiKey, systemPrompt)
+        bot.connect(aiKeys, systemPrompt)
             .then(() => {
                 if (btn) {
                     btn.innerHTML = '<i class="fas fa-ear-listen fa-beat" style="color: #d32f2f;"></i>'; // Icon đang nghe

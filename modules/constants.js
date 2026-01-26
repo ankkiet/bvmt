@@ -18,7 +18,7 @@ export const MODEL_NAME = "models/gemini-2.0-flash-exp";
 
 export const AI_MODELS = {
     main: "gemini-2.5-flash",
-    voice: "gemini-2.5-flash-native-audio-dialog",
+    voice: "gemini-2.5-flash-preview-native-audio-dialog",
     backup: "gemini-2.5-flash-lite",
     advanced: "gemini-3-flash"
 };

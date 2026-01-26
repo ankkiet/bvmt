@@ -952,7 +952,7 @@ window.updateSheetConfig = async () => { const url = document.getElementById('cf
 window.updateAIModels = async () => {
     const models = {
         main: document.getElementById('model-main').value.trim() || "gemini-2.5-flash",
-        voice: document.getElementById('model-voice').value.trim() || "gemini-2.5-flash-native-audio-dialog",
+        voice: document.getElementById('model-voice').value.trim() || "gemini-2.5-flash-preview-native-audio-dialog",
         backup: document.getElementById('model-backup').value.trim() || "gemini-2.5-flash-lite",
         advanced: document.getElementById('model-advanced').value.trim() || "gemini-3-flash"
     };
