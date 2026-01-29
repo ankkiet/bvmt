@@ -73,6 +73,10 @@
     </div>
 
     <div class="ai-chat-window" id="ai-window">
+        <!-- Resize Handles (Tay nắm kéo giãn) -->
+        <div class="resize-handle resize-left" title="Kéo để chỉnh chiều rộng"></div>
+        <div class="resize-handle resize-top" title="Kéo để chỉnh chiều cao"></div>
+        <div class="resize-handle resize-corner" title="Kéo để chỉnh kích thước"></div>
         <div class="ai-header">
             <div style="display:flex; align-items:center; gap:8px;">
                 <img id="ai-avatar-display" src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" style="width:28px; height:28px; border-radius:50%; border:1px solid #ddd;">
@@ -114,7 +118,7 @@
         <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
             <input type="file" id="ai-image-input" accept="image/*" style="display:none" onchange="previewAIImage(this)">
             <button type="button" class="btn-ai-send" onclick="document.getElementById('ai-image-input').click()" style="margin-right:5px; color:var(--text-sec)" title="Gửi ảnh"><i class="fas fa-camera"></i></button>
-            <button type="button" class="btn-ai-send" id="btn-live-chat" style="margin-right:5px; color:var(--text-sec)" title="Chat Live (Realtime)"><i class="fas fa-microphone-lines"></i></button>
+            <button type="button" class="btn-ai-send" id="btn-live-chat" style="margin-right:5px; color:var(--text-sec); display:none;" title="Chat Live (Realtime)"><i class="fas fa-microphone-lines"></i></button>
             <button type="button" class="btn-ai-send" id="btn-mic" onclick="toggleVoiceInput()" style="margin-right:5px; color:var(--text-sec)" title="Nói chuyện"><i class="fas fa-microphone"></i></button>
             <input id="ai-input" placeholder="Hỏi Green Bot bất cứ điều gì..." style="flex:1">
             <button class="btn-ai-send"><i class="fas fa-paper-plane"></i></button>
@@ -153,7 +157,7 @@
     </div>
 
     <!-- GEMINI LIVE OVERLAY UI -->
-    <div id="gemini-live-overlay">
+    <div id="gemini-live-overlay" style="display:none !important;">
         <div class="live-header">
             <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" class="live-logo">
             <span>Green Bot Live</span>
@@ -217,6 +221,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
                     <div>
+                        <button class="btn" style="background:#8bc34a; color:white; margin-right:5px" onclick="checkLoginAndUpload('bio')"><i class="fas fa-search-location"></i> Nhà Sinh Học</button>
                         <button class="btn" style="background:#4caf50; color:white; margin-right:5px" onclick="checkLoginAndUpload('plant')"><i class="fas fa-user-md"></i> AI Bác sĩ cây</button>
                         <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
                     </div>
@@ -285,7 +290,33 @@
                 <div style="text-align:center; margin-bottom:20px;">
                     <button class="btn" style="background:#ff9800; color:white;" onclick="checkLoginAndUpload('trash')"><i class="fas fa-camera"></i> AI Soi Rác (Camera)</button>
                 </div>
-                <div style="max-width:500px; margin:0 auto 20px;"><input type="text" id="trashSearchInput" placeholder="Nhập tên rác (vỏ sữa, pin...)" onkeyup="filterTrash()"></div>
+                
+                <!-- Static Search -->
+                <div style="max-width:500px; margin:0 auto 20px;"><input type="text" id="trashSearchInput" placeholder="🔍 Tra cứu nhanh (Vỏ sữa, pin...)" onkeyup="filterTrash()"></div>
+                
+                <!-- Dynamic Categories -->
+                <div id="trash-categories" style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">
+                    <div class="trash-card" onclick="filterTrashView('Tái chế')" style="background:#e3f2fd; border:1px solid #2196f3; color:#0d47a1">
+                        <i class="fas fa-recycle"></i> <h3>Rác Tái Chế</h3> <span id="count-recycle">Đang tải...</span>
+                    </div>
+                    <div class="trash-card" onclick="filterTrashView('Hữu cơ')" style="background:#e8f5e9; border:1px solid #4caf50; color:#1b5e20">
+                        <i class="fas fa-leaf"></i> <h3>Rác Hữu Cơ</h3> <span id="count-organic">Đang tải...</span>
+                    </div>
+                    <div class="trash-card" onclick="filterTrashView('Rác còn lại')" style="background:#fff3e0; border:1px solid #ff9800; color:#e65100">
+                        <i class="fas fa-trash"></i> <h3>Rác Còn Lại</h3> <span id="count-other">Đang tải...</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Gallery (Hidden by default) -->
+                <div id="trash-gallery-container" style="display:none; animation: fadeIn 0.3s;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <button class="btn btn-sm btn-outline" onclick="resetTrashView()"><i class="fas fa-arrow-left"></i> Quay lại</button>
+                        <h3 id="trash-view-title" style="margin:0; color:var(--primary)">Danh sách</h3>
+                    </div>
+                    <div id="trash-dynamic-grid" class="gallery-grid"></div>
+                </div>
+
+                <!-- Static Results (Search results) -->
                 <div id="trashContainer" class="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div>
             </div>
         </div>

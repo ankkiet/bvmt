@@ -29,6 +29,12 @@ let guestChatCount = 0; // Biến đếm lượt chat của khách
 
 const getSystemPrompt = () => {
     let p = PERSONAS[currentPersona].prompt;
+
+    // Nâng cấp: Thêm quy tắc giao tiếp và khả năng đặc biệt
+    p += `\n\n--- NGUYÊN TẮC GIAO TIẾP & KHẢ NĂNG ĐẶC BIỆT ---\n
+    1.  **Giao tiếp chân thật**: Hãy trả lời một cách tự nhiên, gần gũi, tránh dùng từ ngữ quá trang trọng hoặc máy móc. Sử dụng các biểu tượng cảm xúc (emoji) một cách hợp lý để câu trả lời sinh động hơn. Khi không biết, hãy thẳng thắn thừa nhận.
+    2.  **Tạo bảng (Table Generation)**: Nếu người dùng yêu cầu tạo bảng, lịch trình (lịch học, lịch trực nhật), hoặc danh sách có cấu trúc, hãy trả lời bằng cách sử dụng thẻ HTML <table>. Hãy thiết kế bảng gọn gàng, dễ đọc với các thẻ <thead>, <th>, <tr>, <td>. Ví dụ: "Lập cho tớ lịch học tuần này" -> Trả về một bảng HTML.`;
+
     if(currentUser) {
         const role = (typeof isAdmin === 'function' && isAdmin(currentUser.email)) ? "Quản trị viên (Admin)" : "Thành viên";
         p += `\n\n--- THÔNG TIN NGƯỜI DÙNG HIỆN TẠI ---\n- Tên: ${currentUser.displayName}\n- Email: ${currentUser.email}\n- ID: ${currentUser.customID}\n- Lớp: ${currentUser.class}\n- Vai trò: ${role}\n\n--- CHỈ DẪN GIAO TIẾP ---\n1. Hãy xưng hô bằng tên "${currentUser.displayName}" để thân thiện.\n2. Nếu họ hỏi về lớp, hãy nhắc đến lớp "${currentUser.class}".\n3. Ghi nhớ thông tin này trong suốt cuộc trò chuyện.`;
@@ -386,15 +392,23 @@ window.sendMessageToAI = async (e, isVoice = false) => {
         const mainAnswer = parts[0].trim();
         const suggestions = parts[1] ? parts[1].split('|') : [];
 
-        const formatted = mainAnswer.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-            .replace(/\*(.*?)\*/g, '<i>$1</i>')
-            .replace(/(?:^|\n)[-*] (.*?)(?=\n|$)/g, '<div style="display:flex; align-items:flex-start; gap:6px; margin:4px 0;"><span style="color:var(--primary); font-weight:bold; flex-shrink:0; margin-top:2px;">•</span><span>$1</span></div>')
-            .replace(/{{IMAGE:(.*?)}}/g, (match, key) => {
-                const url = BOT_IMAGES[key.trim()];
-                return url ? `<img src="${url}" style="max-width:150px; border-radius:10px; margin:10px 0; border:1px solid #eee; display:block;">` : "";
-            })
-            .replace(/\n/g, '<br>');
+        // Xử lý format tin nhắn (Giữ nguyên thẻ Table, Escape các thẻ khác)
+        const escapeHTML = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const contentParts = mainAnswer.split(/(<table[\s\S]*?<\/table>)/gi);
+
+        const formatted = contentParts.map(part => {
+            if (part.match(/^<table[\s\S]*?<\/table>$/i)) return part; // Giữ nguyên HTML bảng
+            return escapeHTML(part)
+                .replace(/\*\*([\s\S]*?)\*\*/g, '<b>$1</b>')
+                .replace(/\*([^\s][\s\S]*?)\*/g, '<i>$1</i>')
+                .replace(/(?:^|\n)[-*] (.*?)(?=\n|$)/g, '<div style="display:flex; align-items:flex-start; gap:6px; margin:4px 0;"><span style="color:var(--primary); font-weight:bold; flex-shrink:0; margin-top:2px;">•</span><span>$1</span></div>')
+                .replace(/{{IMAGE:(.*?)}}/g, (match, key) => {
+                    const url = BOT_IMAGES[key.trim()];
+                    return url ? `<img src="${url}" style="max-width:150px; border-radius:10px; margin:10px 0; border:1px solid #eee; display:block;">` : "";
+                })
+                .replace(/\n/g, '<br>');
+        }).join('');
+
         await typeWriterEffect(document.getElementById(loadingId), formatted, 15); // Tăng tốc độ cơ bản lên một chút
 
         // Hiển thị gợi ý nếu có
@@ -522,42 +536,106 @@ onAuthStateChanged(auth, async(u)=>{
 });
 
 window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
-window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash' || c === 'plant') ? 'gallery' : c; document.getElementById('file-input').click(); }
+window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash' || c === 'plant' || c === 'bio') ? 'gallery' : c; document.getElementById('file-input').click(); }
 
 window.executeUpload = async (i) => { 
-    const f = i.files[0]; if(!f) return; const isTrash = (window.uploadMode === 'trash'); const isPlant = (window.uploadMode === 'plant');
+    const f = i.files[0]; if(!f) return; 
+    const isTrash = (window.uploadMode === 'trash'); 
+    const isPlant = (window.uploadMode === 'plant');
+    const isBio = (window.uploadMode === 'bio');
     
+    let description = "";
+    let aiShouldWrite = false;
+    let captionStyle = "tự nhiên và gần gũi"; // Style mặc định
+    let trashCategory = null; // Biến lưu loại rác
+
+    if (!isTrash && !isPlant && !isBio) {
+        const userInput = prompt("Nhập mô tả cho ảnh.\n\n✨ MẸO: Để AI viết giúp, bạn có thể:\n- Để trống và nhấn OK (style tự do)\n- Gõ 'vui', 'ý nghĩa', hoặc 'hài hước'");
+        if (userInput === null) return; // Người dùng nhấn Cancel
+
+        const lowerInput = userInput.trim().toLowerCase();
+        if (lowerInput === '' || lowerInput === 'vui' || lowerInput === 'ý nghĩa' || lowerInput === 'hài hước' || lowerInput === 'sâu sắc') {
+            aiShouldWrite = true;
+            if (lowerInput === 'vui') captionStyle = 'vui vẻ, năng động';
+            else if (lowerInput === 'ý nghĩa' || lowerInput === 'sâu sắc') captionStyle = 'sâu sắc và ý nghĩa';
+            else if (lowerInput === 'hài hước') captionStyle = 'hài hước, dí dỏm';
+        } else {
+            description = userInput; // Người dùng tự viết mô tả
+        }
+    }
+
     let aiPrompt = "";
-    if (isTrash) aiPrompt = "Đây là loại rác gì? Nó thuộc nhóm (Hữu cơ, Tái chế, hay Rác thải còn lại)? Hãy hướng dẫn cách vứt ngắn gọn.";
+    if (isTrash) aiPrompt = "Bạn là chuyên gia phân loại rác. Hãy nhìn ảnh và phân loại. BẮT BUỘC trả lời theo định dạng: CATEGORY|NAME|INSTRUCTION. Trong đó CATEGORY chỉ được chọn 1 trong 3: 'Hữu cơ', 'Tái chế', 'Rác còn lại'. NAME là tên ngắn gọn của rác. INSTRUCTION là hướng dẫn xử lý ngắn gọn. Ví dụ: Tái chế|Vỏ lon|Rửa sạch và ép dẹp.";
     else if (isPlant) aiPrompt = "Bạn là một chuyên gia nông nghiệp (Bác sĩ cây trồng). Hãy nhìn ảnh này và cho biết: 1. Đây là cây gì? 2. Cây có dấu hiệu bị bệnh, héo hay sâu hại không? 3. Nếu có, hãy đưa ra phác đồ điều trị cụ thể. Nếu cây khỏe mạnh, hãy khen và hướng dẫn cách chăm sóc cơ bản. Trả lời ngắn gọn, súc tích.";
-    else aiPrompt = "Đóng vai một học sinh lớp A2K41 đăng ảnh lên mạng xã hội của lớp. Hãy viết 3 dòng trạng thái (caption) ngắn gọn, tự nhiên, xưng hô 'mình' hoặc 'lớp tớ' về bức ảnh này. Gợi ý 1: Vui vẻ. Gợi ý 2: Ý nghĩa. Gợi ý 3: Hài hước. Mỗi gợi ý 1 dòng gạch đầu dòng."; 
-    
-    let description = ""; 
-    if(!isTrash && !isPlant) { const d = prompt("Nhập mô tả cho ảnh (Hoặc để trống để AI gợi ý caption):"); if(d === null) return; description = d; } 
+    else if (isBio) aiPrompt = "Bạn là một nhà sinh học vui tính dành cho học sinh. Hãy nhìn bức ảnh này và cho biết: 1. Tên cây (Tiếng Việt & Tên khoa học). 2. Đặc điểm nhận dạng nổi bật. 3. Công dụng hoặc ý nghĩa của cây (Vd: làm thuốc, bóng mát, trang trí...). Trả lời ngắn gọn, dễ hiểu, dùng emoji sinh động.";
+    else if (aiShouldWrite) {
+        aiPrompt = `Đóng vai một học sinh, hãy viết MỘT caption ngắn gọn, chân thật về bức ảnh này theo phong cách ${captionStyle}. Xưng hô là 'mình', 'tớ' hoặc 'lớp tớ'.`;
+    }
     
     let loadingText = "AI đang viết caption...";
     if(isTrash) loadingText = "AI đang soi rác...";
     if(isPlant) loadingText = "Bác sĩ cây đang chẩn đoán...";
+    if(isBio) loadingText = "Nhà sinh học đang tra cứu...";
 
-    document.getElementById('upload-loading-text').innerText = loadingText; document.getElementById('upload-overlay').style.display='flex'; 
+    document.getElementById('upload-loading-text').innerText = (isTrash || isPlant || isBio || aiShouldWrite) ? loadingText : "Đang tải ảnh lên...";
+    document.getElementById('upload-overlay').style.display='flex'; 
     try { 
         const fd = new FormData(); fd.append('file',f); fd.append('upload_preset',UPLOAD_PRESET); 
         const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd}); const j = await r.json(); 
         if(j.secure_url) { 
-            if(isTrash || isPlant || !description) { 
+            let shouldPost = true;
+
+            if(isTrash || isPlant || isBio || aiShouldWrite) { 
                 try { const base64Img = await fileToBase64(f); const aiResult = await callGeminiAPI(aiPrompt, base64Img, false, 'main', aiKeys, chatHistory); 
 
-                    // Clean * for Alert, Format HTML for Caption
-                    const cleanResult = aiResult.replace(/\*\*\*(.*?)\*\*\*/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
-                    const formattedResult = aiResult.replace(/\*\*\*(.*?)\*\*\*/g, '<b><i>$1</i></b>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
+                    const cleanResult = aiResult.replace(/\*/g, ''); // Xóa dấu * cho alert
+                    const formattedForDesc = aiResult.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
 
-                    if(isTrash) { alert(`🤖 AI Kết luận:\n${cleanResult}`); description = formattedResult; } 
-                    else if(isPlant) { alert(`🌿 Bác sĩ cây chẩn đoán:\n${cleanResult}`); description = formattedResult; }
-                    else { description = formattedResult; } 
-                } catch(err) { console.error(err); if(isTrash || isPlant) alert("AI lỗi, không thể phân tích."); } 
+                    if(isTrash) { 
+                        // Xử lý kết quả phân loại rác
+                        const parts = aiResult.split('|');
+                        let cat = "Rác còn lại"; let name = "Rác không xác định"; let instr = aiResult;
+                        if (parts.length >= 3) {
+                            cat = parts[0].trim(); name = parts[1].trim(); instr = parts[2].trim();
+                            // Chuẩn hóa danh mục
+                            if(cat.toLowerCase().includes('hữu cơ')) cat = 'Hữu cơ';
+                            else if(cat.toLowerCase().includes('tái chế')) cat = 'Tái chế';
+                            else cat = 'Rác còn lại';
+                        }
+                        trashCategory = cat;
+                        alert(`🤖 AI Kết luận:\n- Loại: ${cat}\n- Tên: ${name}\n- Hướng dẫn: ${instr}`); 
+                        description = `[${cat}] <b>${name}</b>: ${instr}`; 
+                    } 
+                    else if(isPlant) { 
+                        alert(`🌿 Bác sĩ cây chẩn đoán:\n${cleanResult}`); 
+                        description = formattedForDesc; 
+                        shouldPost = confirm("Bạn có muốn đăng kết quả chẩn đoán này lên Góc Xanh không?");
+                    }
+                    else if(isBio) { 
+                        alert(`🔍 Nhà Sinh Học Nhí:\n${cleanResult}`); 
+                        description = formattedForDesc; 
+                        shouldPost = confirm("Bạn có muốn chia sẻ kiến thức này lên Góc Xanh không?");
+                    }
+                    else { description = formattedForDesc; } // Dùng caption AI vừa tạo
+                } catch(err) { 
+                    console.error(err); 
+                    if(isTrash || isPlant || isBio) {
+                        alert("AI lỗi, không thể phân tích.");
+                        shouldPost = false;
+                    }
+                    else if (aiShouldWrite) {
+                        alert("AI đang bận, không thể viết caption. Bạn hãy tự nhập mô tả nhé.");
+                        description = "Ảnh đẹp quá! ✨"; // Mô tả dự phòng
+                    }
+                } 
             } 
-            await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: description || "Không có mô tả", uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, type: window.uploadMode, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
-            if(!isTrash && !isPlant) alert("Đăng ảnh thành công!\n(AI đã tự viết caption cho bạn nếu bạn để trống)"); 
+            
+            if (shouldPost) {
+                await addDoc(collection(db, currentCollection), { url: j.secure_url, desc: description, uid: currentUser.uid, authorName: currentUser.displayName, authorID: currentUser.customID || "@unknown", authorAvatar: currentUser.photoURL, className: currentUser.class, type: window.uploadMode, trashCategory: trashCategory, createdAt: serverTimestamp(), likes: [], comments: [], archived: false }); 
+                if (aiShouldWrite) alert("Đăng ảnh thành công!\n(AI đã viết caption giúp bạn)");
+                else if (!isTrash && !isPlant && !isBio) alert("Đăng ảnh thành công!");
+                else if (isPlant || isBio) alert("Đã đăng bài thành công!");
+            }
         } 
     } catch(e) { console.error(e); alert("Lỗi tải ảnh: " + e.message); } 
     document.getElementById('upload-overlay').style.display='none'; i.value=""; 
@@ -589,6 +667,7 @@ function renderGrid(col, elId, uR, cR) {
             if(d.type === 'trash') badge = `<span style="position:absolute; top:10px; left:10px; background:#ff9800; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">AI Soi Rác</span>`;
             else if(d.type === 'contest') badge = `<span style="position:absolute; top:10px; left:10px; background:var(--info); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Thi Đua</span>`;
             else if(d.type === 'plant') badge = `<span style="position:absolute; top:10px; left:10px; background:#4caf50; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Bác sĩ cây</span>`;
+            else if(d.type === 'bio') badge = `<span style="position:absolute; top:10px; left:10px; background:#8bc34a; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Sinh Học</span>`;
             
             // LAZY LOADING + OPTIMIZED URL
             // Load ảnh siêu nhỏ (w=50) làm placeholder, ảnh thật (w=400) để trong data-src
@@ -1091,8 +1170,53 @@ window.showPage = (id) => {
     document.title = `Green School - ${titles[targetId] || 'A2K41'}`;
 }
 
-const trashDB = [ {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Túi nilon",t:"Rác khác",c:"bin-other"} ];
+// --- TRASH GUIDE LOGIC ---
+const trashDB = [ 
+    {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Lon nhôm",t:"Tái chế",c:"bin-recycle"}, {n:"Hộp giấy",t:"Tái chế",c:"bin-recycle"},
+    {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Thức ăn thừa",t:"Hữu cơ",c:"bin-organic"}, {n:"Bã trà/cà phê",t:"Hữu cơ",c:"bin-organic"},
+    {n:"Túi nilon",t:"Rác còn lại",c:"bin-other"}, {n:"Hộp xốp",t:"Rác còn lại",c:"bin-other"}, {n:"Khẩu trang",t:"Rác còn lại",c:"bin-other"}, {n:"Giấy ăn bẩn",t:"Rác còn lại",c:"bin-other"}, {n:"Sành sứ vỡ",t:"Rác còn lại",c:"bin-other"}, {n:"Pin/Acquy",t:"Rác nguy hại",c:"bin-other"}
+];
 window.filterTrash = Utils.debounce(() => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }, 200); window.filterTrash();
+
+let trashItemsCache = [];
+window.loadTrashStats = () => {
+    const q = query(collection(db, 'gallery'), where('type', '==', 'trash'));
+    onSnapshot(q, (snap) => {
+        trashItemsCache = [];
+        let counts = { 'Tái chế': 0, 'Hữu cơ': 0, 'Rác còn lại': 0 };
+        
+        snap.forEach(d => {
+            const data = {id: d.id, ...d.data()};
+            trashItemsCache.push(data);
+            if(data.trashCategory && counts[data.trashCategory] !== undefined) {
+                counts[data.trashCategory]++;
+            } else {
+                counts['Rác còn lại']++; // Mặc định nếu chưa phân loại
+            }
+        });
+
+        const elRecycle = document.getElementById('count-recycle'); if(elRecycle) elRecycle.innerText = `${counts['Tái chế']} ảnh`;
+        const elOrganic = document.getElementById('count-organic'); if(elOrganic) elOrganic.innerText = `${counts['Hữu cơ']} ảnh`;
+        const elOther = document.getElementById('count-other'); if(elOther) elOther.innerText = `${counts['Rác còn lại']} ảnh`;
+    });
+}
+
+window.filterTrashView = (category) => {
+    document.getElementById('trash-categories').style.display = 'none';
+    document.getElementById('trash-gallery-container').style.display = 'block';
+    document.getElementById('trash-view-title').innerText = `Danh sách: ${category}`;
+    
+    const grid = document.getElementById('trash-dynamic-grid'); grid.innerHTML = "";
+    const items = trashItemsCache.filter(i => i.trashCategory === category || (category === 'Rác còn lại' && !i.trashCategory));
+    
+    items.forEach(d => {
+        grid.innerHTML += `<div class="gallery-item" onclick="openLightbox('gallery','${d.id}')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div></div></div>`;
+    });
+    if(items.length === 0) grid.innerHTML = "<p style='text-align:center; width:100%'>Chưa có ảnh nào trong mục này.</p>";
+}
+window.resetTrashView = () => { document.getElementById('trash-categories').style.display = 'flex'; document.getElementById('trash-gallery-container').style.display = 'none'; }
+window.addEventListener('load', loadTrashStats); // Tải thống kê khi vào web
+
 document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
 const mainLoginBtn = document.getElementById('main-login-btn'); if(mainLoginBtn) { mainLoginBtn.addEventListener('click', () => { console.log("Login clicked"); signInWithPopup(auth, provider); }); }
 
@@ -1472,6 +1596,8 @@ function updateLiveStatus(text) {
 
 // Tự động thêm nút Live vào giao diện Chatbot
 window.addEventListener('load', () => {
+    // Tạm ẩn tính năng Live Chat để phát triển sau
+    /*
     setTimeout(() => {
         const area = document.querySelector('.ai-input-area');
         const mic = document.getElementById('btn-mic');
@@ -1486,6 +1612,41 @@ window.addEventListener('load', () => {
             area.insertBefore(btn, mic);
         }
     }, 1500);
+    */
+
+    // --- LOGIC KÉO GIÃN KHUNG CHAT (RESIZABLE) ---
+    const chatWindow = document.getElementById('ai-window');
+    if (chatWindow) {
+        const handles = chatWindow.querySelectorAll('.resize-handle');
+        let startX, startY, startWidth, startHeight;
+
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(document.defaultView.getComputedStyle(chatWindow).width, 10);
+                startHeight = parseInt(document.defaultView.getComputedStyle(chatWindow).height, 10);
+
+                const onMouseMove = (e) => {
+                    if (handle.classList.contains('resize-left') || handle.classList.contains('resize-corner')) {
+                        chatWindow.style.width = (startWidth + startX - e.clientX) + 'px';
+                    }
+                    if (handle.classList.contains('resize-top') || handle.classList.contains('resize-corner')) {
+                        chatWindow.style.height = (startHeight + startY - e.clientY) + 'px';
+                    }
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        });
+    }
 });
 /*
     for (const colName of cols) {

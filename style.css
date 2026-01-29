@@ -314,6 +314,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); outlin
     opacity: 0; visibility: hidden; transform: scale(0.5); transform-origin: bottom right;
     transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     pointer-events: none;
+    min-width: 320px; min-height: 400px; /* Giới hạn nhỏ nhất */
+    max-width: 90vw; max-height: 90vh;   /* Giới hạn lớn nhất */
 }
 .ai-chat-window.active {
     opacity: 1; visibility: visible; transform: scale(1);
@@ -365,6 +367,38 @@ body.dark-mode .chat-bubble.user { background: #444746; color: #a8c7fa; }
 .chat-bubble.bot ul { margin: 5px 0 10px 20px; padding: 0; }
 .chat-bubble.bot li { margin-bottom: 4px; }
 
+/* AI Table Styles */
+.chat-bubble.bot table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 0.9rem;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px var(--shadow);
+}
+.chat-bubble.bot th, .chat-bubble.bot td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+.chat-bubble.bot th { background: var(--bg); font-weight: 700; color: var(--primary); }
+.chat-bubble.bot tr:last-child td { border-bottom: none; }
+.chat-bubble.bot tr:hover { background-color: var(--bg); }
+
+/* --- TRASH GUIDE STYLES --- */
+.trash-card {
+    flex: 1; min-width: 140px; padding: 20px; border-radius: 12px;
+    text-align: center; cursor: pointer; transition: 0.3s;
+    box-shadow: 0 4px 10px var(--shadow);
+}
+.trash-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px var(--shadow); }
+.trash-card i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+.trash-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
+.trash-card span { font-size: 0.9rem; font-weight: bold; opacity: 0.8; }
+
 /* Input Area */
 .ai-input-area { padding: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--card-bg); align-items: center; }
 .ai-input-area input { margin: 0; padding: 12px 15px; font-size: 0.95rem; border-radius: 24px; background: var(--input-bg); border: 1px solid var(--border); flex: 1; transition: 0.3s; }
@@ -387,6 +421,13 @@ body.dark-mode .chat-chip:hover { background: #444746; color: #a8c7fa; border-co
 .ai-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
 .ai-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
 @keyframes dotBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+/* Resize Handles Styles */
+.resize-handle { position: absolute; background: transparent; z-index: 100; transition: background 0.2s; }
+.resize-handle:hover { background: rgba(0,0,0,0.05); } /* Hiệu ứng khi di chuột vào mép */
+.resize-left { left: 0; top: 0; bottom: 0; width: 12px; cursor: ew-resize; } /* Mép trái */
+.resize-top { top: 0; left: 0; right: 0; height: 12px; cursor: ns-resize; } /* Mép trên */
+.resize-corner { top: 0; left: 0; width: 20px; height: 20px; cursor: nwse-resize; z-index: 101; border-top-left-radius: 24px; } /* Góc trên trái */
 
 .ai-msg-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 10px 0; padding-left: 5px; animation: fadeIn 0.5s ease-out; }
 .suggestion-chip { background: var(--card-bg); border: 1px solid var(--primary); color: var(--primary); padding: 5px 10px; border-radius: 15px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
