@@ -253,8 +253,10 @@ nav.pc-nav ul li a { color: #ffffff; text-decoration: none; font-weight: 700; te
 nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); transform: translateY(-2px); }
 
 nav.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
-.mobile-nav-inner { display: flex; justify-content: space-around; align-items: center; height: var(--nav-height); }
-.nav-item { flex: 1; text-align: center; color: var(--text-sec); text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; cursor: pointer; }
+/* Cho phép cuộn ngang để chứa nhiều mục hơn mà không bị chen chúc */
+.mobile-nav-inner { display: flex; justify-content: flex-start; align-items: center; height: var(--nav-height); overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 5px; }
+.mobile-nav-inner::-webkit-scrollbar { display: none; } /* Ẩn thanh cuộn */
+.nav-item { flex: 0 0 auto; min-width: 72px; text-align: center; color: var(--text-sec); text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; cursor: pointer; }
 .nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
 .nav-item.active-menu { color: var(--primary); font-weight: 800; }
 .nav-item.active-menu i { color: var(--primary); transform: translateY(-3px); }
@@ -625,6 +627,30 @@ input:checked + .slider-round:before { transform: translateX(24px); }
     h2 { font-size: 1.2rem; }
     .card { padding: 15px; margin-bottom: 15px; border-radius: 12px; }
     input, select, textarea { font-size: 16px; } /* Chống zoom trên iOS */
+
+    /* --- MOBILE BOTTOM SHEET MODAL --- */
+    /* Biến Modal thường thành dạng trượt từ dưới lên */
+    .modal { align-items: flex-end !important; justify-content: center; }
+    .modal .card {
+        width: 100% !important; max-width: 100% !important;
+        border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+        border-top-left-radius: 20px; border-top-right-radius: 20px;
+        margin: 0 !important;
+        animation: slideUpBottom 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);
+        max-height: 85vh !important; /* Không che hết màn hình */
+    }
+    
+    @keyframes slideUpBottom {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    /* Thanh nắm để kéo xuống (Visual cue) */
+    .modal .card::before {
+        content: ''; display: block; width: 40px; height: 5px;
+        background: var(--border); border-radius: 10px;
+        margin: 0 auto 15px auto;
+    }
 }
 
 /* --- GEMINI LIVE VISUALIZER --- */
@@ -777,3 +803,30 @@ body.dark-mode #gemini-live-overlay { background: rgba(18, 18, 18, 0.98); }
 .bin-recycle { color: #1976d2; }
 .bin-organic { color: #388e3c; }
 .bin-other { color: #f57c00; }
+
+/* --- SKELETON LOADING --- */
+.skeleton {
+    background: #eee;
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    background-size: 200% 100%;
+    animation: 1.5s shine linear infinite;
+}
+body.dark-mode .skeleton {
+    background: linear-gradient(110deg, #333 8%, #444 18%, #333 33%);
+}
+@keyframes shine { to { background-position-x: -200%; } }
+
+.skeleton-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: 1 / 1.3; /* Tỉ lệ gần giống card thật */
+}
+.skeleton-img { width: 100%; aspect-ratio: 1/1; }
+.skeleton-info { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.skeleton-text { height: 14px; margin-bottom: 8px; border-radius: 4px; width: 100%; }
+.skeleton-text.short { width: 60%; }

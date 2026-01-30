@@ -664,6 +664,23 @@ function renderGrid(col, elId, uR, cR) {
     gridParams[col] = { elId, uR, cR };
     if(State.unsubscribes[col]) State.unsubscribes[col]();
     
+    // --- SKELETON LOADING INJECTION ---
+    const g = document.getElementById(elId);
+    if(g) {
+        let skel = "";
+        // Hiển thị 6 khung xương để tạo cảm giác đang tải
+        for(let i=0; i<6; i++) {
+            skel += `<div class="skeleton-card">
+                <div class="skeleton skeleton-img"></div>
+                <div class="skeleton-info">
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text short"></div>
+                </div>
+            </div>`;
+        }
+        g.innerHTML = skel;
+    }
+
     // Query phân trang: Lọc archived -> Sort archived (bắt buộc) -> Sort createdAt -> Limit
     const q = query(collection(db, col), where("archived", "!=", true), orderBy("archived"), orderBy("createdAt", "desc"), limit(gridLimits[col]));
 
@@ -837,6 +854,48 @@ zoomArea.addEventListener('touchend', (e) => { const currentTime = new Date().ge
 zoomArea.addEventListener('dblclick', toggleZoom);
 function toggleZoom(e) { if (zoomArea.classList.contains('zoomed')) { zoomArea.classList.remove('zoomed'); imgEl.style.transform = "scale(1)"; } else { zoomArea.classList.add('zoomed'); let clientX, clientY; if (e.changedTouches && e.changedTouches.length > 0) { clientX = e.changedTouches[0].clientX; clientY = e.changedTouches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; } const rect = zoomArea.getBoundingClientRect(); const x = clientX - rect.left; const y = clientY - rect.top; imgEl.style.transformOrigin = `${x}px ${y}px`; imgEl.style.transform = "scale(2.5)"; } }
 
+// --- SWIPE TO CLOSE LIGHTBOX (MOBILE GESTURE) ---
+let touchStartY = 0;
+let touchCurrentY = 0;
+const lightboxEl = document.getElementById('lightbox');
+const lbContainer = document.querySelector('.lb-container');
+
+lightboxEl.addEventListener('touchstart', (e) => {
+    // Chỉ kích hoạt khi không zoom và chạm vào vùng ảnh
+    if (zoomArea.classList.contains('zoomed')) return;
+    touchStartY = e.touches[0].clientY;
+}, {passive: true});
+
+lightboxEl.addEventListener('touchmove', (e) => {
+    if (zoomArea.classList.contains('zoomed') || touchStartY === 0) return;
+    touchCurrentY = e.touches[0].clientY;
+    const diff = touchCurrentY - touchStartY;
+
+    // Nếu vuốt xuống > 0
+    if (diff > 0) {
+        e.preventDefault(); // Chặn cuộn trang
+        // Hiệu ứng kéo ảnh xuống và mờ dần nền
+        lbContainer.style.transform = `translateY(${diff}px)`;
+        lightboxEl.style.background = `rgba(0, 0, 0, ${1 - Math.min(diff/500, 0.8)})`;
+    }
+}, {passive: false});
+
+lightboxEl.addEventListener('touchend', (e) => {
+    if (zoomArea.classList.contains('zoomed') || touchStartY === 0) return;
+    const diff = touchCurrentY - touchStartY;
+    
+    // Nếu vuốt xuống quá 150px thì đóng
+    if (diff > 150) {
+        closeLightbox();
+    } else {
+        // Reset lại vị trí nếu chưa đủ ngưỡng
+        lbContainer.style.transform = '';
+        lightboxEl.style.background = '#000';
+    }
+    touchStartY = 0;
+    touchCurrentY = 0;
+});
+
 window.quickReply = async (text) => {
     if (!currentUser) return alert("Vui lòng đăng nhập!");
     const list = document.getElementById('lb-comments-list');
@@ -847,6 +906,7 @@ window.quickReply = async (text) => {
     await updateDoc(doc(db, currentCollection, currentImgId), { comments: arrayUnion(c) });
     const postSnap = await getDoc(doc(db, currentCollection, currentImgId));
     if(postSnap.exists()){ const ownerId = postSnap.data().uid; pushNotification(ownerId, 'comment', `<b>${currentUser.displayName}</b> đã bình luận: "${text}"`, currentImgId, currentCollection); }
+    if(navigator.vibrate) navigator.vibrate(30); // Rung khi gửi comment
 }
 
 window.pinPost = async () => { 
@@ -1195,10 +1255,17 @@ window.showPage = (id) => {
     const section = document.getElementById(targetId); if(section) section.classList.add('active');
     document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu'));
     if(document.getElementById('menu-pc-'+targetId)) document.getElementById('menu-pc-'+targetId).classList.add('active-menu');
-    if(document.getElementById('mob-'+targetId)) document.getElementById('mob-'+targetId).classList.add('active-menu');
+    if(document.getElementById('mob-'+targetId)) {
+        const el = document.getElementById('mob-'+targetId);
+        el.classList.add('active-menu');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
     if(targetId === 'archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); }
     const titles = { 'home': 'Trang Chủ', 'greenclass': 'Góc Xanh', 'contest': 'Thi Đua', 'archive': 'Lưu Trữ', 'activities': 'Hoạt Động', 'guide': 'Tra Cứu', 'profile': 'Hồ Sơ', 'admin': '🛠 Quản Trị Hệ Thống' };
     document.title = `Green School - ${titles[targetId] || 'A2K41'}`;
+    
+    // Haptic Feedback khi chuyển trang (Rung nhẹ)
+    if(navigator.vibrate) navigator.vibrate(15);
 }
 
 // --- TRASH GUIDE LOGIC ---
