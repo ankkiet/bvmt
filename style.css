@@ -81,58 +81,14 @@ body {
     100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
 }
 
-/* --- FAB GROUP (MENU TIỆN ÍCH) --- */
-.fab-container { 
-    position: fixed; bottom: 90px; right: 10px; z-index: 2000; /* Sát lề phải hơn */
-    width: 55px; height: 55px; /* Kích thước cố định bằng nút chính */
-    display: block; /* Bỏ flex để tránh lỗi layout */
-    pointer-events: none; /* QUAN TRỌNG: Cho phép click xuyên qua vùng trống */
-}
-.fab-main-btn { 
-    width: 100%; height: 100%; 
-    border-radius: 50%; background: var(--primary); color: white; border: none; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem; 
-    cursor: pointer; display: flex; align-items: center; justify-content: center; 
-    transition: 0.3s; z-index: 2002; pointer-events: auto; /* Bật lại click cho nút chính */
-    position: absolute; top: 0; right: 0; /* Neo chặt vào góc */
-}
-.fab-main-btn:active { transform: scale(0.9); }
-.fab-main-btn.active { transform: rotate(45deg); background: var(--danger); }
-
-.fab-items { 
-    position: absolute; 
-    right: 65px; /* Đẩy sang bên trái nút chính (55px + 10px gap) */
-    bottom: 5px; /* Căn giữa theo chiều dọc (55 - 45) / 2 */
-    display: flex; flex-direction: row; gap: 25px; /* Tăng khoảng cách để chữ không dính */
-    opacity: 0; visibility: hidden; 
-    transform: translateX(20px) scale(0.8); 
-    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    pointer-events: auto; /* Bật lại click cho các nút con */ 
-    margin: 0;
-}
-.fab-container.open .fab-items { opacity: 1; visibility: visible; transform: translateX(0) scale(1); }
-
-.fab-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--card-bg); color: var(--text); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s; position: relative; font-size: 1.2rem; }
-.fab-btn:hover { transform: scale(1.1); }
-.fab-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
-/* Label cho các nút con (Tooltip bên trên) */
-.fab-btn::after { content: attr(title); position: absolute; bottom: 55px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; white-space: nowrap; opacity: 0; visibility: hidden; transition: 0.2s; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-.fab-container.open .fab-btn::after { opacity: 1; visibility: visible; }
-
-/* Điều chỉnh vị trí trên Mobile để không che Nav */
-@media (max-width: 768px) {
-    .fab-container { bottom: 80px; right: 10px; }
-}
-
 .effect-menu {
-    position: fixed; bottom: 150px; right: 70px; /* Chỉnh lại vị trí menu mùa */
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: var(--card-bg); border-radius: 12px;
-    box-shadow: 0 5px 20px var(--shadow);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     border: 1px solid var(--border);
     z-index: 2000; display: none; overflow: hidden;
-    animation: slideUp 0.3s ease-out;
-    min-width: 140px;
+    animation: popIn 0.3s ease-out;
+    min-width: 200px;
 }
 .effect-menu.active { display: block; }
 .effect-menu div { padding: 10px 15px; cursor: pointer; font-size: 0.9rem; color: var(--text); border-bottom: 1px solid var(--border); transition: 0.2s; }
@@ -579,6 +535,10 @@ input:checked + .slider:before { transform: translateX(22px); }
 .slider-round:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider-round { background-color: var(--primary); }
 input:checked + .slider-round:before { transform: translateX(24px); }
+
+/* --- SETTINGS BUTTONS --- */
+.settings-btn { transition: transform 0.1s; }
+.settings-btn:active { transform: scale(0.9); opacity: 0.8; }
 
 /* --- CONFESSIONS STYLE (NEW) --- */
 .confession-container { max-height: 400px; overflow-y: auto; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }

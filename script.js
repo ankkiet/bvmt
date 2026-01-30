@@ -28,6 +28,41 @@ let currentPersona = 'green_bot';
 let currentAIImageBase64 = null;
 let guestChatCount = 0; // Biến đếm lượt chat của khách
 
+// Hàm lấy ngữ cảnh nội dung trên màn hình hiện tại (Context-Awareness)
+const getCurrentPageContext = () => {
+    const activeSection = document.querySelector('.page-section.active');
+    if (!activeSection) return "";
+    
+    const id = activeSection.id;
+    let content = `\n--- THÔNG TIN TRÊN MÀN HÌNH (${id.toUpperCase()}) ---\n`;
+    
+    try {
+        if (id === 'home') {
+            const pinned = document.getElementById('pin-title')?.innerText;
+            const featured = document.getElementById('feat-title')?.innerText;
+            const tip = document.getElementById('daily-tip')?.innerText;
+            if(pinned) content += `- Tin ghim: ${pinned}\n`;
+            if(featured) content += `- Top 1: ${featured}\n`;
+            if(tip) content += `- Thông điệp: ${tip}\n`;
+        } 
+        else if (id === 'greenclass' || id === 'contest') {
+            const timer = document.getElementById(`timer-${id}`)?.innerText;
+            if(timer) content += `- Thời gian còn lại: ${timer}\n`;
+            const rankRows = document.querySelectorAll(`#rank-${id}-user tr`);
+            if(rankRows.length > 0) {
+                content += "- Top xếp hạng: ";
+                Array.from(rankRows).slice(0, 3).forEach(r => content += r.innerText.replace(/\n/g, ' ') + "; ");
+                content += "\n";
+            }
+        }
+        else if (id === 'activities') {
+            const cards = activeSection.querySelectorAll('.card h2');
+            content += "- Các hoạt động: " + Array.from(cards).map(c => c.innerText).join(", ") + "\n";
+        }
+    } catch(e) { }
+    return content;
+};
+
 // Hàm tạo câu lệnh nhắc (System Prompt) cho AI dựa trên ngữ cảnh người dùng
 const getSystemPrompt = () => {
     let p = PERSONAS[currentPersona].prompt;
@@ -43,6 +78,7 @@ const getSystemPrompt = () => {
     } else {
         p += `\n\n--- TRẠNG THÁI NGƯỜI DÙNG ---\nNgười dùng chưa đăng nhập (Khách). Hãy khuyến khích họ đăng nhập để lưu dữ liệu.`;
     }
+    p += getCurrentPageContext(); // Thêm ngữ cảnh màn hình vào Prompt
     return p;
 };
 
@@ -580,6 +616,27 @@ window.executeUpload = async (i) => {
         } else {
             description = userInput; // Người dùng tự viết mô tả
         }
+    }
+
+    // --- AI CONTENT MODERATION (KIỂM DUYỆT ẢNH) ---
+    // Bước này ngăn chặn ảnh nhạy cảm trước khi tải lên Server
+    Utils.loader(true, "🛡️ AI đang kiểm duyệt nội dung...");
+    try {
+        const base64Mod = await fileToBase64(f);
+        // Prompt yêu cầu AI đóng vai kiểm duyệt viên trường học
+        const modPrompt = "Bạn là hệ thống kiểm duyệt an toàn cho trường học (School Safety Filter). Hãy phân tích bức ảnh này. Nếu ảnh chứa nội dung: Khỏa thân, Khiêu dâm, Bạo lực, Máu me, Kinh dị, Vũ khí, hoặc Ngón tay thối. Hãy trả lời duy nhất từ: 'UNSAFE'. Nếu ảnh an toàn và phù hợp với học sinh, hãy trả lời: 'SAFE'.";
+        
+        // Gọi model 'main' (Flash) để kiểm tra nhanh
+        const modResult = await callGeminiAPI(modPrompt, base64Mod, false, 'main', aiKeys, []);
+        
+        if (modResult && modResult.toUpperCase().includes("UNSAFE")) {
+            Utils.loader(false);
+            alert("🚫 ẢNH BỊ TỪ CHỐI!\n\nHệ thống AI phát hiện ảnh có nội dung nhạy cảm hoặc không phù hợp với môi trường học đường.\nVui lòng chọn ảnh khác văn minh hơn nhé! 🌸");
+            i.value = ""; // Reset input file để người dùng chọn lại
+            return; // Dừng toàn bộ quá trình upload
+        }
+    } catch (e) {
+        console.warn("Lỗi kiểm duyệt (Bỏ qua để không chặn người dùng):", e);
     }
 
     let aiPrompt = "";

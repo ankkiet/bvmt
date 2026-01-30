@@ -138,7 +138,7 @@
     </div>
 
     <!-- Trình phát nhạc ẩn -->
-    <div id="player" style="display:none;"></div>
+    <div id="player" style="position: fixed; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"></div>
 
     <audio id="fireworks-audio" src="https://www.soundjay.com/misc/sounds/magic-chime-01.mp3" preload="auto"></audio>
 
@@ -150,17 +150,6 @@
         <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" alt="AI">
     </div>
 
-    <!-- MENU TIỆN ÍCH TỔNG HỢP (FAB GROUP) -->
-    <div class="fab-container" id="fab-group">
-        <div class="fab-items">
-            <div class="fab-btn" onclick="toggleMusic()" title="Nhạc"><i class="fas fa-compact-disc" id="music-icon-display"></i><div class="music-note-badge" style="top:-2px; right:-2px;">🎵</div></div>
-            <div class="fab-btn" onclick="toggleSeasonalMenu()" title="Hiệu ứng"><i class="fas fa-snowflake" id="effect-icon"></i></div>
-            <div class="fab-btn" onclick="toggleDarkMode()" title="Chế độ tối"><i class="fas fa-moon" id="dark-icon"></i></div>
-        </div>
-        <button class="fab-main-btn" onclick="toggleFabGroup()">
-            <i class="fas fa-cog" id="fab-main-icon"></i>
-        </button>
-    </div>
     <div class="effect-menu" id="effect-menu">
         <div onclick="setEffectMode('auto')">🔄 Tự động</div>
         <div onclick="setEffectMode('spring')">🌸 Mùa Xuân</div>
@@ -347,6 +336,36 @@
         <!-- TRANG HỒ SƠ (PROFILE) -->
         <div id="profile" class="page-section">
             <h1>👤 Hồ Sơ Của Tôi</h1>
+            
+            <!-- CÀI ĐẶT & TIỆN ÍCH (MỚI) -->
+            <div class="card">
+                <h3 style="margin-top:0">⚙️ Cài Đặt & Tiện Ích</h3>
+                <div style="display: flex; gap: 15px; justify-content: space-around; flex-wrap: wrap;">
+                    <!-- Nút Nhạc -->
+                    <div class="settings-btn" onclick="toggleMusic()" style="text-align:center; cursor:pointer; flex:1; min-width:80px;">
+                        <div style="width:50px; height:50px; background:var(--input-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 5px auto; border:1px solid var(--border); position:relative;">
+                            <i class="fas fa-compact-disc" id="music-icon-display" style="font-size:1.5rem; color:var(--text);"></i>
+                            <div class="music-note-badge" style="top:-2px; right:-2px;">🎵</div>
+                        </div>
+                        <span style="font-size:0.85rem;">Nhạc nền</span>
+                    </div>
+                    <!-- Nút Hiệu ứng -->
+                    <div class="settings-btn" onclick="toggleSeasonalMenu()" style="text-align:center; cursor:pointer; flex:1; min-width:80px;">
+                        <div style="width:50px; height:50px; background:var(--input-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 5px auto; border:1px solid var(--border);">
+                            <i class="fas fa-snowflake" id="effect-icon" style="font-size:1.5rem; color:var(--text);"></i>
+                        </div>
+                        <span style="font-size:0.85rem;">Hiệu ứng</span>
+                    </div>
+                    <!-- Nút Giao diện -->
+                    <div class="settings-btn" onclick="toggleDarkMode()" style="text-align:center; cursor:pointer; flex:1; min-width:80px;">
+                        <div style="width:50px; height:50px; background:var(--input-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 5px auto; border:1px solid var(--border);">
+                            <i class="fas fa-moon" id="dark-icon" style="font-size:1.5rem; color:var(--text);"></i>
+                        </div>
+                        <span style="font-size:0.85rem;">Giao diện</span>
+                    </div>
+                </div>
+            </div>
+
             <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
             <div id="profile-in" style="display: none;">
                 <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>

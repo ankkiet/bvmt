@@ -183,7 +183,9 @@ class GreenBotLive {
         1. 'navigate': Chuyển trang. Các page hợp lệ: 'home', 'greenclass', 'contest', 'archive', 'profile', 'guide'.
         2. 'scroll': Cuộn trang. Các hướng hợp lệ: 'up', 'down', 'top', 'bottom'.
         3. 'action': Hành động đặc biệt. Các type hợp lệ: 'music' (bật/tắt nhạc), 'dark_mode' (bật/tắt nền tối), 'upload' (mở cửa sổ tải file).
-        4. 'chat': Nếu không phải là lệnh điều khiển, phân loại là 'chat'.
+        4. 'read_page': Đọc to nội dung chính trên màn hình hiện tại.
+        5. 'fill_form': Điền thông tin vào form hồ sơ. data: { "field": "name"|"id"|"class", "value": "..." }
+        6. 'chat': Nếu không phải là lệnh điều khiển, phân loại là 'chat'.
 
         VÍ DỤ:
         - Input: "Mở trang thi đua"
@@ -194,6 +196,9 @@ class GreenBotLive {
         
         - Input: "Bật nhạc lên"
         - Output: {"command":"action","data":{"type":"music"},"response":"Nhạc lên nào! 🎶"}
+
+        - Input: "Đổi tên tớ thành Nguyễn Văn A"
+        - Output: {"command":"fill_form","data":{"field":"name","value":"Nguyễn Văn A"},"response":"Đã điền tên mới cho cậu."}
 
         - Input: "Chào Green Bot"
         - Output: {"command":"chat","data":null,"response":""}
@@ -222,6 +227,24 @@ class GreenBotLive {
                 if (cmd.command === 'navigate' && cmd.data?.page) { if (window.showPage) { window.showPage(cmd.data.page); window.location.hash = cmd.data.page; } } 
                 else if (cmd.command === 'scroll') { if (cmd.data.dir === 'down') window.scrollBy({ top: 500, behavior: 'smooth' }); if (cmd.data.dir === 'up') window.scrollBy({ top: -500, behavior: 'smooth' }); if (cmd.data.dir === 'top') window.scrollTo({ top: 0, behavior: 'smooth' }); if (cmd.data.dir === 'bottom') window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); } 
                 else if (cmd.command === 'action') { if (cmd.data.type === 'music' && window.toggleMusic) window.toggleMusic(); if (cmd.data.type === 'dark_mode' && window.toggleDarkMode) window.toggleDarkMode(); if (cmd.data.type === 'upload') document.getElementById('file-input')?.click(); }
+                
+                // Lệnh mới: Đọc nội dung trang
+                else if (cmd.command === 'read_page') {
+                    const active = document.querySelector('.page-section.active');
+                    const textToRead = active ? (active.innerText.replace(/\s+/g, ' ').substring(0, 300) + "...") : "Không có nội dung.";
+                    speakText("Trên màn hình đang có: " + textToRead, null);
+                    return; // Return để tránh AI nói đè
+                }
+                // Lệnh mới: Điền form
+                else if (cmd.command === 'fill_form') {
+                    if (window.location.hash !== '#profile') window.showPage('profile');
+                    setTimeout(() => {
+                        const map = { 'name': 'edit-name', 'id': 'edit-custom-id', 'class': 'edit-class' };
+                        const el = document.getElementById(map[cmd.data.field]);
+                        if(el) { el.value = cmd.data.value; speakText(`Đã điền ${cmd.data.value} vào ô ${cmd.data.field}`, null); }
+                    }, 800);
+                    return;
+                }
 
                 // Dùng TTS của trình duyệt để đọc câu phản hồi xác nhận
                 if (cmd.response) {
