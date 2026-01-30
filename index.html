@@ -605,6 +605,33 @@
         <h2 style="color:var(--primary)" id="upload-loading-text">Đang tải ảnh lên...</h2>
     </div>
 
+    <!-- TRASH DETAIL MODAL -->
+    <div id="trash-detail-modal" class="modal" style="background: rgba(0,0,0,0.6); align-items:center; justify-content:center; display:none;">
+        <div class="card" style="max-width: 500px; width: 90%; max-height: 80vh; display:flex; flex-direction:column; animation: fadeIn 0.3s;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
+                <h3 id="trash-detail-title" style="margin:0; color:var(--primary);">Chi tiết</h3>
+                <button class="lb-close-btn" style="position:static; transform:none; background:var(--input-bg); color:var(--text);" onclick="closeTrashDetail()">×</button>
+            </div>
+            
+            <div style="flex:1; overflow-y:auto; padding-right:10px;">
+                <img id="trash-detail-img" src="" style="width:100%; height:200px; object-fit:cover; border-radius:10px; margin-bottom:15px;">
+                <div id="trash-detail-desc"></div>
+
+                <!-- Mini Chat -->
+                <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
+                    <h4 style="margin:0 0 10px 0; font-size:1rem;">🤖 Hỏi AI thêm:</h4>
+                    <div id="trash-chat-messages" style="max-height:150px; overflow-y:auto; background:var(--bg); padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:10px;">
+                        <div style="color:var(--text-sec)">Ví dụ: Nó có thể tái chế thành gì?</div>
+                    </div>
+                    <form onsubmit="sendTrashChatMessage(event)" style="display:flex; gap:5px;">
+                        <input id="trash-chat-input" placeholder="Hỏi về mục này..." style="margin:0; flex:1; font-size:0.9rem; padding:8px;">
+                        <button class="btn btn-sm"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="script.js"></script>
 
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "18a4fa3e191846769c91bd8e455fa668"}'></script>

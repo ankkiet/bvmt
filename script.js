@@ -1171,12 +1171,79 @@ window.showPage = (id) => {
 }
 
 // --- TRASH GUIDE LOGIC ---
-const trashDB = [ 
-    {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle"}, {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle"}, {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle"}, {n:"Lon nhôm",t:"Tái chế",c:"bin-recycle"}, {n:"Hộp giấy",t:"Tái chế",c:"bin-recycle"},
-    {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Lá cây",t:"Hữu cơ",c:"bin-organic"}, {n:"Thức ăn thừa",t:"Hữu cơ",c:"bin-organic"}, {n:"Bã trà/cà phê",t:"Hữu cơ",c:"bin-organic"},
-    {n:"Túi nilon",t:"Rác còn lại",c:"bin-other"}, {n:"Hộp xốp",t:"Rác còn lại",c:"bin-other"}, {n:"Khẩu trang",t:"Rác còn lại",c:"bin-other"}, {n:"Giấy ăn bẩn",t:"Rác còn lại",c:"bin-other"}, {n:"Sành sứ vỡ",t:"Rác còn lại",c:"bin-other"}, {n:"Pin/Acquy",t:"Rác nguy hại",c:"bin-other"}
+const trashDB = [
+    {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1618242383803-03c0b36b3b57?q=80&w=400", desc: "Vỏ hộp sữa (Tetra Pak) là rác tái chế. Chúng được cấu tạo từ nhiều lớp giấy, nhựa và nhôm. Cần được làm sạch và ép dẹp trước khi bỏ vào thùng rác tái chế."},
+    {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1604106421297-2b3a941a3a9c?q=80&w=400", desc: "Chai nhựa PET, HDPE (thường là chai nước, chai sữa tắm) có thể tái chế thành sợi polyester, đồ dùng mới. Hãy làm sạch và tháo nắp trước khi vứt."},
+    {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1586019817288-72bce0a97468?q=80&w=400", desc: "Các loại giấy báo, giấy văn phòng, bìa carton đều có thể tái chế. Tránh để giấy bị dính dầu mỡ hoặc thức ăn."},
+    {n:"Lon nhôm",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1593375629324-f8f948152b80?q=80&w=400", desc: "Lon nước ngọt, bia làm từ nhôm có giá trị tái chế cao, tiết kiệm đến 95% năng lượng so với sản xuất mới. Hãy làm sạch và ép dẹp chúng."},
+    {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic", img: "https://images.unsplash.com/photo-1557800636-894a64c1696f?q=80&w=400", desc: "Vỏ các loại rau củ quả là rác hữu cơ, có thể được ủ để làm phân compost bón cho cây trồng, rất tốt cho đất."},
+    {n:"Thức ăn thừa",t:"Hữu cơ",c:"bin-organic", img: "https://images.unsplash.com/photo-1543353071-873f6b6a6a89?q=80&w=400", desc: "Thức ăn thừa không chứa dầu mỡ nhiều có thể được ủ làm phân hữu cơ. Tránh đổ thức ăn có dầu mỡ vào bồn rửa vì có thể gây tắc cống."},
+    {n:"Túi nilon",t:"Rác còn lại",c:"bin-other", img: "https://images.unsplash.com/photo-1593113646773-5b8617fab7e3?q=80&w=400", desc: "Túi nilon rất khó phân hủy và khó tái chế. Hãy hạn chế sử dụng, tái sử dụng nhiều lần và bỏ vào thùng rác còn lại khi không thể dùng nữa."},
+    {n:"Pin/Acquy",t:"Rác nguy hại",c:"bin-other", img: "https://images.unsplash.com/photo-1578358672957-25a3259f4ebe?q=80&w=400", desc: "Pin và acquy chứa nhiều kim loại nặng độc hại. TUYỆT ĐỐI KHÔNG vứt vào thùng rác thông thường. Cần được thu gom tại các điểm thu hồi rác thải nguy hại riêng."}
 ];
-window.filterTrash = Utils.debounce(() => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }, 200); window.filterTrash();
+window.filterTrash = Utils.debounce(() => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center; cursor:pointer;" onclick="showTrashDetail('${i.n}')"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }, 200); window.filterTrash();
+
+let trashChatHistory = [];
+let currentTrashItem = null;
+
+window.showTrashDetail = (itemName) => {
+    currentTrashItem = trashDB.find(item => item.n === itemName);
+    if (!currentTrashItem) return;
+
+    document.getElementById('trash-detail-title').innerText = currentTrashItem.n;
+    document.getElementById('trash-detail-img').src = currentTrashItem.img;
+    document.getElementById('trash-detail-desc').innerHTML = `<p>${currentTrashItem.desc}</p>`;
+    
+    const modal = document.getElementById('trash-detail-modal');
+    modal.style.display = 'flex';
+
+    // Reset chat
+    const chatMessages = document.getElementById('trash-chat-messages');
+    chatMessages.innerHTML = `<div style="color:var(--text-sec)">Ví dụ: Nó có thể tái chế thành gì?</div>`;
+    
+    const systemPrompt = `Bạn là một chuyên gia tái chế, chỉ trả lời các câu hỏi liên quan đến '${currentTrashItem.n}'. Hãy trả lời ngắn gọn, tập trung vào việc xử lý và tái chế. (Trả lời bằng Tiếng Việt)`;
+    trashChatHistory = [
+        { role: "user", parts: [{ text: systemPrompt }] },
+        { role: "model", parts: [{ text: "Sẵn sàng giải đáp!" }] }
+    ];
+}
+
+window.closeTrashDetail = () => {
+    document.getElementById('trash-detail-modal').style.display = 'none';
+    currentTrashItem = null;
+}
+
+window.sendTrashChatMessage = async (e) => {
+    e.preventDefault();
+    if (!currentTrashItem) return;
+
+    const input = document.getElementById('trash-chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const chatMessages = document.getElementById('trash-chat-messages');
+    if (chatMessages.querySelector('div[style*="color:var(--text-sec)"]')) {
+        chatMessages.innerHTML = ''; // Clear placeholder
+    }
+    chatMessages.innerHTML += `<div style="text-align:right; margin-bottom:5px;"><b>Bạn:</b> ${msg}</div>`;
+    input.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    trashChatHistory.push({ role: "user", parts: [{ text: msg }] });
+
+    const loadingDiv = document.createElement('div');
+    loadingDiv.innerHTML = '<b>AI:</b> <i class="fas fa-spinner fa-spin"></i>';
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+        const response = await callGeminiAPI(null, null, true, 'main', aiKeys, trashChatHistory);
+        loadingDiv.innerHTML = `<b>AI:</b> ${response.replace(/\n/g, '<br>')}`;
+    } catch (err) {
+        loadingDiv.innerHTML = `<b>AI:</b> <span style="color:red">Lỗi!</span>`;
+    }
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 let trashItemsCache = [];
 window.loadTrashStats = () => {
@@ -1210,9 +1277,10 @@ window.filterTrashView = (category) => {
     const items = trashItemsCache.filter(i => i.trashCategory === category || (category === 'Rác còn lại' && !i.trashCategory));
     
     items.forEach(d => {
-        grid.innerHTML += `<div class="gallery-item" onclick="openLightbox('gallery','${d.id}')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div></div></div>`;
+        grid.innerHTML += `<div class="gallery-item" onclick="openLightbox('gallery','${d.id}', 'reference')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img lazy-blur" data-src="${optimizeUrl(d.url, 400)}"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div></div></div>`;
     });
     if(items.length === 0) grid.innerHTML = "<p style='text-align:center; width:100%'>Chưa có ảnh nào trong mục này.</p>";
+    lazyLoadImages(); // Kích hoạt lazy load cho ảnh mới
 }
 window.resetTrashView = () => { document.getElementById('trash-categories').style.display = 'flex'; document.getElementById('trash-gallery-container').style.display = 'none'; }
 window.addEventListener('load', loadTrashStats); // Tải thống kê khi vào web
