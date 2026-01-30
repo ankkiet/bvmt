@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <!-- Cấu hình Viewport cho Mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Green School - A2K41 Official</title>
     
@@ -13,20 +14,25 @@
     <meta property="og:title" content="A2K41 - Green School">
     <meta property="og:image" content="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg">
     
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Thư viện hỗ trợ: Excel, ChartJS, PDF, Confetti -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Cảnh báo khi mở bằng trình duyệt trong app (Zalo/FB) -->
     <div id="webview-warning">
         <div class="wv-icon"><i class="fas fa-exclamation-circle"></i></div>
         <div class="wv-title">Trình duyệt không hỗ trợ</div>
@@ -37,6 +43,7 @@
         <div class="wv-arrow"><i class="fas fa-arrow-up"></i></div>
     </div>
 
+    <!-- Màn hình bảo trì (Chỉ hiện khi Admin bật) -->
     <div id="maintenance-overlay">
         <i class="fas fa-hammer"></i>
         <h1>Hệ Thống Đang Bảo Trì</h1>
@@ -44,6 +51,7 @@
         <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
     </div>
 
+    <!-- Popup thông báo toàn cục -->
     <div id="notification-popup">
         <div class="notif-icon"><i class="fas fa-bell"></i></div>
         <div class="notif-content">
@@ -53,15 +61,18 @@
         <div class="notif-close" onclick="closeNotification()">✕</div>
     </div>
 
+    <!-- Loader khi kéo trang xuống (Pull to Refresh) -->
     <div id="ptr-loader">
         <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
     </div>
 
+    <!-- Chuông thông báo cá nhân -->
     <div class="header-bell" onclick="toggleNotifDropdown()">
         <i class="fas fa-bell"></i>
         <div class="bell-dot" id="nav-bell-dot"></div>
     </div>
 
+    <!-- Danh sách thông báo cá nhân -->
     <div class="notif-dropdown" id="notif-dropdown">
         <div class="notif-header">
             <span>Thông báo</span>
@@ -72,6 +83,7 @@
         </div>
     </div>
 
+    <!-- Cửa sổ Chat AI (Green Bot) -->
     <div class="ai-chat-window" id="ai-window">
         <!-- Resize Handles (Tay nắm kéo giãn) -->
         <div class="resize-handle resize-left" title="Kéo để chỉnh chiều rộng"></div>
@@ -125,10 +137,12 @@
         </form>
     </div>
 
+    <!-- Trình phát nhạc ẩn -->
     <div id="player" style="display:none;"></div>
 
     <audio id="fireworks-audio" src="https://www.soundjay.com/misc/sounds/magic-chime-01.mp3" preload="auto"></audio>
 
+    <!-- Canvas hiệu ứng mùa (Tuyết rơi, lá rơi...) -->
     <canvas id="seasonal-canvas"></canvas>
 
     <!-- NÚT CHAT AI (ĐỘC LẬP) -->
@@ -168,6 +182,7 @@
         <button class="btn-live-close" onclick="window.stopGeminiLive()"><i class="fas fa-times"></i></button>
     </div>
 
+    <!-- Menu điều hướng trên PC -->
     <nav class="pc-nav">
         <ul>
             <li><a href="#home" id="menu-pc-home">Trang Chủ</a></li>
@@ -181,7 +196,9 @@
         </ul>
     </nav>
 
+    <!-- Container chính chứa các trang nội dung -->
     <div class="container">
+        <!-- TRANG CHỦ -->
         <div id="home" class="page-section">
             <div id="locked-home" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-home">
@@ -215,6 +232,7 @@
             </div>
         </div>
 
+        <!-- TRANG GÓC XANH (GALLERY) -->
         <div id="greenclass" class="page-section">
             <div id="locked-greenclass" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-greenclass">
@@ -238,6 +256,7 @@
             </div>
         </div>
 
+        <!-- TRANG THI ĐUA -->
         <div id="contest" class="page-section">
             <div id="locked-contest" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-contest">
@@ -257,6 +276,7 @@
             </div>
         </div>
 
+        <!-- TRANG LƯU TRỮ -->
         <div id="archive" class="page-section">
             <div id="locked-archive" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Kho lưu trữ đang đóng</h2></div>
             <div id="content-archive">
@@ -275,6 +295,7 @@
             </div>
         </div>
 
+        <!-- TRANG HOẠT ĐỘNG -->
         <div id="activities" class="page-section">
             <div id="locked-activities" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-activities">
@@ -283,12 +304,14 @@
                 <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#" style="text-decoration:none; color:var(--primary)">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
             </div>
         </div>
+        <!-- TRANG TRA CỨU (GUIDE) -->
         <div id="guide" class="page-section">
             <div id="locked-guide" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
             <div id="content-guide">
                 <h1>🔍 Tra Cứu Phân Loại Rác</h1>
-                <div style="text-align:center; margin-bottom:20px;">
-                    <button class="btn" style="background:#ff9800; color:white;" onclick="checkLoginAndUpload('trash')"><i class="fas fa-camera"></i> AI Soi Rác (Camera)</button>
+                <div style="text-align:center; margin-bottom:20px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                    <button class="btn" style="background:#ff9800; color:white;" onclick="checkLoginAndUpload('trash')"><i class="fas fa-camera"></i> AI Soi Rác</button>
+                    <button class="btn" style="background:#2196f3; color:white;" onclick="startQRScanner()"><i class="fas fa-qrcode"></i> Quét QR</button>
                 </div>
                 
                 <!-- Static Search -->
@@ -321,6 +344,7 @@
             </div>
         </div>
 
+        <!-- TRANG HỒ SƠ (PROFILE) -->
         <div id="profile" class="page-section">
             <h1>👤 Hồ Sơ Của Tôi</h1>
             <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
@@ -372,6 +396,7 @@
             </div>
         </div>
 
+        <!-- TRANG QUẢN TRỊ (ADMIN) -->
         <div id="admin" class="page-section">
             <h1>🛠 Quản Trị Hệ Thống</h1>
 
@@ -533,6 +558,7 @@
         </div>
     </div>
 
+    <!-- Menu điều hướng trên Mobile -->
     <nav class="mobile-nav">
         <div class="mobile-nav-inner">
             <a href="#home" id="mob-home" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
@@ -544,6 +570,7 @@
         </div>
     </nav>
 
+    <!-- Lightbox (Xem ảnh chi tiết) -->
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container">
             <div class="lb-overlay-top">
@@ -598,6 +625,7 @@
         </div>
     </div>
 
+    <!-- Input file ẩn để upload -->
     <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
     <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="changeAvatar(this)">
     <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
@@ -610,6 +638,7 @@
         <div class="card" style="max-width: 500px; width: 90%; max-height: 80vh; display:flex; flex-direction:column; animation: fadeIn 0.3s;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
                 <h3 id="trash-detail-title" style="margin:0; color:var(--primary);">Chi tiết</h3>
+                <button class="btn btn-sm btn-outline" onclick="createTrashQR()" style="margin-left:auto; margin-right:10px;"><i class="fas fa-qrcode"></i> Tạo QR</button>
                 <button class="lb-close-btn" style="position:static; transform:none; background:var(--input-bg); color:var(--text);" onclick="closeTrashDetail()">×</button>
             </div>
             
@@ -632,6 +661,29 @@
         </div>
     </div>
 
+    <!-- QR SCANNER MODAL -->
+    <div id="qr-scanner-modal" class="modal" style="background: rgba(0,0,0,0.9); align-items:center; justify-content:center; display:none; z-index:10000;">
+        <div class="card" style="max-width: 500px; width: 90%; padding: 20px; position:relative; background: var(--card-bg);">
+            <button class="lb-close-btn" style="position:absolute; top:-15px; right:-15px; background:var(--danger); color:white; z-index:10;" onclick="stopQRScanner()">×</button>
+            <h3 style="text-align:center; margin-top:0; color:var(--primary);">Quét mã QR</h3>
+            <div id="qr-reader" style="width:100%"></div>
+            <p style="text-align:center; font-size:0.9rem; color:var(--text-sec); margin-top:10px;">Di chuyển camera vào mã QR để tra cứu</p>
+        </div>
+    </div>
+
+    <!-- QR GENERATOR MODAL -->
+    <div id="qr-gen-modal" class="modal" style="background: rgba(0,0,0,0.8); align-items:center; justify-content:center; display:none; z-index:10001;">
+        <div class="card" style="background:white; padding:30px; text-align:center; border-radius:15px; max-width:350px;">
+            <h3 style="color:var(--primary); margin-top:0;">Mã QR Thùng Rác</h3>
+            <div id="qr-code-display" style="display:flex; justify-content:center; margin:20px 0;"></div>
+            <h2 id="qr-trash-name" style="margin:10px 0; text-transform:uppercase;">TÊN RÁC</h2>
+            <p style="color:#666; font-size:0.9rem;">Dán mã này lên thùng rác để mọi người quét và tra cứu cách xử lý.</p>
+            <button class="btn" onclick="downloadQRLabel()"><i class="fas fa-download"></i> Tải ảnh về in</button>
+            <button class="btn btn-ghost-danger" onclick="document.getElementById('qr-gen-modal').style.display='none'" style="margin-top:10px;">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Main Script -->
     <script type="module" src="script.js"></script>
 
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "18a4fa3e191846769c91bd8e455fa668"}'></script>

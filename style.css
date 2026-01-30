@@ -730,3 +730,50 @@ body.dark-mode #gemini-live-overlay { background: rgba(18, 18, 18, 0.98); }
 .live-visualizer-css .bar:nth-child(3) { animation-delay: 0.4s; }
 .live-visualizer-css .bar:nth-child(4) { animation-delay: 0.1s; }
 .live-visualizer-css .bar:nth-child(5) { animation-delay: 0.3s; }
+
+/* --- FLIP CARD STYLES (TRASH GUIDE) --- */
+.flip-card {
+    background-color: transparent;
+    perspective: 1000px;
+    height: 240px; /* Chiều cao cố định cho thẻ */
+    margin-bottom: 0;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 10px var(--shadow);
+    border-radius: 12px;
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+}
+
+.flip-card-front { z-index: 2; }
+.flip-card-back { transform: rotateY(180deg); background: var(--input-bg); justify-content: space-between; }
+
+.flip-card-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.bin-recycle { color: #1976d2; }
+.bin-organic { color: #388e3c; }
+.bin-other { color: #f57c00; }

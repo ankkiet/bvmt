@@ -5,6 +5,7 @@ import { Utils, fileToBase64, optimizeUrl, getYoutubeID, speakText, listenOnce }
 import { callGeminiAPI, typeWriterEffect, connectToGemini, startRecording, stopRecording } from './modules/ai.js';
 import { toggleLiveChat } from './modules/live.js';
 
+// --- KHAI BÁO BIẾN TOÀN CỤC & CẤU HÌNH ---
 let dynamicAdminEmails = [...ADMIN_EMAILS]; // Sử dụng biến động cho Admin
 
 let currentUser=null, currentCollection='gallery', currentImgId=null, currentImgCollection=null, activeArchiveTab='gallery', musicId='jfKfPfyJRdk';
@@ -18,7 +19,7 @@ const PAGE_SIZE = 12;
 const gridLimits = { gallery: PAGE_SIZE, contest: PAGE_SIZE };
 const gridParams = {};
 
-// Multi-Key AI Logic (FAIL-OVER)
+// --- CẤU HÌNH AI & CHATBOT (GEMINI) ---
 let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; 
 
 // --- CHAT HISTORY (MEMORY) ---
@@ -27,6 +28,7 @@ let currentPersona = 'green_bot';
 let currentAIImageBase64 = null;
 let guestChatCount = 0; // Biến đếm lượt chat của khách
 
+// Hàm tạo câu lệnh nhắc (System Prompt) cho AI dựa trên ngữ cảnh người dùng
 const getSystemPrompt = () => {
     let p = PERSONAS[currentPersona].prompt;
 
@@ -53,6 +55,7 @@ window.refreshChatContext = () => {
 window.refreshChatContext();
 
 // --- VOICE RECOGNITION (SPEECH-TO-TEXT) ---
+// Xử lý nhận diện giọng nói để nhập liệu vào ô chat
 let recognition;
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -84,6 +87,7 @@ window.toggleVoiceInput = () => {
     else recognition.start();
 }
 
+// Xử lý xem trước ảnh khi người dùng chọn ảnh để gửi cho AI
 window.previewAIImage = async (input) => {
     const file = input.files[0];
     if(!file) return;
@@ -119,6 +123,7 @@ if (btnLive) {
     btnLive.addEventListener('click', () => toggleLiveChat('btn-live-chat', aiKeys));
 }
 
+// Chuyển đổi nhân vật AI (Green Bot <-> Giáo Sư)
 window.switchPersona = (key) => {
     if (!PERSONAS[key]) return;
     currentPersona = key;
@@ -149,6 +154,7 @@ const isAdmin=(e)=>dynamicAdminEmails.includes(e);
 const State = { unsubscribes: {} };
 
 // --- DARK MODE LOGIC (NEW) ---
+// Chuyển đổi giao diện Sáng / Tối
 window.toggleDarkMode = () => {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
@@ -157,6 +163,7 @@ window.toggleDarkMode = () => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
 
+// Khởi chạy các chức năng khi trang web tải xong
 window.addEventListener('load', () => {
     // Check Theme
     if (localStorage.getItem('theme') === 'dark') {
@@ -176,6 +183,7 @@ window.addEventListener('load', () => {
 });
 
 // --- PULL TO REFRESH LOGIC ---
+// Tính năng kéo trang xuống để làm mới (trên Mobile)
 let startY = 0;
 const ptrElement = document.getElementById('ptr-loader');
 const ptrIcon = ptrElement.querySelector('.ptr-icon');
@@ -209,6 +217,7 @@ window.addEventListener('touchend', (e) => {
 });
 
 // --- NOTIFICATION SYSTEM ---
+// Hệ thống thông báo toàn cục (Global Admin Notification)
 function listenForNotifications() {
     onSnapshot(doc(db, "settings", "notifications"), (doc) => {
         if (doc.exists()) {
@@ -246,6 +255,7 @@ window.sendAdminNotification = async () => {
 }
 
 // --- PERSONAL NOTIFICATIONS ---
+// Hệ thống thông báo cá nhân (Like, Comment, Reply)
 let notifUnsub = null;
 function listenToMyNotifications(uid) {
     if (notifUnsub) notifUnsub(); 
@@ -290,6 +300,7 @@ window.markAllRead = async () => {
 }
 
 // --- GREETING LOGIC ---
+// Hiển thị lời chào theo thời gian trong ngày
 window.updateGreeting = () => {
     const h = new Date().getHours();
     let g = "Xin chào";
@@ -304,6 +315,7 @@ window.updateGreeting = () => {
 }
 
 // --- GEMINI AI ---
+// Các hàm xử lý gọi API Gemini, quản lý Key và gửi tin nhắn
 window.testAIConnection = async () => {
     const btn = document.querySelector('.btn-outline'); const originalText = btn.innerText; btn.innerText = "Đang test...";
     try { const result = await callGeminiAPI("Chào Green Bot!", null, false, 'main', aiKeys, chatHistory); alert("✅ Kết nối AI thành công!\nTrả lời: " + result); } catch(e) { alert("❌ Lỗi: " + e.message); }
@@ -324,6 +336,7 @@ window.toggleAIChat = () => {
 
 window.fillChat = (text) => { document.getElementById('ai-input').value = text; window.sendMessageToAI(new Event('submit')); }
 
+// Hàm chính gửi tin nhắn đến AI và xử lý phản hồi
 window.sendMessageToAI = async (e, isVoice = false) => {
     e.preventDefault(); const input = document.getElementById('ai-input'); const msg = input.value; 
     if(!msg && !currentAIImageBase64) return;
@@ -424,6 +437,7 @@ window.sendMessageToAI = async (e, isVoice = false) => {
 }
 
 // --- YOUTUBE ID & MUSIC ---
+// Trình phát nhạc nền sử dụng YouTube IFrame API
 
 const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 let player; window.onYouTubeIframeAPIReady = function() { player = new YT.Player('player', { height: '0', width: '0', videoId: musicId, events: { 'onStateChange': onPlayerStateChange } }); }
@@ -445,6 +459,7 @@ window.playSong = async (id) => { await updateDoc(doc(db, "settings", "config"),
 window.deleteSong = async (name, id) => { if(confirm("Xóa bài này?")) await updateDoc(doc(db, "settings", "config"), { playlist: arrayRemove({name, id}) }); }
 
 // --- GLOBAL LISTENER ---
+// Lắng nghe thay đổi cấu hình từ Firebase (Realtime) để cập nhật giao diện ngay lập tức
 onSnapshot(doc(db, "settings", "config"), (docSnap) => {
     if(docSnap.exists()) {
         const cfg = docSnap.data();
@@ -477,10 +492,12 @@ function applyLock(s,l){const o=document.getElementById(`locked-${s}`), c=docume
 let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const d=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${d}d ${h}h ${m}p`;}},1000);}
 
 // --- AUTH ---
+// Xử lý đăng nhập, đăng xuất và đồng bộ Google Sheet
 window.handleLogout=async()=>{await signOut(auth);alert("Đã đăng xuất");location.reload();}
 window.checkAdminLogin=()=>signInWithPopup(auth,provider);
 async function syncToGoogleSheet(user) { if (!googleSheetUrl) return; try { const payload = { displayName: user.displayName || "Chưa đặt tên", email: user.email, customID: user.customID || "", createdAt: user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN'), classInfo: user.class ? `Thành viên lớp ${user.class}` : "Chưa cập nhật lớp", lastActive: new Date().toLocaleString('vi-VN'), loginCount: user.loginCount || 1, uid: user.uid }; await fetch(googleSheetUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); console.log("Synced to Google Sheet"); } catch (e) { console.error("Sync Error:", e); } }
 
+// Lắng nghe trạng thái đăng nhập của người dùng
 onAuthStateChanged(auth, async(u)=>{
     renderGrid('gallery', 'gallery-grid', {id:'rank-gallery-user'}, {id:'rank-gallery-class'}); 
     renderGrid('contest', 'contest-grid', {id:'rank-contest-user'}, {id:'rank-contest-class'});
@@ -538,6 +555,7 @@ onAuthStateChanged(auth, async(u)=>{
 window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
 window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash' || c === 'plant' || c === 'bio') ? 'gallery' : c; document.getElementById('file-input').click(); }
 
+// Xử lý logic tải ảnh lên Cloudinary và lưu vào Firestore (bao gồm cả AI phân tích ảnh)
 window.executeUpload = async (i) => { 
     const f = i.files[0]; if(!f) return; 
     const isTrash = (window.uploadMode === 'trash'); 
@@ -641,6 +659,7 @@ window.executeUpload = async (i) => {
     document.getElementById('upload-overlay').style.display='none'; i.value=""; 
 }
 
+// Hàm hiển thị danh sách ảnh ra lưới (Grid) và phân trang
 function renderGrid(col, elId, uR, cR) {
     gridParams[col] = { elId, uR, cR };
     if(State.unsubscribes[col]) State.unsubscribes[col]();
@@ -700,6 +719,7 @@ window.loadMore = (col) => {
 }
 
 // --- FEATURED POST LOGIC (PIN & TOP 1) ---
+// Xử lý hiển thị bài ghim và bài Top 1 Trending
 onSnapshot(doc(db, "settings", "featured"), (snap) => {
     pinnedSettings = snap.exists() ? snap.data() : null;
     updateFeaturedUI();
@@ -750,6 +770,7 @@ async function updateFeaturedUI() {
     }
 }
 
+// Tối ưu tải ảnh (Lazy Loading) - Chỉ tải ảnh khi cuộn tới
 function lazyLoadImages() {
     const imgObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
@@ -767,6 +788,7 @@ function lazyLoadImages() {
     document.querySelectorAll('img.lazy-blur').forEach(img => imgObserver.observe(img));
 }
 
+// Hiển thị bảng xếp hạng
 function renderRank(eid, obj) { 
     const s=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,5); 
     const b=document.getElementById(eid); if(!b) return; b.innerHTML=""; 
@@ -776,6 +798,7 @@ function renderRank(eid, obj) {
     if(!s.length)b.innerHTML="<tr><td style='text-align:center'>Chưa có dữ liệu</td></tr>"; 
 }
 
+// Mở chế độ xem ảnh chi tiết (Lightbox)
 window.openLightbox = async (c, i) => { 
     currentImgId=i; currentImgCollection=c; document.getElementById('lightbox').style.display='flex'; 
     const s=await getDoc(doc(db,c,i)); const d=s.data(); 
@@ -856,6 +879,7 @@ window.handleLike = async () => {
     const postSnap = await getDoc(doc(db, currentCollection, currentImgId)); if(postSnap.exists()){ const ownerId = postSnap.data().uid; pushNotification(ownerId, 'like', `<b>${currentUser.displayName}</b> đã thả tim ảnh của bạn ❤️`, currentImgId, currentCollection); } }
 }
 
+// Hiển thị bình luận trong Lightbox
 function renderComments(arr) { 
     const l=document.getElementById('lb-comments-list'); l.innerHTML=""; 
     arr.forEach((c, index)=>{ 
@@ -882,6 +906,7 @@ window.deleteComment = async (index) => {
     }
 }
 
+// Xuất dữ liệu ra file Excel
 window.exportExcel = async (type) => { 
     if(!currentUser || !isAdmin(currentUser.email)) return; 
     Utils.loader(true, "Đang tạo file Excel chuẩn..."); const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet('DuLieu'); 
@@ -898,6 +923,7 @@ window.exportExcel = async (type) => {
 }
 
 // --- PDF EXPORT LOGIC ---
+// Xuất dữ liệu ra file PDF
 window.exportPDF = async (type) => {
     if(!currentUser || !isAdmin(currentUser.email)) return;
     Utils.loader(true, "Đang tạo PDF...");
@@ -936,6 +962,7 @@ window.exportPDF = async (type) => {
 }
 
 // --- CHART JS LOGIC ---
+// Vẽ biểu đồ thống kê (Admin)
 window.drawClassChart = async () => {
     if(!currentUser || !isAdmin(currentUser.email)) return;
     Utils.loader(true, "Đang tổng hợp dữ liệu...");
@@ -1015,6 +1042,7 @@ window.drawAIChart = async () => {
 }
 
 // --- FIREWORKS EFFECT ---
+// Hiệu ứng pháo hoa chúc mừng
 window.triggerFireworks = () => {
     const duration = 3000; const end = Date.now() + duration;
     // Phát nhạc
@@ -1043,10 +1071,12 @@ window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config")
 window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
 window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
 window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
+// Tải danh sách các đợt lưu trữ cũ
 window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); const sn=await getDocs(q); const docs = []; sn.forEach(d => docs.push(d.data())); docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0)); docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); }
 window.loadArchiveGrid = Utils.debounce(async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }, 300);
 window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
 
+// Tải dữ liệu người dùng cho trang quản trị Admin
 window.loadAdminData = async () => { 
     if(!currentUser||!isAdmin(currentUser.email))return; 
     const b=document.getElementById('user-table-body'); b.innerHTML="<tr><td colspan='6' style='text-align:center'>Đang tải dữ liệu...</td></tr>"; 
@@ -1138,6 +1168,7 @@ window.updateProfile = async (e) => {
 }
 
 // --- ROUTING LOGIC ---
+// Xử lý điều hướng trang (SPA - Single Page Application)
 function handleRoute() {
     const hash = window.location.hash.slice(1) || 'home';
     showPage(hash);
@@ -1171,17 +1202,45 @@ window.showPage = (id) => {
 }
 
 // --- TRASH GUIDE LOGIC ---
+// Dữ liệu và logic cho phần Tra Cứu Rác
 const trashDB = [
-    {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1618242383803-03c0b36b3b57?q=80&w=400", desc: "Vỏ hộp sữa (Tetra Pak) là rác tái chế. Chúng được cấu tạo từ nhiều lớp giấy, nhựa và nhôm. Cần được làm sạch và ép dẹp trước khi bỏ vào thùng rác tái chế."},
-    {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1604106421297-2b3a941a3a9c?q=80&w=400", desc: "Chai nhựa PET, HDPE (thường là chai nước, chai sữa tắm) có thể tái chế thành sợi polyester, đồ dùng mới. Hãy làm sạch và tháo nắp trước khi vứt."},
-    {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1586019817288-72bce0a97468?q=80&w=400", desc: "Các loại giấy báo, giấy văn phòng, bìa carton đều có thể tái chế. Tránh để giấy bị dính dầu mỡ hoặc thức ăn."},
-    {n:"Lon nhôm",t:"Tái chế",c:"bin-recycle", img: "https://images.unsplash.com/photo-1593375629324-f8f948152b80?q=80&w=400", desc: "Lon nước ngọt, bia làm từ nhôm có giá trị tái chế cao, tiết kiệm đến 95% năng lượng so với sản xuất mới. Hãy làm sạch và ép dẹp chúng."},
-    {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic", img: "https://images.unsplash.com/photo-1557800636-894a64c1696f?q=80&w=400", desc: "Vỏ các loại rau củ quả là rác hữu cơ, có thể được ủ để làm phân compost bón cho cây trồng, rất tốt cho đất."},
-    {n:"Thức ăn thừa",t:"Hữu cơ",c:"bin-organic", img: "https://images.unsplash.com/photo-1543353071-873f6b6a6a89?q=80&w=400", desc: "Thức ăn thừa không chứa dầu mỡ nhiều có thể được ủ làm phân hữu cơ. Tránh đổ thức ăn có dầu mỡ vào bồn rửa vì có thể gây tắc cống."},
-    {n:"Túi nilon",t:"Rác còn lại",c:"bin-other", img: "https://images.unsplash.com/photo-1593113646773-5b8617fab7e3?q=80&w=400", desc: "Túi nilon rất khó phân hủy và khó tái chế. Hãy hạn chế sử dụng, tái sử dụng nhiều lần và bỏ vào thùng rác còn lại khi không thể dùng nữa."},
-    {n:"Pin/Acquy",t:"Rác nguy hại",c:"bin-other", img: "https://images.unsplash.com/photo-1578358672957-25a3259f4ebe?q=80&w=400", desc: "Pin và acquy chứa nhiều kim loại nặng độc hại. TUYỆT ĐỐI KHÔNG vứt vào thùng rác thông thường. Cần được thu gom tại các điểm thu hồi rác thải nguy hại riêng."}
+    {n:"Vỏ sữa",t:"Tái chế",c:"bin-recycle", img: "https://provietnam.com.vn/wp-content/uploads/2021/05/02-GIAIRAC-01.jpg", desc: "Vỏ hộp sữa (Tetra Pak) là rác tái chế. Chúng được cấu tạo từ nhiều lớp giấy, nhựa và nhôm. Cần được làm sạch và ép dẹp trước khi bỏ vào thùng rác tái chế."},
+    {n:"Chai nhựa",t:"Tái chế",c:"bin-recycle", img: "https://t-tech.vn/data/uploads/2025/09/coc-tien-chai-nhua-vo-chai.png", desc: "Chai nhựa PET, HDPE (thường là chai nước, chai sữa tắm) có thể tái chế thành sợi polyester, đồ dùng mới. Hãy làm sạch và tháo nắp trước khi vứt."},
+    {n:"Giấy vụn",t:"Tái chế",c:"bin-recycle", img: "https://baochithongminh.wordpress.com/wp-content/uploads/2018/02/tu-than.jpg", desc: "Các loại giấy báo, giấy văn phòng, bìa carton đều có thể tái chế. Tránh để giấy bị dính dầu mỡ hoặc thức ăn."},
+    {n:"Lon nhôm",t:"Tái chế",c:"bin-recycle", img: "https://blog.sendmoney.jp/wp-content/uploads/2025/05/Gia-tang-toi-pham-trom-rac-tai-che-o-Nhat.png", desc: "Lon nước ngọt, bia làm từ nhôm có giá trị tái chế cao, tiết kiệm đến 95% năng lượng so với sản xuất mới. Hãy làm sạch và ép dẹp chúng."},
+    {n:"Vỏ trái cây",t:"Hữu cơ",c:"bin-organic", img: "https://afamilycdn.com/2017/img20170919103225617.jpg", desc: "Vỏ các loại rau củ quả là rác hữu cơ, có thể được ủ để làm phân compost bón cho cây trồng, rất tốt cho đất."},
+    {n:"Thức ăn thừa",t:"Hữu cơ",c:"bin-organic", img: "https://hacheco.vn/wp-content/uploads/2020/04/rac-thai.jpeg", desc: "Thức ăn thừa không chứa dầu mỡ nhiều có thể được ủ làm phân hữu cơ. Tránh đổ thức ăn có dầu mỡ vào bồn rửa vì có thể gây tắc cống."},
+    {n:"Túi nilon",t:"Rác còn lại",c:"bin-other", img: "https://images.unsplash.com/photo-1621451537084-482c73073a0f?q=80&w=400", desc: "Túi nilon rất khó phân hủy và khó tái chế. Hãy hạn chế sử dụng, tái sử dụng nhiều lần và bỏ vào thùng rác còn lại khi không thể dùng nữa."},
+    {n:"Pin/Acquy",t:"Rác nguy hại",c:"bin-other", img: "https://hnm.1cdn.vn/2016/06/04/hanoimoi.com.vn-uploads-tuandiep-2016-6-4-_pin-phe-thai.jpg", desc: "Pin và acquy chứa nhiều kim loại nặng độc hại. TUYỆT ĐỐI KHÔNG vứt vào thùng rác thông thường. Cần được thu gom tại các điểm thu hồi rác thải nguy hại riêng."}
 ];
-window.filterTrash = Utils.debounce(() => { const k = document.getElementById('trashSearchInput').value.toLowerCase(); const r = document.getElementById('trashContainer'); r.innerHTML=""; trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ r.innerHTML+=`<div class="gallery-item" style="padding:10px;text-align:center; cursor:pointer;" onclick="showTrashDetail('${i.n}')"><div class="${i.c}" style="font-weight:bold">${i.t}</div><strong>${i.n}</strong></div>`; }); }, 200); window.filterTrash();
+window.filterTrash = Utils.debounce(() => { 
+    const k = document.getElementById('trashSearchInput').value.toLowerCase(); 
+    const r = document.getElementById('trashContainer'); 
+    r.innerHTML=""; 
+    
+    const iconMap = { 'bin-recycle': 'fa-recycle', 'bin-organic': 'fa-leaf', 'bin-other': 'fa-trash' };
+
+    trashDB.filter(i=>i.n.toLowerCase().includes(k)).forEach(i=>{ 
+        const icon = iconMap[i.c] || 'fa-question-circle';
+        r.innerHTML+=`
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="${i.c} flip-card-icon"><i class="fas ${icon}"></i></div>
+                    <div class="${i.c}" style="font-weight:bold; font-size:0.85rem; text-transform:uppercase; margin-bottom:5px;">${i.t}</div>
+                    <strong style="font-size:1.1rem; color:var(--text);">${i.n}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-sec); margin-top:15px; opacity:0.6;"><i class="fas fa-hand-pointer"></i> Chạm để xem</div>
+                </div>
+                <div class="flip-card-back">
+                    <img src="${i.img}" style="width:100%; height:100px; object-fit:cover; border-radius:8px; margin-bottom:5px;">
+                    <p style="font-size:0.8rem; color:var(--text); margin:0 0 5px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; line-height:1.3;">${i.desc}</p>
+                    <button class="btn btn-sm btn-outline" style="width:100%; padding:5px; font-size:0.8rem;" onclick="event.stopPropagation(); showTrashDetail('${i.n}')">Chi tiết / Chat AI</button>
+                </div>
+            </div>
+        </div>`; 
+    }); 
+}, 200); 
+window.filterTrash();
 
 let trashChatHistory = [];
 let currentTrashItem = null;
@@ -1245,6 +1304,88 @@ window.sendTrashChatMessage = async (e) => {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// --- QR SCANNER LOGIC ---
+let qrScanner = null;
+window.startQRScanner = () => {
+    if (typeof Html5QrcodeScanner === 'undefined') {
+        alert("Đang tải thư viện quét mã... Vui lòng thử lại sau vài giây!");
+        return;
+    }
+    const modal = document.getElementById('qr-scanner-modal');
+    if(modal) modal.style.display = 'flex';
+    
+    if (!qrScanner) {
+        qrScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+        qrScanner.render(onScanSuccess);
+    }
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    window.stopQRScanner();
+    const searchInput = document.getElementById('trashSearchInput');
+    if(searchInput) {
+        searchInput.value = decodedText;
+        window.filterTrash(); // Gọi hàm lọc rác
+        
+        // Tự động mở chi tiết nếu khớp chính xác tên rác trong DB
+        const exact = trashDB.find(i => i.n.toLowerCase() === decodedText.toLowerCase());
+        if(exact) window.showTrashDetail(exact.n);
+        else alert(`Đã quét được: "${decodedText}". Đang tìm kiếm kết quả tương ứng...`);
+    }
+}
+
+window.stopQRScanner = () => {
+    const modal = document.getElementById('qr-scanner-modal');
+    if(modal) modal.style.display = 'none';
+    if(qrScanner) {
+        qrScanner.clear().then(() => { qrScanner = null; }).catch(err => console.error(err));
+    }
+}
+
+// --- QR GENERATOR LOGIC ---
+window.createTrashQR = () => {
+    if(!currentTrashItem) return;
+    const modal = document.getElementById('qr-gen-modal');
+    const container = document.getElementById('qr-code-display');
+    const nameEl = document.getElementById('qr-trash-name');
+    
+    container.innerHTML = ""; // Clear old QR
+    nameEl.innerText = currentTrashItem.n;
+    
+    // Generate QR
+    new QRCode(container, {
+        text: currentTrashItem.n,
+        width: 200,
+        height: 200,
+        colorDark : "#2e7d32",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+    
+    modal.style.display = 'flex';
+}
+
+window.downloadQRLabel = () => {
+    const qrCanvas = document.querySelector('#qr-code-display canvas') || document.querySelector('#qr-code-display img');
+    if(!qrCanvas) return;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const width = 400;
+    const height = 500;
+    
+    canvas.width = width; canvas.height = height;
+    ctx.fillStyle = "white"; ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = "#2e7d32"; ctx.lineWidth = 10; ctx.strokeRect(0, 0, width, height);
+    
+    ctx.fillStyle = "#2e7d32"; ctx.font = "bold 30px Arial"; ctx.textAlign = "center"; ctx.fillText("QUÉT ĐỂ TRA CỨU", width/2, 50);
+    ctx.drawImage(qrCanvas, (width-250)/2, 80, 250, 250);
+    ctx.fillStyle = "#000"; ctx.font = "bold 40px Arial"; ctx.fillText(currentTrashItem.n.toUpperCase(), width/2, 380);
+    ctx.fillStyle = "#666"; ctx.font = "italic 20px Arial"; ctx.fillText("Green School - A2K41", width/2, 430);
+    
+    const link = document.createElement('a'); link.download = `QR_${currentTrashItem.n}.png`; link.href = canvas.toDataURL(); link.click();
+}
+
 let trashItemsCache = [];
 window.loadTrashStats = () => {
     const q = query(collection(db, 'gallery'), where('type', '==', 'trash'));
@@ -1295,6 +1436,7 @@ document.getElementById('btn-install-pc').addEventListener('click', installPWA);
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered!', reg)).catch(err => console.log('SW Error:', err)); }); }
 
 // --- SEASONAL EFFECT LOGIC ---
+// Hiệu ứng theo mùa (Tuyết rơi, Lá rơi...)
 let effectCtx, effectCanvas, effectParticles = [], effectAnimationId;
 let effectConfig = { active: true, type: 'snow', img: new Image() };
 
@@ -1425,6 +1567,7 @@ window.setEffectMode = (mode) => {
 }
 
 // --- SEASONAL GAME LOGIC (HỨNG QUÀ) ---
+// Mini game hứng vật phẩm rơi trên màn hình
 let gameScore = 0;
 window.addEventListener('pointerdown', (e) => {
     // Chỉ chơi khi: Hiệu ứng bật, Canvas đã tải, và đang ở Trang Chủ
@@ -1477,6 +1620,7 @@ function showFloatingText(x, y, text) {
 }
 
 // --- HÀM CỨU HỘ DỮ LIỆU (CHẠY 1 LẦN) ---
+// Công cụ sửa lỗi dữ liệu cũ (Admin Tool)
 window.fixOldData = async () => {
     if(!currentUser || !isAdmin(currentUser.email)) return alert("Cần quyền Admin!");
 
@@ -1518,6 +1662,7 @@ window.fixOldData = async () => {
 }
 
 // --- GEMINI LIVE API (HYBRID MODE: STT -> API -> TTS) ---
+// Chế độ hội thoại trực tiếp với AI (Giọng nói)
 let isLiveMode = false;
 let currentRecognition = null;
 

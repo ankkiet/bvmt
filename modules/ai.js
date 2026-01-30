@@ -1,5 +1,6 @@
 // e:\A2K41_WEB\web sịn hahahhhahahaha\bvmt\modules\ai.js
 
+// Import cấu hình và tiện ích
 import { AI_MODELS, WEBSOCKET_URL, MODEL_NAME } from './constants.js';
 import { downsampleBuffer, floatTo16BitPCM, base64ToArrayBuffer } from './utils.js';
 import { db, doc, updateDoc, setDoc, increment } from './firebase.js';
@@ -19,6 +20,7 @@ export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, 
         prompt = "(Trả lời bằng Tiếng Việt): " + prompt;
     }
 
+    // Chuẩn bị nội dung gửi đi (Text hoặc Chat History)
     let requestContents;
     if (useHistory) {
         // Nếu có prompt (Live Mode), thêm vào history
@@ -46,6 +48,7 @@ export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, 
     const modelsToTry = [AI_MODELS[modelType]];
     if (modelType !== 'backup') modelsToTry.push(AI_MODELS['backup']);
 
+    // Thử lần lượt các API Key và Model để đảm bảo luôn có phản hồi (Fail-over)
     for (let i = 0; i < aiKeys.length; i++) {
         const keyObj = aiKeys[i];
         
@@ -82,7 +85,7 @@ export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, 
     return "Hệ thống AI đang bận, vui lòng thử lại sau.";
 }
 
-// Hiệu ứng gõ chữ (Typewriter)
+// Hiệu ứng gõ chữ (Typewriter) để hiển thị câu trả lời của AI mượt mà
 export async function typeWriterEffect(element, html, speed = 10) {
     element.innerHTML = "";
     const tempDiv = document.createElement("div");
@@ -116,6 +119,7 @@ let audioContext = null;
 let mediaStream = null;
 let processor = null;
 
+// Hàm kết nối WebSocket cho chế độ Live cũ (Legacy)
 export function connectToGemini(apiKey, onAudioReceived, onClose, onConnected) {
     const url = `${WEBSOCKET_URL}?key=${apiKey}`;
     const ws = new WebSocket(url);
@@ -171,6 +175,7 @@ export function connectToGemini(apiKey, onAudioReceived, onClose, onConnected) {
     return ws;
 }
 
+// Bắt đầu ghi âm và gửi dữ liệu qua WebSocket (Legacy)
 export async function startRecording(wsInstance) {
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -209,6 +214,7 @@ export async function startRecording(wsInstance) {
     return { audioContext, source, mediaStream };
 }
 
+// Dừng ghi âm và giải phóng tài nguyên
 export function stopRecording() {
     if (processor) { processor.disconnect(); processor = null; }
     if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }

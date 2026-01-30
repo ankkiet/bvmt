@@ -1,4 +1,5 @@
 const CACHE_NAME = 'nvc-green-v56-fix-white-screen'; 
+// Danh sách các file tĩnh cần cache để chạy offline
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -10,7 +11,7 @@ const STATIC_ASSETS = [
     'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js'
 ];
 
-// 1. INSTALL: Cài đặt SW và Cache file tĩnh
+// 1. SỰ KIỆN INSTALL: Chạy khi Service Worker được cài đặt lần đầu
 self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil(
@@ -20,7 +21,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// 2. ACTIVATE: Xóa cache cũ khi có phiên bản mới
+// 2. SỰ KIỆN ACTIVATE: Chạy khi SW kích hoạt, dùng để dọn dẹp cache cũ
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keyList) => {
@@ -34,7 +35,7 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// 3. FETCH: Chiến lược Network First cho HTML (để luôn thấy web mới nhất)
+// 3. SỰ KIỆN FETCH: Chặn các request mạng để xử lý cache
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
 
@@ -49,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         return; 
     }
 
-    // Với file HTML chính (điều hướng): Ưu tiên mạng -> Nếu lỗi thì dùng Cache
+    // Chiến lược cho HTML: Network First (Ưu tiên mạng -> Nếu lỗi thì dùng Cache)
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request)
@@ -67,7 +68,7 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Với ảnh, font, css: Ưu tiên Cache -> Nếu không có thì tải mạng
+    // Chiến lược cho tài nguyên tĩnh (CSS, JS, Ảnh): Cache First (Ưu tiên Cache -> Nếu không có thì tải mạng)
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
             return cachedResponse || fetch(event.request);

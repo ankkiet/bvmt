@@ -1,3 +1,4 @@
+// Import các hằng số và hàm tiện ích cần thiết
 import { PERSONAS, WEBSOCKET_URL, AI_MODELS } from './constants.js';
 import { base64ToArrayBuffer, floatTo16BitPCM, downsampleBuffer, speakText } from './utils.js';
 import { callGeminiAPI } from './ai.js';
@@ -89,6 +90,7 @@ class GreenBotLive {
         }
     }
 
+    // Gửi tin nhắn cấu hình ban đầu (Setup) cho Gemini qua WebSocket
     handleOpen(systemInstruction) {
         const setupMsg = {
             setup: {
@@ -114,6 +116,7 @@ class GreenBotLive {
         this.ws.send(JSON.stringify(setupMsg));
     }
 
+    // Xử lý tin nhắn nhận được từ Gemini (Audio hoặc Text)
     async handleMessage(event) {
         try {
             let data;
@@ -123,7 +126,7 @@ class GreenBotLive {
                 data = JSON.parse(event.data);
             }
 
-            // Nhận Audio PCM từ Server
+            // 1. Nhận dữ liệu âm thanh (Audio PCM) từ Server để phát ra loa
             if (data.serverContent?.modelTurn?.parts) {
                 for (const part of data.serverContent.modelTurn.parts) {
                     if (part.inlineData?.mimeType?.startsWith('audio/pcm')) {
@@ -133,7 +136,7 @@ class GreenBotLive {
                 }
             }
 
-            // 2. Xử lý Transcription (Lời nói người dùng) -> Diễn giải lệnh
+            // 2. Nhận văn bản (Transcription) từ lời nói của người dùng -> Dùng để điều khiển web
             if (data.serverContent?.inputTranscription) {
                 const userText = data.serverContent.inputTranscription.text;
                 console.log("User said:", userText);
@@ -146,7 +149,7 @@ class GreenBotLive {
                 this.interpretAndExecute(userText);
             }
             
-            // Xử lý sự kiện ngắt lời (Interruption) từ Server
+            // 3. Xử lý sự kiện ngắt lời (Interruption) - Khi người dùng nói chen vào
             if (data.serverContent?.interrupted) {
                 console.log("⚠️ Bot bị ngắt lời");
                 this.stopAudio();
@@ -230,6 +233,7 @@ class GreenBotLive {
         }
     }
 
+    // Khởi động Micro và xử lý luồng âm thanh đầu vào
     async startAudioInput() {
         const stream = await navigator.mediaDevices.getUserMedia({
             audio: {
@@ -247,6 +251,7 @@ class GreenBotLive {
         const source = this.audioContext.createMediaStreamSource(this.mediaStream);
         this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
 
+        // Xử lý từng chunk âm thanh thu được từ Micro
         this.processor.onaudioprocess = (e) => {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
@@ -281,6 +286,7 @@ class GreenBotLive {
         this.processor.connect(this.audioContext.destination);
     }
 
+    // Thêm chunk âm thanh vào hàng đợi để phát
     queueAudio(pcmData) {
         this.audioQueue.push(pcmData);
         if (!this.isPlaying) {
@@ -288,6 +294,7 @@ class GreenBotLive {
         }
     }
 
+    // Phát chunk âm thanh tiếp theo trong hàng đợi
     playNextChunk() {
         if (this.audioQueue.length === 0) {
             this.isPlaying = false;
@@ -316,6 +323,7 @@ class GreenBotLive {
         this.currentSource = source;
     }
 
+    // Dừng phát âm thanh ngay lập tức
     stopAudio() {
         if (this.currentSource) {
             try { this.currentSource.stop(); } catch(e) {}
