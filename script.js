@@ -1,5 +1,5 @@
 // IMPORT TỪ CÁC MODULES
-import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit } from './modules/firebase.js';
+import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit, writeBatch } from './modules/firebase.js';
 import { CLOUD_NAME, UPLOAD_PRESET, ADMIN_EMAILS, BOT_IMAGES, AI_MODELS, PERSONAS } from './modules/constants.js';
 import { Utils, fileToBase64, optimizeUrl, getYoutubeID, speakText, listenOnce } from './modules/utils.js';
 import { callGeminiAPI, typeWriterEffect, connectToGemini, startRecording, stopRecording } from './modules/ai.js';
@@ -89,6 +89,24 @@ window.refreshChatContext = () => {
     chatHistory = [{ role: "user", parts: [{ text: getSystemPrompt() }] }, { role: "model", parts: [{ text: greeting }] }];
 };
 window.refreshChatContext();
+
+// --- SYNC USER DATA HELPER ---
+// Hàm đồng bộ thông tin user sang các bài viết cũ (Gallery, Contest)
+async function syncUserToPosts(uid, data) {
+    Utils.loader(true, "Đang đồng bộ dữ liệu toàn hệ thống...");
+    const cols = ['gallery', 'contest'];
+    const updates = [];
+    for (const col of cols) {
+        // Tìm tất cả bài viết của user này
+        const q = query(collection(db, col), where('uid', '==', uid));
+        const snap = await getDocs(q);
+        snap.forEach(d => {
+            updates.push(updateDoc(doc(db, col, d.id), data));
+        });
+    }
+    await Promise.all(updates);
+    Utils.loader(false);
+}
 
 // --- VOICE RECOGNITION (SPEECH-TO-TEXT) ---
 // Xử lý nhận diện giọng nói để nhập liệu vào ô chat
@@ -243,6 +261,8 @@ window.addEventListener('touchmove', (e) => {
     const diff = y - startY;
     if (window.scrollY === 0 && diff > 0) {
         if (diff < 250) { 
+            // Ngăn chặn hành vi cuộn mặc định của trình duyệt (quan trọng cho PWA mượt mà)
+            if (e.cancelable) e.preventDefault();
             ptrElement.style.top = (diff / 2.5 - 70) + 'px'; 
             ptrIcon.style.transform = `rotate(${diff * 2}deg)`;
         }
@@ -279,7 +299,7 @@ window.showNotification = (text) => {
     const popup = document.getElementById('notification-popup');
     const content = document.getElementById('notif-text');
     if(popup && content) {
-        content.innerText = text;
+        content.innerHTML = text; // Cho phép hiển thị HTML (in đậm tên)
         popup.classList.add('show');
         setTimeout(() => { popup.classList.remove('show'); }, 8000);
     }
@@ -304,10 +324,29 @@ let notifUnsub = null;
 function listenToMyNotifications(uid) {
     if (notifUnsub) notifUnsub(); 
     const q = query(collection(db, "notifications"), where("recipientUid", "==", uid), limit(50));
+    
+    let isFirstLoad = true; // Cờ để tránh hiện popup khi vừa vào trang
+
     notifUnsub = onSnapshot(q, (snap) => {
         const list = document.getElementById('notif-list-ui');
         const dot = document.getElementById('nav-bell-dot');
         let unreadCount = 0; let html = ""; let notifs = [];
+        
+        // Xử lý thông báo Real-time (Toast)
+        if (!isFirstLoad) {
+            snap.docChanges().forEach(change => {
+                if (change.type === "added") {
+                    const d = change.doc.data();
+                    // Chỉ hiện nếu thông báo mới tạo trong vòng 1 phút (tránh cache cũ)
+                    if (Date.now() - (d.createdAt?.seconds * 1000 || 0) < 60000) {
+                        showNotification(d.message);
+                        if(navigator.vibrate) navigator.vibrate([50, 30, 50]); // Rung nhẹ
+                    }
+                }
+            });
+        }
+        isFirstLoad = false;
+
         if (snap.empty) {
             list.innerHTML = '<div class="empty-notif">Chưa có thông báo nào</div>';
             dot.style.display = 'none'; return;
@@ -316,7 +355,16 @@ function listenToMyNotifications(uid) {
         notifs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
         notifs.forEach(data => {
             if (!data.isRead) unreadCount++;
-            html += `<div class="notif-item ${data.isRead ? '' : 'unread'}" onclick="clickNotification('${data.id}', '${data.collectionRef}', '${data.link}')"><img src="${data.senderAvatar || 'https://via.placeholder.com/30'}" class="notif-avatar"><div class="notif-body"><p>${data.message}</p><span class="notif-time">${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</span></div></div>`;
+            html += `<div class="notif-item ${data.isRead ? '' : 'unread'}">
+                        <div class="notif-content-wrapper" onclick="clickNotification('${data.id}', '${data.collectionRef}', '${data.link}')">
+                            <img src="${data.senderAvatar || 'https://via.placeholder.com/30'}" class="notif-avatar">
+                            <div class="notif-body">
+                                <p>${data.message}</p>
+                                <span class="notif-time">${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</span>
+                            </div>
+                        </div>
+                        <button class="notif-delete-btn" onclick="deleteNotification('${data.id}')" title="Xóa">✕</button>
+                    </div>`;
         });
         list.innerHTML = html;
         dot.style.display = unreadCount > 0 ? 'block' : 'none';
@@ -337,10 +385,25 @@ window.clickNotification = async (notifId, col, postId) => {
 }
 
 window.toggleNotifDropdown = () => { document.getElementById('notif-dropdown').classList.toggle('active'); }
+
+// Hàm xóa thông báo
+window.deleteNotification = async (id) => {
+    if(confirm("Xóa thông báo này?")) {
+        await deleteDoc(doc(db, "notifications", id));
+    }
+}
+
+// Hàm đánh dấu đã đọc tất cả (Cập nhật lên Server)
 window.markAllRead = async () => {
-   const list = document.querySelectorAll('.notif-item.unread');
-   list.forEach(item => item.classList.remove('unread'));
-   document.getElementById('nav-bell-dot').style.display='none';
+    if(!currentUser) return;
+    const q = query(collection(db, "notifications"), where("recipientUid", "==", currentUser.uid), where("isRead", "==", false));
+    const snap = await getDocs(q);
+    const batch = writeBatch(db);
+    snap.forEach(d => {
+        batch.update(doc(db, "notifications", d.id), { isRead: true });
+    });
+    await batch.commit();
+    document.getElementById('nav-bell-dot').style.display='none';
 }
 
 // --- GREETING LOGIC ---
@@ -612,7 +675,23 @@ onAuthStateChanged(auth, async(u)=>{
     }
 });
 
-window.changeAvatar=async(i)=>{const f=i.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);document.getElementById('upload-overlay').style.display='flex';try{const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});const j=await r.json();if(j.secure_url){await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});alert("Xong!");location.reload();}}catch(e){alert("Lỗi tải ảnh!")}document.getElementById('upload-overlay').style.display='none';}
+window.changeAvatar=async(i)=>{
+    const f=i.files[0];if(!f)return;
+    const fd=new FormData();fd.append('file',f);fd.append('upload_preset',UPLOAD_PRESET);
+    document.getElementById('upload-overlay').style.display='flex';
+    try{
+        const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:'POST',body:fd});
+        const j=await r.json();
+        if(j.secure_url){
+            await updateDoc(doc(db,"users",currentUser.uid),{photoURL:j.secure_url});
+            // Đồng bộ Avatar sang tất cả bài viết cũ
+            await syncUserToPosts(currentUser.uid, { authorAvatar: j.secure_url });
+            alert("Đổi ảnh đại diện thành công! Dữ liệu đã được đồng bộ.");
+            location.reload();
+        }
+    }catch(e){alert("Lỗi tải ảnh!")}
+    document.getElementById('upload-overlay').style.display='none';
+}
 window.checkLoginAndUpload = (c) => { if(!currentUser) { alert("Vui lòng đăng nhập!"); return; } if(!currentUser.class || !currentUser.customID || !currentUser.dob) { alert("Vui lòng cập nhật đầy đủ thông tin (Lớp, ID, Ngày sinh)!"); showPage('profile'); return; } window.uploadMode = c; currentCollection = (c === 'trash' || c === 'plant' || c === 'bio') ? 'gallery' : c; document.getElementById('file-input').click(); }
 
 // Xử lý logic tải ảnh lên Cloudinary và lưu vào Firestore (bao gồm cả AI phân tích ảnh)
@@ -793,7 +872,8 @@ function renderGrid(col, elId, uR, cR) {
             const isAdm = d.className === 'Admin' || d.authorName === 'Admin_xinhxinh';
             const admBadge = isAdm ? ' <i class="fas fa-check-circle" style="color:#2e7d32; font-size:0.8em;" title="Admin"></i>' : '';
             const nameStyle = isAdm ? 'color:#d32f2f;font-weight:bold' : '';
-            htmlBuffer += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${tinyUrl}" data-src="${realUrl}" class="gallery-img lazy-blur"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center"><img src="${d.authorAvatar||'https://lh3.googleusercontent.com/a/default-user=s96-c'}" class="post-avatar" onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'"> <span style="${nameStyle}">${d.authorID||d.authorName}${admBadge}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
+            // Thêm sự kiện onclick vào div chứa avatar và tên để mở danh sách bài viết
+            htmlBuffer += `<div class="gallery-item" onclick="openLightbox('${col}','${d.id}')">${badge}${ctrls}<div class="gallery-img-container"><img src="${tinyUrl}" data-src="${realUrl}" class="gallery-img lazy-blur"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><div style="display:flex;align-items:center; cursor:pointer; z-index:10;" onclick="event.stopPropagation(); showUserPosts('${d.uid}', '${d.authorName}')"><img src="${d.authorAvatar||'https://lh3.googleusercontent.com/a/default-user=s96-c'}" class="post-avatar" onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'"> <span style="${nameStyle}">${d.authorID||d.authorName}${admBadge}</span></div><span><i class="fas fa-heart" style="color:${d.likes?.includes(currentUser?.uid)?'red':'#ccc'}"></i> ${l}</span></div><div class="grid-actions"><button class="grid-act-btn" onclick="event.stopPropagation(); alert('Link ảnh: ${d.url}')"><i class="fas fa-share"></i> Share</button></div></div></div>`;
         });
         
         if(snap.docs.length >= gridLimits[col]) {
@@ -808,6 +888,66 @@ function renderGrid(col, elId, uR, cR) {
         if(error.code === 'failed-precondition') alert("⚠️ Admin cần tạo Index Firestore (archived + createdAt) để phân trang hoạt động! Xem Console để lấy link tạo.");
     });
     State.unsubscribes[col] = unsub;
+}
+
+// --- USER POSTS MODAL LOGIC ---
+window.showUserPosts = async (uid, name) => {
+    const modal = document.getElementById('user-posts-modal');
+    const grid = document.getElementById('user-posts-grid');
+    const title = document.getElementById('user-posts-title');
+    
+    if(modal) modal.style.display = 'flex';
+    if(title) title.innerHTML = `Bài viết của <b>${name}</b>`;
+    if(grid) grid.innerHTML = '<div style="width:100%; text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>';
+
+    if (!uid || uid === 'undefined' || uid === 'null') {
+        grid.innerHTML = '<div style="width:100%; text-align:center; color:var(--text-sec);">Không tìm thấy ID người dùng này.</div>';
+        return;
+    }
+
+    try {
+        // Hàm phụ để lấy dữ liệu an toàn (Fallback nếu thiếu Index)
+        const getSafeDocs = async (col) => {
+            try {
+                // Thử query tối ưu (Cần Index: uid + createdAt DESC)
+                const q = query(collection(db, col), where('uid', '==', uid), orderBy('createdAt', 'desc'), limit(20));
+                return await getDocs(q);
+            } catch (err) {
+                // Nếu lỗi (thường do thiếu Index), fallback về query đơn giản (Lọc client-side)
+                console.warn(`Query ${col} failed (likely missing index), falling back...`, err);
+                const qSimple = query(collection(db, col), where('uid', '==', uid));
+                return await getDocs(qSimple);
+            }
+        };
+        
+        const [snap1, snap2] = await Promise.all([getSafeDocs('gallery'), getSafeDocs('contest')]);
+        
+        let posts = [];
+        snap1.forEach(d => posts.push({id: d.id, col: 'gallery', ...d.data()}));
+        snap2.forEach(d => posts.push({id: d.id, col: 'contest', ...d.data()}));
+        
+        // Sắp xếp lại theo thời gian giảm dần
+        posts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        if (posts.length === 0) {
+            grid.innerHTML = '<div style="width:100%; text-align:center; color:var(--text-sec);">Thành viên này chưa có bài đăng nào.</div>';
+            return;
+        }
+
+        let html = "";
+        posts.forEach(d => {
+            html += `<div class="gallery-item" onclick="openLightbox('${d.col}','${d.id}')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img lazy-blur" data-src="${optimizeUrl(d.url, 400)}"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><span>${new Date(d.createdAt?.seconds*1000).toLocaleDateString('vi-VN')}</span><span><i class="fas fa-heart"></i> ${d.likes?.length||0}</span></div></div></div>`;
+        });
+        grid.innerHTML = html;
+        lazyLoadImages(); // Kích hoạt lazy load cho ảnh trong modal
+    } catch (e) {
+        console.error(e);
+        grid.innerHTML = `<div style="width:100%; text-align:center; color:red;">Lỗi tải dữ liệu: ${e.message}</div>`;
+    }
+}
+
+window.closeUserPosts = () => {
+    document.getElementById('user-posts-modal').style.display = 'none';
 }
 
 window.loadMore = (col) => {
@@ -1308,6 +1448,9 @@ window.updateProfile = async (e) => {
     document.getElementById('sb-name').innerText = f;
     document.getElementById('sb-id').innerText = cid;
     
+    // Đồng bộ Tên, ID, Lớp sang tất cả bài viết cũ
+    await syncUserToPosts(currentUser.uid, { authorName: f, authorID: cid, className: finalClass });
+
     alert("Đã lưu hồ sơ thành công! Bạn có thể sử dụng web bình thường."); 
     if(currentUser.class && currentUser.customID && currentUser.dob) { showPage('home'); window.location.hash = 'home'; }
 }

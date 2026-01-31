@@ -664,6 +664,17 @@
         </div>
     </div>
 
+    <!-- Modal Xem bài viết của thành viên (User Profile Posts) -->
+    <div id="user-posts-modal" class="modal" style="background: rgba(0,0,0,0.9); align-items:center; justify-content:center; display:none; z-index:10005;">
+        <div class="card" style="max-width: 800px; width: 95%; height: 85vh; display:flex; flex-direction:column; padding:0; overflow:hidden; background:var(--bg);">
+            <div style="padding:15px; background:var(--card-bg); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 id="user-posts-title" style="margin:0; color:var(--primary); font-size:1.1rem;">Bài viết của...</h3>
+                <button class="lb-close-btn" style="position:static; transform:none; background:var(--input-bg); color:var(--text); width:35px; height:35px;" onclick="closeUserPosts()">×</button>
+            </div>
+            <div id="user-posts-grid" class="gallery-grid" style="padding:15px; overflow-y:auto; align-content: flex-start;"></div>
+        </div>
+    </div>
+
     <!-- Input file ẩn để upload -->
     <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
     <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="changeAvatar(this)">

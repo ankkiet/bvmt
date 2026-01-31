@@ -177,11 +177,14 @@ body.no-scroll { overflow: hidden; }
 }
 .notif-list { max-height: 350px; overflow-y: auto; background: var(--card-bg); }
 .notif-item {
-    padding: 12px 15px; border-bottom: 1px solid var(--border);
-    display: flex; gap: 10px; align-items: flex-start;
-    cursor: pointer; transition: 0.2s; position: relative;
+    padding: 0; border-bottom: 1px solid var(--border);
+    display: flex; align-items: stretch;
+    transition: 0.2s; position: relative;
 }
-.notif-item:hover { background: var(--input-bg); }
+.notif-content-wrapper {
+    flex: 1; padding: 12px 15px; display: flex; gap: 10px; align-items: flex-start; cursor: pointer;
+}
+.notif-content-wrapper:hover { background: var(--input-bg); }
 .notif-item.unread { background: rgba(46, 125, 50, 0.1); } 
 .notif-item.unread::after {
     content: ''; position: absolute; top: 15px; right: 10px;
@@ -191,6 +194,14 @@ body.no-scroll { overflow: hidden; }
 .notif-body { flex: 1; }
 .notif-body p { margin: 0; font-size: 0.9rem; color: var(--text); line-height: 1.3; }
 .notif-time { font-size: 0.75rem; color: var(--text-sec); margin-top: 4px; display: block; }
+.notif-delete-btn {
+    width: 40px; background: transparent; border: none; border-left: 1px solid var(--border);
+    color: var(--text-sec); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; transition: 0.2s;
+}
+.notif-delete-btn:hover {
+    background: #ffebee; color: var(--danger);
+}
 .empty-notif { text-align: center; padding: 20px; color: var(--text-sec); font-size: 0.9rem; }
 
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
