@@ -1,8 +1,9 @@
-const CACHE_NAME = 'nvc-green-v56-fix-white-screen'; 
+const CACHE_NAME = 'nvc-green-v57-rename-structure'; 
 // Danh sách các file tĩnh cần cache để chạy offline
 const STATIC_ASSETS = [
     './',
     './index.html',
+    './main.html',
     './manifest.json',
     'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+192',
     'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap',

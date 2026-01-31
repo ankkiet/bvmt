@@ -2,711 +2,149 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <!-- Cấu hình Viewport cho Mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Green School - A2K41 Official</title>
-    
-    <meta name="theme-color" content="#2e7d32">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green">
-    
-    <meta name="description" content="Web lớp A2K41 - Green School.">
-    <meta property="og:title" content="A2K41 - Green School">
-    <meta property="og:image" content="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg">
-    
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green School - Digital Ecosystem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --tech-green: #00ff88;
+            --deep-forest: #051a10;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border-glass: rgba(0, 255, 136, 0.2);
+        }
 
-    <!-- Thư viện hỗ trợ: Excel, ChartJS, PDF, Confetti -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--deep-forest); color: white; overflow: hidden; }
 
-    <link rel="stylesheet" href="style.css">
+        /* Phông nền động hạt phân tử */
+        #particles-js { position: absolute; width: 100%; height: 100%; z-index: 1; }
+
+        /* Lớp giới thiệu ban đầu */
+        #hero-section {
+            position: relative; z-index: 10; height: 100vh; display: flex; 
+            flex-direction: column; align-items: center; justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        /* Giao diện Chatbot Toàn màn hình (Mặc định ẩn) */
+        #explore-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 26, 16, 0.98); z-index: 20;
+            transform: translateY(100%); transition: 0.8s ease-in-out;
+            padding: 40px; box-sizing: border-box; display: flex; flex-direction: column;
+        }
+
+        .show-explore #explore-overlay { transform: translateY(0); }
+        .show-explore #hero-section { transform: translateY(-100%); }
+
+        /* Chatbot Presentation */
+        .ai-guide {
+            text-align: center; max-width: 800px; margin: 0 auto 50px;
+        }
+
+        .ai-avatar {
+            width: 80px; height: 80px; background: var(--tech-green);
+            border-radius: 50%; margin: 0 auto 20px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 30px var(--tech-green);
+            animation: pulse 2s infinite;
+        }
+
+        /* Khu vực trưng bày tinh túy */
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px; width: 100%; max-width: 1200px; margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--glass); border: 1px solid var(--border-glass);
+            border-radius: 20px; padding: 30px; transition: 0.4s;
+            position: relative; overflow: hidden; cursor: pointer;
+        }
+
+        .feature-card:hover {
+            background: rgba(0, 255, 136, 0.05);
+            transform: translateY(-10px);
+            border-color: var(--tech-green);
+        }
+
+        .feature-card i { font-size: 2.5rem; color: var(--tech-green); margin-bottom: 20px; }
+
+        .btn-launch {
+            margin-top: 50px; background: none; border: 2px solid var(--tech-green);
+            color: var(--tech-green); padding: 15px 50px; border-radius: 30px;
+            font-weight: bold; cursor: pointer; transition: 0.3s; align-self: center;
+        }
+
+        .btn-launch:hover { background: var(--tech-green); color: var(--deep-forest); }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0, 255, 136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); } }
+    </style>
 </head>
 <body>
+    <div id="particles-js"></div>
 
-    <!-- Cảnh báo khi mở bằng trình duyệt trong app (Zalo/FB) -->
-    <div id="webview-warning">
-        <div class="wv-icon"><i class="fas fa-exclamation-circle"></i></div>
-        <div class="wv-title">Trình duyệt không hỗ trợ</div>
-        <div class="wv-desc">
-            Bạn đang mở link bằng Zalo/Messenger/Facebook. Google không cho phép đăng nhập qua các ứng dụng này.<br><br>
-            <b>Hãy nhấn vào dấu <i class="fas fa-ellipsis-h"></i> (hoặc 3 chấm) ở góc màn hình và chọn "Mở bằng trình duyệt" (Chrome/Safari) để tiếp tục.</b>
+    <section id="hero-section">
+        <h1 style="font-size: 4rem; letter-spacing: 10px;">GREEN SCHOOL</h1>
+        <p style="color: var(--tech-green); font-style: italic;">Hệ sinh thái công nghệ xanh 4.0</p>
+        <button class="btn-launch" onclick="openExplore()" style="font-size: 1.2rem;">KHÁM PHÁ TINH TÚY</button>
+    </section>
+
+    <div id="explore-overlay">
+        <div class="ai-guide">
+            <div class="ai-avatar"><i class="fas fa-microchip" style="color: #051a10; font-size: 2rem;"></i></div>
+            <h2 id="ai-text">Chào bạn, tôi là trợ lý ảo Green School...</h2>
         </div>
-        <div class="wv-arrow"><i class="fas fa-arrow-up"></i></div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-eye"></i>
+                <h3>AI Soi Rác</h3>
+                <p>Công nghệ nhận diện thị giác máy tính, phân loại rác thải nhựa, giấy, kim loại trong 0.5 giây.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-seedling"></i>
+                <h3>Góc Xanh</h3>
+                <p>Nơi lưu trữ những khoảnh khắc bảo vệ môi trường, lan tỏa năng lượng tích cực tới cộng đồng.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-trophy"></i>
+                <h3>Bảng Xếp Hạng</h3>
+                <p>Vinh danh những chiến binh xanh xuất sắc nhất trong hành trình giải cứu Trái Đất.</p>
+            </div>
+        </div>
+
+        <button class="btn-launch" onclick="location.href='main.html'">TRUY CẬP HỆ THỐNG NGAY</button>
     </div>
 
-    <!-- Màn hình bảo trì (Chỉ hiện khi Admin bật) -->
-    <div id="maintenance-overlay">
-        <i class="fas fa-hammer"></i>
-        <h1>Hệ Thống Đang Bảo Trì</h1>
-        <p>Admin đang nâng cấp tính năng mới cho hệ thống. Vui lòng quay lại sau ít phút!</p>
-        <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
-    </div>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Cấu hình hạt bụi công nghệ
+        particlesJS('particles-js', {
+            "particles": {
+                "number": { "value": 80 },
+                "color": { "value": "#00ff88" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5 },
+                "size": { "value": 3 },
+                "line_linked": { "enable": true, "distance": 150, "color": "#00ff88", "opacity": 0.2, "width": 1 }
+            }
+        });
 
-    <!-- Popup thông báo toàn cục -->
-    <div id="notification-popup">
-        <div class="notif-icon"><i class="fas fa-bell"></i></div>
-        <div class="notif-content">
-            <h4>Thông báo mới</h4>
-            <p id="notif-text">...</p>
-        </div>
-        <div class="notif-close" onclick="closeNotification()">✕</div>
-    </div>
+        function openExplore() {
+            document.body.classList.add('show-explore');
+            typeWriter();
+        }
 
-    <!-- Loader khi kéo trang xuống (Pull to Refresh) -->
-    <div id="ptr-loader">
-        <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
-    </div>
-
-    <!-- Chuông thông báo cá nhân -->
-    <div class="header-bell" onclick="toggleNotifDropdown()">
-        <i class="fas fa-bell"></i>
-        <div class="bell-dot" id="nav-bell-dot"></div>
-    </div>
-
-    <!-- Danh sách thông báo cá nhân -->
-    <div class="notif-dropdown" id="notif-dropdown">
-        <div class="notif-header">
-            <span>Thông báo</span>
-            <span style="font-size:0.8rem; cursor:pointer; color:#666" onclick="markAllRead()">Đã đọc hết</span>
-        </div>
-        <div class="notif-list" id="notif-list-ui">
-            <div class="empty-notif">Không có thông báo mới</div>
-        </div>
-    </div>
-
-    <!-- Cửa sổ Chat AI (Green Bot) -->
-    <div class="ai-chat-window" id="ai-window">
-        <!-- Resize Handles (Tay nắm kéo giãn) -->
-        <div class="resize-handle resize-left" title="Kéo để chỉnh chiều rộng"></div>
-        <div class="resize-handle resize-top" title="Kéo để chỉnh chiều cao"></div>
-        <div class="resize-handle resize-corner" title="Kéo để chỉnh kích thước"></div>
-        <div class="ai-header">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <img id="ai-avatar-display" src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" style="width:28px; height:28px; border-radius:50%; border:1px solid #ddd;">
-                <div style="display:flex; flex-direction:column; line-height:1.1;">
-                    <span id="ai-name-display" style="font-size:0.95rem;">Green Bot</span>
-                    <select onchange="switchPersona(this.value)" style="padding:0; font-size:0.7rem; width:auto; margin:0; border:none; background:transparent; color:#666; cursor:pointer;">
-                        <option value="green_bot">Chế độ: Vui vẻ (Gen Z)</option>
-                        <option value="teacher_bot">Chế độ: Nghiêm túc</option>
-                    </select>
-                </div>
-            </div>
-            <span onclick="toggleAIChat()" style="cursor:pointer; font-size:1.2rem; padding:5px;">×</span>
-        </div>
-        
-        <div class="chat-suggestions">
-            <div class="chat-chip" onclick="fillChat('Web này có chức năng gì?')">Chức năng web?</div>
-            <div class="chat-chip" onclick="fillChat('Cách đăng ảnh điểm cộng?')">Cách đăng ảnh?</div>
-            <div class="chat-chip" onclick="fillChat('Giải giúp tớ bài tập này với')">Giải bài tập 📚</div>
-            <div class="chat-chip" onclick="fillChat('Kể chuyện cười đi')">Kể chuyện cười 😂</div>
-            <div class="chat-chip" onclick="fillChat('Tư vấn tình cảm tuổi học trò')">Tư vấn tình cảm ❤️</div>
-        </div>
-
-        <div class="ai-body" id="ai-messages">
-            <div class="chat-row bot">
-                <div class="chat-avatar"><img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png"></div>
-                <div class="chat-content">
-                    <div class="chat-bubble bot">Xin chào! Tớ là <b>Green Bot</b> - Trợ lý AI đa năng của A2K41 đây! 🌱<br>Tớ không chỉ rành về web mà còn biết giải bài tập, kể chuyện cười và tư vấn tình cảm nữa đó! Cứ hỏi tớ nhé! 😎</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="ai-image-preview" style="display:none; padding: 10px 15px; background: var(--bg); border-top: 1px solid var(--border);">
-            <div style="position:relative; display:inline-block;">
-                <img id="ai-preview-img" src="" style="height: 60px; border-radius: 8px; border: 1px solid var(--border);">
-                <button type="button" onclick="clearAIImage()" style="position:absolute; top:-8px; right:-8px; background:var(--danger); color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">×</button>
-            </div>
-        </div>
-
-        <form onsubmit="sendMessageToAI(event)" class="ai-input-area">
-            <input type="file" id="ai-image-input" accept="image/*" style="display:none" onchange="previewAIImage(this)">
-            <button type="button" class="btn-ai-send" onclick="document.getElementById('ai-image-input').click()" style="margin-right:5px; color:var(--text-sec)" title="Gửi ảnh"><i class="fas fa-camera"></i></button>
-            <button type="button" class="btn-ai-send" id="btn-live-chat" style="margin-right:5px; color:var(--text-sec); display:none;" title="Chat Live (Realtime)"><i class="fas fa-microphone-lines"></i></button>
-            <button type="button" class="btn-ai-send" id="btn-mic" onclick="toggleVoiceInput()" style="margin-right:5px; color:var(--text-sec)" title="Nói chuyện"><i class="fas fa-microphone"></i></button>
-            <input id="ai-input" placeholder="Hỏi Green Bot bất cứ điều gì..." style="flex:1">
-            <button class="btn-ai-send"><i class="fas fa-paper-plane"></i></button>
-        </form>
-    </div>
-
-    <!-- Trình phát nhạc ẩn -->
-    <div id="player" style="position: fixed; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"></div>
-
-    <audio id="fireworks-audio" src="https://www.soundjay.com/misc/sounds/magic-chime-01.mp3" preload="auto"></audio>
-
-    <!-- Canvas hiệu ứng mùa (Tuyết rơi, lá rơi...) -->
-    <canvas id="seasonal-canvas"></canvas>
-
-    <!-- NÚT CHAT AI (ĐỘC LẬP) -->
-    <div class="ai-fab" onclick="toggleAIChat()" title="Chat với Green Bot">
-        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" alt="AI">
-    </div>
-
-    <div class="effect-menu" id="effect-menu">
-        <div onclick="setEffectMode('auto')">🔄 Tự động</div>
-        <div onclick="setEffectMode('spring')">🌸 Mùa Xuân</div>
-        <div onclick="setEffectMode('summer')">🌿 Mùa Hạ</div>
-        <div onclick="setEffectMode('autumn')">🍂 Mùa Thu</div>
-        <div onclick="setEffectMode('winter')">❄️ Mùa Đông</div>
-        <div onclick="setEffectMode('off')">🚫 Tắt hiệu ứng</div>
-    </div>
-
-    <!-- GEMINI LIVE OVERLAY UI -->
-    <div id="gemini-live-overlay" style="display:none !important;">
-        <div class="live-header">
-            <img src="https://cdn-icons-png.flaticon.com/512/8943/8943377.png" class="live-logo">
-            <span>Green Bot Live</span>
-        </div>
-        <canvas id="live-canvas"></canvas>
-        <div id="live-status">Đang nghe...</div>
-        <button id="btn-live-interrupt" onclick="window.interruptGemini()"><i class="fas fa-hand-paper"></i> Ngắt lời</button>
-        <button class="btn-live-close" onclick="window.stopGeminiLive()"><i class="fas fa-times"></i></button>
-    </div>
-
-    <!-- Menu điều hướng trên PC -->
-    <nav class="pc-nav">
-        <ul>
-            <li><a href="#home" id="menu-pc-home">Trang Chủ</a></li>
-            <li><a href="#greenclass" id="menu-pc-greenclass">Góc Xanh</a></li>
-            <li><a href="#contest" id="menu-pc-contest">Thi Đua</a></li>
-            <li><a href="#archive" id="menu-pc-archive">Lưu Trữ</a></li>
-            <li><a href="#activities" id="menu-pc-activities">Hoạt Động</a></li>
-            <li><a href="#guide" id="menu-pc-guide">Tra Cứu</a></li>
-            <li><a href="#profile" id="menu-pc-profile">Tài Khoản</a></li>
-            <li><a href="#admin" id="menu-pc-admin" style="display:none">Admin</a></li>
-        </ul>
-    </nav>
-
-    <!-- Container chính chứa các trang nội dung -->
-    <div class="container">
-        <!-- TRANG CHỦ -->
-        <div id="home" class="page-section">
-            <div id="locked-home" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
-            <div id="content-home">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg" style="width: 100%; height: 350px; object-fit: cover; object-position: center; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-                    <h1 style="border:none; margin-top: 20px;">A2K41 - Green School</h1>
-                    <h2 id="greeting-msg" style="color:var(--primary); margin-top: -20px; font-size: 1.2rem; font-weight: 600;"></h2>
-                    <div id="home-login-area" style="display:none;">
-                        <button class="home-login-btn" id="main-login-btn"><i class="fas fa-sign-in-alt"></i> Đăng Nhập / Tham Gia Ngay</button>
-                    </div>
-                </div>
-                <div id="pinned-post" class="featured-section" style="display: none; border-color: #ffa000; background: linear-gradient(135deg, #fff8e1, #ffecb3);">
-                    <div class="featured-badge" style="background: #ffa000; color: white;">📌 BẢNG TIN NỔI BẬT</div>
-                    <img id="pin-img" src="" class="featured-img" style="border-color: #ffa000;">
-                    <div class="featured-content">
-                        <h3 id="pin-title">Thông Báo Quan Trọng</h3>
-                        <p id="pin-desc">...</p>
-                        <p id="pin-author" style="margin-top: 10px;">— Tác giả: ...</p>
-                    </div>
-                </div>
-                <div id="featured-post" class="featured-section" style="display: none;">
-                    <div class="featured-badge">🌟 TOP 1 ĐƯỢC YÊU THÍCH</div>
-                    <img id="feat-img" src="" class="featured-img">
-                    <div class="featured-content">
-                        <h3 id="feat-title">Khoảnh Khắc Ấn Tượng</h3>
-                        <p id="feat-desc">...</p>
-                        <p id="feat-author" style="margin-top: 10px;">— Tác giả: ...</p>
-                    </div>
-                </div>
-                <div class="card" style="border-left: 5px solid var(--accent);"><h3>💡 Thông điệp hôm nay</h3><p id="daily-tip">Loading...</p></div>
-            </div>
-        </div>
-
-        <!-- TRANG GÓC XANH (GALLERY) -->
-        <div id="greenclass" class="page-section">
-            <div id="locked-greenclass" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
-            <div id="content-greenclass">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-                    <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
-                    <div>
-                        <button class="btn" style="background:#8bc34a; color:white; margin-right:5px" onclick="checkLoginAndUpload('bio')"><i class="fas fa-search-location"></i> Nhà Sinh Học</button>
-                        <button class="btn" style="background:#4caf50; color:white; margin-right:5px" onclick="checkLoginAndUpload('plant')"><i class="fas fa-user-md"></i> AI Bác sĩ cây</button>
-                        <button class="btn btn-upload" onclick="checkLoginAndUpload('gallery')"><i class="fas fa-camera"></i> Đăng Ảnh Ngay</button>
-                    </div>
-                </div>
-                <div class="countdown-container" id="cd-gallery">
-                    <div class="countdown-header"><i class="fas fa-clock"></i> <span>Thời gian nộp bài còn lại</span></div>
-                    <div id="timer-gallery" class="timer-display">Loading...</div>
-                </div>
-                <div id="gallery-grid" class="gallery-grid"></div>
-                <div class="ranking-wrapper">
-                    <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-gallery-user"></tbody></table></div>
-                    <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-gallery-class"></tbody></table></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TRANG THI ĐUA -->
-        <div id="contest" class="page-section">
-            <div id="locked-contest" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
-            <div id="content-contest">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-                    <h2 style="margin:0">🏆 Phong Trào Thi Đua</h2>
-                    <button class="btn btn-upload" onclick="checkLoginAndUpload('contest')"><i class="fas fa-upload"></i> Báo Cáo Hoạt Động</button>
-                </div>
-                <div class="countdown-container" id="cd-contest" style="background: linear-gradient(135deg, #0288d1, #01579b);">
-                    <div class="countdown-header"><i class="fas fa-calendar-alt"></i> <span>Hạn chót báo cáo</span></div>
-                    <div id="timer-contest" class="timer-display">Loading...</div>
-                </div>
-                <div id="contest-grid" class="gallery-grid"></div>
-                <div class="ranking-wrapper">
-                    <div class="ranking-card"><div class="ranking-header">👤 Top Cá Nhân</div><table class="rank-table"><tbody id="rank-contest-user"></tbody></table></div>
-                    <div class="ranking-card"><div class="ranking-header class-rank">🏫 Top Lớp</div><table class="rank-table"><tbody id="rank-contest-class"></tbody></table></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TRANG LƯU TRỮ -->
-        <div id="archive" class="page-section">
-            <div id="locked-archive" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Kho lưu trữ đang đóng</h2></div>
-            <div id="content-archive">
-                <h1>🗄️ Kho Lưu Trữ</h1>
-                <div class="card">
-                    <div class="archive-controls">
-                        <div class="archive-tab active" onclick="switchArchiveTab('gallery')" id="tab-ar-gallery">Góc Xanh</div>
-                        <div class="archive-tab" onclick="switchArchiveTab('contest')" id="tab-ar-contest">Thi Đua</div>
-                    </div>
-                    <div style="margin-bottom:15px; display:flex; gap:10px;">
-                        <input type="text" id="archive-search" placeholder="🔍 Tìm theo ID, Tên, Nội dung..." style="flex:1;" onkeyup="loadArchiveGrid()">
-                    </div>
-                    <select id="archive-season-select" onchange="loadArchiveGrid()" style="margin-bottom:20px; width:100%"><option value="ALL">📂 Tất cả ảnh lưu trữ</option></select>
-                    <div id="archive-grid" class="gallery-grid"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TRANG HOẠT ĐỘNG -->
-        <div id="activities" class="page-section">
-            <div id="locked-activities" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
-            <div id="content-activities">
-                <h1>📅 Hoạt Động & Tin Tức</h1>
-                <div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div>
-                <div class="card" style="border-left: 5px solid #039be5;"><h2>📰 Tin Tức</h2><ul><li><a href="#" style="text-decoration:none; color:var(--primary)">🌱 Lễ ra quân "Ngày Chủ Nhật Xanh"</a></li></ul></div>
-            </div>
-        </div>
-        <!-- TRANG TRA CỨU (GUIDE) -->
-        <div id="guide" class="page-section">
-            <div id="locked-guide" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
-            <div id="content-guide">
-                <h1>🔍 Tra Cứu Phân Loại Rác</h1>
-                <div style="text-align:center; margin-bottom:20px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-                    <button class="btn" style="background:#ff9800; color:white;" onclick="checkLoginAndUpload('trash')"><i class="fas fa-camera"></i> AI Soi Rác</button>
-                    <button class="btn" style="background:#2196f3; color:white;" onclick="startQRScanner()"><i class="fas fa-qrcode"></i> Quét QR</button>
-                </div>
-                
-                <!-- Static Search -->
-                <div style="max-width:500px; margin:0 auto 20px;"><input type="text" id="trashSearchInput" placeholder="🔍 Tra cứu nhanh (Vỏ sữa, pin...)" onkeyup="filterTrash()"></div>
-                
-                <!-- Dynamic Categories -->
-                <div id="trash-categories" style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">
-                    <div class="trash-card" onclick="filterTrashView('Tái chế')" style="background:#e3f2fd; border:1px solid #2196f3; color:#0d47a1">
-                        <i class="fas fa-recycle"></i> <h3>Rác Tái Chế</h3> <span id="count-recycle">Đang tải...</span>
-                    </div>
-                    <div class="trash-card" onclick="filterTrashView('Hữu cơ')" style="background:#e8f5e9; border:1px solid #4caf50; color:#1b5e20">
-                        <i class="fas fa-leaf"></i> <h3>Rác Hữu Cơ</h3> <span id="count-organic">Đang tải...</span>
-                    </div>
-                    <div class="trash-card" onclick="filterTrashView('Rác còn lại')" style="background:#fff3e0; border:1px solid #ff9800; color:#e65100">
-                        <i class="fas fa-trash"></i> <h3>Rác Còn Lại</h3> <span id="count-other">Đang tải...</span>
-                    </div>
-                </div>
-
-                <!-- Dynamic Gallery (Hidden by default) -->
-                <div id="trash-gallery-container" style="display:none; animation: fadeIn 0.3s;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <button class="btn btn-sm btn-outline" onclick="resetTrashView()"><i class="fas fa-arrow-left"></i> Quay lại</button>
-                        <h3 id="trash-view-title" style="margin:0; color:var(--primary)">Danh sách</h3>
-                    </div>
-                    <div id="trash-dynamic-grid" class="gallery-grid"></div>
-                </div>
-
-                <!-- Static Results (Search results) -->
-                <div id="trashContainer" class="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"></div>
-            </div>
-        </div>
-
-        <!-- TRANG HỒ SƠ (PROFILE) -->
-        <div id="profile" class="page-section">
-            <h1>👤 Hồ Sơ Của Tôi</h1>
-            
-            <!-- CÀI ĐẶT & TIỆN ÍCH (MỚI) -->
-            <div class="card">
-                <h3 style="margin-top:0">⚙️ Cài Đặt & Tiện Ích</h3>
-                <div style="display: flex; gap: 15px; justify-content: space-around; flex-wrap: wrap;">
-                    <!-- Nút Nhạc -->
-                    <div class="settings-btn" onclick="toggleMusic()" style="text-align:center; cursor:pointer; flex:1; min-width:80px;">
-                        <div style="width:50px; height:50px; background:var(--input-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 5px auto; border:1px solid var(--border); position:relative;">
-                            <i class="fas fa-compact-disc" id="music-icon-display" style="font-size:1.5rem; color:var(--text);"></i>
-                            <div class="music-note-badge" style="top:-2px; right:-2px;">🎵</div>
-                        </div>
-                        <span style="font-size:0.85rem;">Nhạc nền</span>
-                    </div>
-                    <!-- Nút Hiệu ứng -->
-                    <div class="settings-btn" onclick="toggleSeasonalMenu()" style="text-align:center; cursor:pointer; flex:1; min-width:80px;">
-                        <div style="width:50px; height:50px; background:var(--input-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 5px auto; border:1px solid var(--border);">
-                            <i class="fas fa-snowflake" id="effect-icon" style="font-size:1.5rem; color:var(--text);"></i>
-                        </div>
-                        <span style="font-size:0.85rem;">Hiệu ứng</span>
-                    </div>
-                    <!-- Nút Giao diện -->
-                    <div class="settings-btn" onclick="toggleDarkMode()" style="text-align:center; cursor:pointer; flex:1; min-width:80px;">
-                        <div style="width:50px; height:50px; background:var(--input-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 5px auto; border:1px solid var(--border);">
-                            <i class="fas fa-moon" id="dark-icon" style="font-size:1.5rem; color:var(--text);"></i>
-                        </div>
-                        <span style="font-size:0.85rem;">Giao diện</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="profile-out" style="text-align: center; padding: 50px;"><p>Vui lòng đăng nhập.</p><button class="btn btn-google btn-login"><i class="fab fa-google"></i> Đăng nhập bằng Google</button></div>
-            <div id="profile-in" style="display: none;">
-                <div id="soft-delete-msg" style="display:none; background:#ffebee; color:red; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ffcdd2;">⚠️ Tài khoản đang chờ xóa. <button class="btn btn-sm" onclick="restoreAccount()">Khôi phục ngay</button></div>
-                <div class="card">
-                    <div style="text-align:center; margin-bottom:20px">
-                        <div style="position:relative; display:inline-block">
-                            <img id="p-avatar" src="" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border:4px solid var(--primary);">
-                            <button onclick="document.getElementById('avatar-upload').click()" style="position:absolute; bottom:5px; right:5px; background:var(--accent); border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fas fa-camera" style="color:white"></i></button>
-                        </div>
-                        <h2 id="p-name" style="margin:10px 0 5px 0">User Name</h2>
-                        <div id="p-custom-id" style="color:var(--primary); font-weight:bold; font-size:0.9rem;">@id</div>
-                        <p id="p-email" style="color:#666">user@email.com</p>
-                    </div>
-                    <form onsubmit="updateProfile(event)">
-                        <label>Tên hiển thị:</label><input type="text" id="edit-name" required>
-                        <label>ID Cá nhân:</label><input type="text" id="edit-custom-id" placeholder="@..." required>
-                        
-                        <label>Ngày sinh:</label><input type="date" id="edit-dob" required>
-                        
-                        <label>Lớp:</label>
-                        <select id="edit-class" required>
-                            <option value="">-- Chọn --</option>
-                            <optgroup label="Khối 10">
-                                <option>10A1</option><option>10A2</option><option>10A3</option><option>10A4</option><option>10A5</option>
-                                <option>10A6</option><option>10A7</option><option>10A8</option><option>10A9</option>
-                            </optgroup>
-                            <optgroup label="Khối 11">
-                                <option>11A1</option><option>11A2</option><option>11A3</option><option>11A4</option><option>11A5</option>
-                                <option>11A6</option><option>11A7</option><option>11A8</option><option>11A9</option>
-                            </optgroup>
-                            <optgroup label="Khối 12">
-                                <option>12A1</option><option>12A2</option><option>12A3</option><option>12A4</option><option>12A5</option>
-                                <option>12A6</option><option>12A7</option><option>12A8</option><option>12A9</option>
-                            </optgroup>
-                            <option value="GV">Giáo Viên</option>
-                            <option value="Khac">Khác</option>
-                        </select>
-
-                        <label>Tiểu sử:</label><textarea id="edit-bio" rows="3"></textarea>
-                        <div style="margin-top:20px; display:flex; flex-direction:column; gap:15px;">
-                            <button type="submit" class="btn">💾 Lưu Hồ Sơ</button>
-                            <button type="button" class="btn" style="background:var(--primary-dark); color:white;" onclick="handleLogout()">🚪 ĐĂNG XUẤT</button>
-                        </div>
-                    </form>
-                    <div style="margin-top:20px; text-align:center;"><button class="btn-ghost-danger" onclick="requestDeleteAccount()"><i class="fas fa-trash"></i> Xóa tài khoản vĩnh viễn</button></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TRANG QUẢN TRỊ (ADMIN) -->
-        <div id="admin" class="page-section">
-            <h1>🛠 Quản Trị Hệ Thống</h1>
-
-            <div class="card" style="border-left: 5px solid #2e7d32;">
-                <h3>🔔 Gửi Thông Báo (Global)</h3>
-                <p>Gửi tin nhắn nổi bật cho tất cả người dùng đang online.</p>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="admin-notif-msg" placeholder="Nhập nội dung thông báo..." style="flex:1">
-                    <button class="btn btn-sm" onclick="sendAdminNotification()">Gửi ngay</button>
-                </div>
-            </div>
-            
-            <div class="card" style="border-left: 5px solid #6200ea;">
-                <h3>🤖 Quản Lý API Key (AI Fail-over)</h3>
-                <p>Nhập nhiều Key để hệ thống tự động chuyển đổi khi lỗi.</p>
-                <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <input type="text" id="new-key-name" placeholder="Tên Key (Vd: Key chính)" style="flex:1">
-                    <input type="password" id="new-key-val" placeholder="Nhập API Key..." style="flex:2">
-                    <button class="btn btn-sm btn-ai" onclick="addAIKey()">➕ Thêm</button>
-                </div>
-                <div id="ai-key-list" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border); border-radius:8px; padding:5px;">
-                    </div>
-                <div style="margin-top:10px;">
-                    <button class="btn btn-sm btn-outline" onclick="testAIConnection()">Kiểm tra kết nối AI</button>
-                </div>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #6200ea;">
-                <h3>🧠 Cấu hình Model AI</h3>
-                <p>Tùy chỉnh phiên bản Gemini cho từng tác vụ (Nhập tên Model từ Google AI Studio).</p>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold">Chat & Soi Rác (Main)</label>
-                        <input type="text" id="model-main" placeholder="gemini-2.5-flash">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold">Giọng nói (Voice)</label>
-                        <input type="text" id="model-voice" placeholder="gemini-2.5-flash-native-audio-dialog">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold">Dự phòng (Backup)</label>
-                        <input type="text" id="model-backup" placeholder="gemini-2.5-flash-lite">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold">Nâng cao (Advanced)</label>
-                        <input type="text" id="model-advanced" placeholder="gemini-3-flash">
-                    </div>
-                </div>
-                <button class="btn btn-sm btn-ai" onclick="updateAIModels()">💾 Lưu Cấu Hình Model</button>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #2e7d32;">
-                <h3>📊 Đồng Bộ Google Sheet</h3>
-                <p>Dán Link Script (Web App URL) để tự động lưu thông tin thành viên khi họ đăng nhập.</p>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="cfg-sheet-url" placeholder="https://script.google.com/..." style="flex:1">
-                    <button class="btn btn-sm" onclick="updateSheetConfig()">Lưu Link</button>
-                </div>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #9c27b0;">
-                <h3>🎵 Quản Lý Nhạc</h3>
-                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
-                    <input type="text" id="new-song-name" placeholder="Tên bài hát" style="flex:1">
-                    <input type="text" id="new-song-url" placeholder="Dán Link YouTube..." style="flex:1">
-                    <button class="btn btn-sm" onclick="addNewSong()">➕ Thêm</button>
-                </div>
-                <div id="music-playlist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius:8px;"></div>
-            </div>
-
-            <div class="card" style="border-left: 5px solid var(--admin-color);">
-                <h3>⚙️ Cấu hình Hệ thống</h3>
-                <div style="padding:15px; background:rgba(255, 235, 238, 0.2); margin-bottom:20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:bold; color:red"><i class="fas fa-tools"></i> BẢO TRÌ TOÀN TRANG:</span>
-                    <label class="switch"><input type="checkbox" id="cfg-maintenance" onchange="updateMainConfig()"><span class="slider"></span></label>
-                </div>
-                <h4>🔒 Khóa từng mục</h4>
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:15px; margin-bottom:25px;">
-                    <label>🏠 Home <input type="checkbox" id="lock-home" onchange="updateLocks()"></label>
-                    <label>🌿 Góc Xanh <input type="checkbox" id="lock-greenclass" onchange="updateLocks()"></label>
-                    <label>🏆 Thi Đua <input type="checkbox" id="lock-contest" onchange="updateLocks()"></label>
-                    <label>📅 Hoạt Động <input type="checkbox" id="lock-activities" onchange="updateLocks()"></label>
-                    <label>🗄️ Lưu Trữ <input type="checkbox" id="lock-archive" onchange="updateLocks()"></label>
-                    <label>🔍 Tra Cứu <input type="checkbox" id="lock-guide" onchange="updateLocks()"></label>
-                </div>
-                <h4>⏳ Deadline & Lưu trữ</h4>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div><label>Góc Xanh:</label><input type="datetime-local" id="time-gallery" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('gallery')">📦 Lưu trữ</button></div>
-                    <div><label>Thi Đua:</label><input type="datetime-local" id="time-contest" onchange="updateDeadlines()"><button class="btn btn-sm btn-danger" style="width:100%; margin-top:5px" onclick="archiveSeason('contest')">📦 Lưu trữ</button></div>
-                </div>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #ff5722;">
-                <h3>🚑 Cứu Hộ Dữ Liệu</h3>
-                <p>Sử dụng khi ảnh cũ bị ẩn do cập nhật tính năng mới (thiếu trường archived).</p>
-                <button class="btn btn-sm btn-danger" onclick="fixOldData()"><i class="fas fa-first-aid"></i> Khôi phục ảnh cũ</button>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #0288d1;">
-                <h3>📊 Xuất Dữ Liệu Excel (XLSX)</h3>
-                <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                    <button class="btn btn-sm btn-outline" onclick="exportExcel('users')">DS Thành viên</button>
-                    <button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')">Góc Xanh</button>
-                    <button class="btn btn-sm btn-outline" onclick="exportExcel('contest')">Thi Đua</button>
-                    <button class="btn btn-sm btn-outline" style="border-color:#d32f2f; color:#d32f2f" onclick="exportPDF('contest')"><i class="fas fa-file-pdf"></i> PDF Thi Đua</button>
-                </div>
-                <table id="export-table" style="display:none"></table>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #ff9800;">
-                <h3>📈 Thống Kê Bài Đăng Theo Lớp</h3>
-                <select id="chart-filter" style="margin-bottom:10px; width:auto; display:inline-block;">
-                    <option value="all">Toàn thời gian</option>
-                    <option value="month">Tháng này</option>
-                    <option value="week">7 ngày qua</option>
-                </select>
-                <canvas id="classChart" style="width:100%; max-height:400px;"></canvas>
-                <button class="btn btn-sm" onclick="drawClassChart()" style="margin-top:10px">Cập nhật biểu đồ</button>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #673ab7;">
-                <h3>🤖 Thống Kê Hoạt Động AI</h3>
-                <p>Tỉ lệ phản hồi thành công/thất bại của Chatbot.</p>
-                <p style="font-size:0.8rem; color:#d32f2f; margin-top:-10px;">* Tự động gửi Email báo cáo nếu lỗi > 20%</p>
-                <div style="max-width: 300px; margin: 0 auto;">
-                    <canvas id="aiChart"></canvas>
-                </div>
-                <div style="text-align:center; margin-top:10px; display:flex; gap:10px; justify-content:center;">
-                    <button class="btn btn-sm" onclick="drawAIChart()">Cập nhật số liệu</button>
-                    <button class="btn btn-sm btn-outline" onclick="testEmailReport()">📧 Test Email</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Danh sách thành viên</h3>
-                <input type="text" id="admin-user-search" placeholder="🔍 Tìm theo Tên, ID, Email hoặc Lớp..." onkeyup="filterAdminUsers()" style="margin-bottom:10px">
-                <div style="overflow-x:auto;">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th onclick="sortAdminUsers('displayName')" style="cursor:pointer" id="th-displayName">Tên <i class="fas fa-sort sort-icon"></i></th>
-                                <th onclick="sortAdminUsers('email')" style="cursor:pointer" id="th-email">Email <i class="fas fa-sort sort-icon"></i></th>
-                                <th onclick="sortAdminUsers('class')" style="cursor:pointer" id="th-class">Lớp <i class="fas fa-sort sort-icon"></i></th>
-                                <th>Trạng thái</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody id="user-table-body"></tbody>
-                    </table>
-                </div>
-                <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:10px;">
-                    <button class="btn btn-sm btn-outline" id="btn-prev-page" onclick="changeAdminPage(-1)">Prev</button>
-                    <span id="admin-page-info" style="font-weight:bold;">Trang 1 / 1</span>
-                    <button class="btn btn-sm btn-outline" id="btn-next-page" onclick="changeAdminPage(1)">Next</button>
-                </div>
-                <button class="btn btn-sm" onclick="loadAdminData()" style="margin-top:10px">Làm mới</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Menu điều hướng trên Mobile -->
-    <nav class="mobile-nav">
-        <div class="mobile-nav-inner">
-            <a href="#home" id="mob-home" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
-            <a href="#greenclass" id="mob-greenclass" class="nav-item"><i class="fas fa-leaf"></i><span>Xanh</span></a>
-            <a href="#contest" id="mob-contest" class="nav-item"><i class="fas fa-trophy"></i><span>ThiĐua</span></a>
-            <a href="#activities" id="mob-activities" class="nav-item"><i class="fas fa-calendar-alt"></i><span>H.Động</span></a>
-            <a href="#guide" id="mob-guide" class="nav-item"><i class="fas fa-search"></i><span>TraCứu</span></a>
-            <a href="#archive" id="mob-archive" class="nav-item"><i class="fas fa-box"></i><span>Lưu</span></a>
-            <a href="#profile" id="mob-profile" class="nav-item"><i class="fas fa-user"></i><span>Tôi</span></a>
-            <a href="#admin" id="mob-admin" class="nav-item" style="display:none; color:red"><i class="fas fa-cogs"></i><span>Admin</span></a>
-        </div>
-    </nav>
-
-    <!-- Lightbox (Xem ảnh chi tiết) -->
-    <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
-        <div class="lb-container">
-            <div class="lb-overlay-top">
-                <button class="lb-close-btn" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="lb-image-area" id="lb-zoom-area">
-                <img id="lb-img" src="">
-            </div>
-
-            <div class="lb-toggle-details-btn" onclick="toggleDetails()">
-                <i class="fas fa-comment-alt"></i> Bình luận / Chi tiết
-            </div>
-
-            <div class="lb-details" id="lb-details-sheet">
-                <div class="lb-drag-handle" onclick="toggleDetails()"></div>
-                <div class="lb-header">
-                    <img id="lb-author-avatar" class="lb-avatar">
-                    <div class="lb-meta">
-                        <h4 id="lb-author-name">Name</h4>
-                        <span id="lb-custom-id">@id</span>
-                    </div>
-                    
-                    <div class="lb-controls" id="lb-owner-controls" style="display:none">
-                        <button class="lb-btn-icon lb-btn-pin" onclick="pinPost()" title="Ghim"><i class="fas fa-thumbtack"></i></button>
-                        <button class="lb-btn-icon lb-btn-edit" onclick="editPostFromLB()" title="Sửa"><i class="fas fa-edit"></i></button>
-                        <button class="lb-btn-icon lb-btn-delete" onclick="deletePostFromLB()" title="Xóa"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </div>
-                
-                <div class="lb-desc" id="lb-desc">Description</div>
-                
-                <div class="lb-stats">
-                    <div id="lb-like-btn" class="lb-stat-item" onclick="handleLike()">
-                        <i class="fas fa-heart"></i> <span id="lb-like-count">0</span>
-                    </div>
-                    <div class="lb-stat-item" onclick="window.open(document.getElementById('lb-img').src)">
-                        <i class="fas fa-download"></i> Tải ảnh
-                    </div>
-                </div>
-
-                <div class="lb-comments-list" id="lb-comments-list"></div>
-
-                <div class="quick-replies-container">
-                    <div class="quick-chip" onclick="quickReply('Tuyệt vời! 😍')"> Tuyệt vời! 😍</div>
-                    <div class="quick-chip" onclick="quickReply('Xanh quá! 🌿')"> Xanh quá! 🌿</div>
-                    <div class="quick-chip" onclick="quickReply('Cố lên! 💪')"> Cố lên! 💪</div>
-                    <div class="quick-chip" onclick="quickReply('Ý nghĩa quá! ❤️')"> Ý nghĩa quá! ❤️</div>
-                    <div class="quick-chip" onclick="quickReply('Đỉnh! 🔥')"> Đỉnh! 🔥</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Input file ẩn để upload -->
-    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
-    <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="changeAvatar(this)">
-    <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
-        <i class="fas fa-cloud-upload-alt fa-bounce" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-        <h2 style="color:var(--primary)" id="upload-loading-text">Đang tải ảnh lên...</h2>
-    </div>
-
-    <!-- TRASH DETAIL MODAL -->
-    <div id="trash-detail-modal" class="modal" style="background: rgba(0,0,0,0.6); align-items:center; justify-content:center; display:none;">
-        <div class="card" style="max-width: 500px; width: 90%; max-height: 80vh; display:flex; flex-direction:column; animation: fadeIn 0.3s;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
-                <h3 id="trash-detail-title" style="margin:0; color:var(--primary);">Chi tiết</h3>
-                <button class="btn btn-sm btn-outline" onclick="createTrashQR()" style="margin-left:auto; margin-right:10px;"><i class="fas fa-qrcode"></i> Tạo QR</button>
-                <button class="lb-close-btn" style="position:static; transform:none; background:var(--input-bg); color:var(--text);" onclick="closeTrashDetail()">×</button>
-            </div>
-            
-            <div style="flex:1; overflow-y:auto; padding-right:10px;">
-                <img id="trash-detail-img" src="" style="width:100%; height:200px; object-fit:cover; border-radius:10px; margin-bottom:15px;">
-                <div id="trash-detail-desc"></div>
-
-                <!-- Mini Chat -->
-                <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
-                    <h4 style="margin:0 0 10px 0; font-size:1rem;">🤖 Hỏi AI thêm:</h4>
-                    <div id="trash-chat-messages" style="max-height:150px; overflow-y:auto; background:var(--bg); padding:10px; border-radius:8px; font-size:0.9rem; margin-bottom:10px;">
-                        <div style="color:var(--text-sec)">Ví dụ: Nó có thể tái chế thành gì?</div>
-                    </div>
-                    <form onsubmit="sendTrashChatMessage(event)" style="display:flex; gap:5px;">
-                        <input id="trash-chat-input" placeholder="Hỏi về mục này..." style="margin:0; flex:1; font-size:0.9rem; padding:8px;">
-                        <button class="btn btn-sm"><i class="fas fa-paper-plane"></i></button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- QR SCANNER MODAL -->
-    <div id="qr-scanner-modal" class="modal" style="background: rgba(0,0,0,0.9); align-items:center; justify-content:center; display:none; z-index:10000;">
-        <div class="card" style="max-width: 500px; width: 90%; padding: 20px; position:relative; background: var(--card-bg);">
-            <button class="lb-close-btn" style="position:absolute; top:-15px; right:-15px; background:var(--danger); color:white; z-index:10;" onclick="stopQRScanner()">×</button>
-            <h3 style="text-align:center; margin-top:0; color:var(--primary);">Quét mã QR</h3>
-            <div id="qr-reader" style="width:100%"></div>
-            <p style="text-align:center; font-size:0.9rem; color:var(--text-sec); margin-top:10px;">Di chuyển camera vào mã QR để tra cứu</p>
-        </div>
-    </div>
-
-    <!-- QR GENERATOR MODAL -->
-    <div id="qr-gen-modal" class="modal" style="background: rgba(0,0,0,0.8); align-items:center; justify-content:center; display:none; z-index:10001;">
-        <div class="card" style="background:white; padding:30px; text-align:center; border-radius:15px; max-width:350px;">
-            <h3 style="color:var(--primary); margin-top:0;">Mã QR Thùng Rác</h3>
-            <div id="qr-code-display" style="display:flex; justify-content:center; margin:20px 0;"></div>
-            <h2 id="qr-trash-name" style="margin:10px 0; text-transform:uppercase;">TÊN RÁC</h2>
-            <p style="color:#666; font-size:0.9rem;">Dán mã này lên thùng rác để mọi người quét và tra cứu cách xử lý.</p>
-            <button class="btn" onclick="downloadQRLabel()"><i class="fas fa-download"></i> Tải ảnh về in</button>
-            <button class="btn btn-ghost-danger" onclick="document.getElementById('qr-gen-modal').style.display='none'" style="margin-top:10px;">Đóng</button>
-        </div>
-    </div>
-
-    <!-- Main Script -->
-    <script type="module" src="script.js"></script>
-
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "18a4fa3e191846769c91bd8e455fa668"}'></script>
+        // Hiệu ứng chatbot gõ chữ
+        const text = "<br>Tôi đã tổng hợp những công nghệ tiên tiến nhất của Green School dành riêng cho bạn. Hãy chọn phân khu bạn muốn bắt đầu...";
+        let i = 0;
+        function typeWriter() {
+            if (i < text.length) {
+                document.getElementById("ai-text").innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 30);
+            }
+        }
+    </script>
 </body>
 </html>
