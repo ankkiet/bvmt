@@ -11,6 +11,7 @@
             --deep-forest: #051a10;
             --glass: rgba(255, 255, 255, 0.03);
             --border-glass: rgba(0, 255, 136, 0.2);
+            --text-gray: #b0bec5;
         }
 
         body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--deep-forest); color: white; overflow: hidden; }
@@ -29,8 +30,9 @@
         #explore-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 26, 16, 0.98); z-index: 20;
-            transform: translateY(100%); transition: 0.8s ease-in-out;
-            padding: 40px; box-sizing: border-box; display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+            padding: 40px 20px; box-sizing: border-box; 
+            overflow-y: auto; /* Cho phép cuộn */
         }
 
         .show-explore #explore-overlay { transform: translateY(0); }
@@ -49,25 +51,89 @@
             animation: pulse 2s infinite;
         }
 
-        /* Khu vực trưng bày tinh túy */
-        .features-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px; width: 100%; max-width: 1200px; margin: 0 auto;
+        /* --- NEW: ZIGZAG LAYOUT STYLES --- */
+        .features-container {
+            max-width: 1000px; margin: 0 auto; padding-bottom: 100px;
         }
 
-        .feature-card {
+        .feature-item {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 80px; opacity: 0; transform: translateY(50px);
+            transition: all 0.8s ease-out;
+        }
+
+        .feature-item.visible { opacity: 1; transform: translateY(0); }
+
+        /* Đảo ngược thứ tự cho các thẻ chẵn để tạo hiệu ứng xen kẽ */
+        .feature-item:nth-child(even) { flex-direction: row-reverse; }
+
+        .feature-visual {
+            flex: 1; display: flex; justify-content: center; align-items: center;
+        }
+
+        .feature-icon-box {
+            width: 120px; height: 120px; border-radius: 20px;
+            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,0,0,0));
+            border: 1px solid var(--border-glass);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: var(--tech-green);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+        }
+        
+        /* Hiệu ứng 3D Tilt nhẹ khi hover */
+        .feature-item:hover .feature-icon-box { transform: scale(1.1) rotate(5deg); border-color: var(--tech-green); }
+
+        .feature-content {
+            flex: 1.2; padding: 30px;
             background: var(--glass); border: 1px solid var(--border-glass);
-            border-radius: 20px; padding: 30px; transition: 0.4s;
-            position: relative; overflow: hidden; cursor: pointer;
+            border-radius: 20px; position: relative;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
         }
 
-        .feature-card:hover {
-            background: rgba(0, 255, 136, 0.05);
-            transform: translateY(-10px);
-            border-color: var(--tech-green);
+        .feature-content h3 { margin-top: 0; color: var(--tech-green); font-size: 1.8rem; margin-bottom: 15px; }
+        
+        .feature-desc {
+            color: var(--text-gray); line-height: 1.6; font-size: 1rem;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            overflow: hidden; transition: all 0.5s ease;
         }
 
-        .feature-card i { font-size: 2.5rem; color: var(--tech-green); margin-bottom: 20px; }
+        .feature-desc.expanded { -webkit-line-clamp: unset; }
+
+        .btn-read-more {
+            background: none; border: none; color: var(--tech-green);
+            font-weight: bold; cursor: pointer; margin-top: 10px;
+            font-size: 0.9rem; padding: 0; text-decoration: underline;
+        }
+
+        /* Responsive cho Mobile */
+        @media (max-width: 768px) {
+            .feature-item, .feature-item:nth-child(even) { flex-direction: column; text-align: center; }
+            .feature-visual { margin-bottom: 20px; }
+            .feature-content { width: 100%; }
+            #hero-section h1 { font-size: 2.5rem !important; letter-spacing: 5px !important; text-align: center; }
+        }
+
+        /* Scroll Progress Bar */
+        #scroll-progress {
+            position: fixed; top: 0; left: 0; height: 4px; background: var(--tech-green);
+            width: 0%; z-index: 30; transition: width 0.1s;
+        }
+
+        /* Floating Action Button to Enter */
+        .fab-enter {
+            position: fixed; bottom: 30px; right: 30px;
+            background: var(--tech-green); color: var(--deep-forest);
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; cursor: pointer; z-index: 25;
+            box-shadow: 0 0 20px rgba(0,255,136,0.4);
+            animation: pulse 2s infinite; border: none;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .show-explore .fab-enter { opacity: 1; pointer-events: auto; }
 
         .btn-launch {
             margin-top: 50px; background: none; border: 2px solid var(--tech-green);
@@ -78,42 +144,76 @@
         .btn-launch:hover { background: var(--tech-green); color: var(--deep-forest); }
 
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0, 255, 136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); } }
+
+        /* Hiệu ứng Fade Out khi chuyển trang */
+        body { transition: opacity 0.5s ease-in-out; opacity: 1; }
+        body.fade-out { opacity: 0; }
     </style>
 </head>
 <body>
+    <div id="scroll-progress"></div>
     <div id="particles-js"></div>
 
     <section id="hero-section">
         <h1 style="font-size: 4rem; letter-spacing: 10px;">GREEN SCHOOL</h1>
         <p style="color: var(--tech-green); font-style: italic;">Hệ sinh thái công nghệ xanh 4.0</p>
-        <button class="btn-launch" onclick="openExplore()" style="font-size: 1.2rem;">KHÁM PHÁ TINH TÚY</button>
+        <button class="btn-launch" onclick="openExplore()" style="font-size: 1.2rem;">KHÁM PHÁ TINH TÚY <i class="fas fa-arrow-down"></i></button>
     </section>
 
     <div id="explore-overlay">
         <div class="ai-guide">
             <div class="ai-avatar"><i class="fas fa-microchip" style="color: #051a10; font-size: 2rem;"></i></div>
-            <h2 id="ai-text">Chào bạn, tôi là trợ lý ảo Green School...</h2>
+            <h2 id="ai-text" style="min-height: 60px;">Chào bạn, tôi là trợ lý ảo Green School...</h2>
         </div>
 
-        <div class="features-grid">
-            <div class="feature-card">
-                <i class="fas fa-eye"></i>
-                <h3>AI Soi Rác</h3>
-                <p>Công nghệ nhận diện thị giác máy tính, phân loại rác thải nhựa, giấy, kim loại trong 0.5 giây.</p>
+        <div class="features-container">
+            <!-- Feature 1: AI Soi Rác -->
+            <div class="feature-item">
+                <div class="feature-visual"><div class="feature-icon-box"><i class="fas fa-eye"></i></div></div>
+                <div class="feature-content">
+                    <h3>AI Soi Rác</h3>
+                    <p class="feature-desc">Sử dụng công nghệ thị giác máy tính (Computer Vision) tiên tiến nhất. Chỉ cần đưa camera vào vật thể, AI sẽ phân tích cấu trúc, chất liệu trong 0.5 giây để xác định chính xác đó là rác tái chế, hữu cơ hay rác thải còn lại. Giúp việc phân loại rác trở nên dễ dàng như một trò chơi.</p>
+                    <button class="btn-read-more" onclick="toggleReadMore(this)">Xem thêm</button>
+                </div>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-seedling"></i>
-                <h3>Góc Xanh</h3>
-                <p>Nơi lưu trữ những khoảnh khắc bảo vệ môi trường, lan tỏa năng lượng tích cực tới cộng đồng.</p>
+
+            <!-- Feature 2: Góc Xanh -->
+            <div class="feature-item">
+                <div class="feature-visual"><div class="feature-icon-box"><i class="fas fa-seedling"></i></div></div>
+                <div class="feature-content">
+                    <h3>Góc Xanh (Gallery)</h3>
+                    <p class="feature-desc">Không gian triển lãm số hóa, nơi lưu giữ hàng ngàn khoảnh khắc đẹp của các bạn học sinh trong hành trình bảo vệ môi trường. Hỗ trợ tải ảnh chất lượng cao, tương tác thả tim, bình luận và chia sẻ lan tỏa thông điệp xanh tới cộng đồng mạng xã hội.</p>
+                    <button class="btn-read-more" onclick="toggleReadMore(this)">Xem thêm</button>
+                </div>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-trophy"></i>
-                <h3>Bảng Xếp Hạng</h3>
-                <p>Vinh danh những chiến binh xanh xuất sắc nhất trong hành trình giải cứu Trái Đất.</p>
+
+            <!-- Feature 3: Thi Đua -->
+            <div class="feature-item">
+                <div class="feature-visual"><div class="feature-icon-box"><i class="fas fa-trophy"></i></div></div>
+                <div class="feature-content">
+                    <h3>Thi Đua & Xếp Hạng</h3>
+                    <p class="feature-desc">Hệ thống tính điểm thời gian thực (Real-time). Mỗi hành động xanh của bạn đều được ghi nhận. Bảng xếp hạng vinh danh những "Chiến binh xanh" xuất sắc nhất tuần, tháng. Tạo động lực cạnh tranh lành mạnh giữa các lớp và cá nhân.</p>
+                    <button class="btn-read-more" onclick="toggleReadMore(this)">Xem thêm</button>
+                </div>
+            </div>
+
+            <!-- Feature 4: Chatbot Green Bot -->
+            <div class="feature-item">
+                <div class="feature-visual"><div class="feature-icon-box"><i class="fas fa-robot"></i></div></div>
+                <div class="feature-content">
+                    <h3>Trợ Lý Ảo Green Bot</h3>
+                    <p class="feature-desc">Được tích hợp mô hình ngôn ngữ lớn (LLM) Gemini. Green Bot không chỉ giải đáp thắc mắc về môi trường mà còn là người bạn tâm giao, hỗ trợ giải bài tập, kể chuyện cười và tư vấn tâm lý tuổi học trò. Hỗ trợ cả nhập liệu bằng giọng nói.</p>
+                    <button class="btn-read-more" onclick="toggleReadMore(this)">Xem thêm</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 50px;">
+                <button class="btn-launch" onclick="navigateToMain()">TRUY CẬP HỆ THỐNG NGAY <i class="fas fa-rocket"></i></button>
             </div>
         </div>
 
-        <button class="btn-launch" onclick="location.href='main.html'">TRUY CẬP HỆ THỐNG NGAY</button>
+        <!-- Nút nổi để vào nhanh -->
+        <button class="fab-enter" onclick="navigateToMain()" title="Vào trang chính"><i class="fas fa-arrow-right"></i></button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
@@ -132,18 +232,64 @@
 
         function openExplore() {
             document.body.classList.add('show-explore');
+            // Thêm thẻ xuống dòng ngay lập tức trước khi hiệu ứng gõ bắt đầu
+            const el = document.getElementById("ai-text");
+            if (el) el.innerHTML += "<br>";
             typeWriter();
+            // Kích hoạt quan sát viên khi mở overlay
+            setTimeout(initObserver, 500);
         }
 
         // Hiệu ứng chatbot gõ chữ
-        const text = "<br>Tôi đã tổng hợp những công nghệ tiên tiến nhất của Green School dành riêng cho bạn. Hãy chọn phân khu bạn muốn bắt đầu...";
+        const text = "Tôi đã tổng hợp những công nghệ tiên tiến nhất của Green School dành riêng cho bạn. Hãy cuộn xuống để khám phá từng phân khu...";
         let i = 0;
         function typeWriter() {
-            if (i < text.length) {
+            const el = document.getElementById("ai-text");
+            if (i < text.length && el) {
                 document.getElementById("ai-text").innerHTML += text.charAt(i);
                 i++;
                 setTimeout(typeWriter, 30);
             }
+        }
+
+        // Xử lý nút Xem thêm / Thu gọn
+        function toggleReadMore(btn) {
+            const desc = btn.previousElementSibling;
+            desc.classList.toggle('expanded');
+            btn.innerText = desc.classList.contains('expanded') ? "Thu gọn" : "Xem thêm";
+        }
+
+        // Hiệu ứng cuộn (Intersection Observer)
+        function initObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            document.querySelectorAll('.feature-item').forEach(item => {
+                observer.observe(item);
+            });
+        }
+
+        // Thanh tiến trình cuộn
+        const overlay = document.getElementById('explore-overlay');
+        overlay.addEventListener('scroll', () => {
+            const scrollTop = overlay.scrollTop;
+            const scrollHeight = overlay.scrollHeight - overlay.clientHeight;
+            const scrolled = (scrollTop / scrollHeight) * 100;
+            document.getElementById('scroll-progress').style.width = scrolled + "%";
+        });
+
+        function navigateToMain() {
+            // Thêm class để kích hoạt transition opacity
+            document.body.classList.add('fade-out');
+            // Đợi 500ms (0.5s) cho hiệu ứng chạy xong rồi mới chuyển trang
+            setTimeout(() => {
+                window.location.href = 'main.html';
+            }, 500);
         }
     </script>
 </body>

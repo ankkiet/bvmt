@@ -46,7 +46,9 @@ body {
     background-color: var(--bg); color: var(--text); padding-bottom: 90px;
     overscroll-behavior-y: contain; 
     transition: background-color 0.4s ease, color 0.4s ease; /* Hiệu ứng chuyển màu mượt hơn */
+    animation: fadeInPage 0.8s ease-out;
 }
+body.no-scroll { overflow: hidden; }
 
 /* --- SEASONAL EFFECT --- */
 #seasonal-canvas {
@@ -79,6 +81,11 @@ body {
 @keyframes floatUp {
     0% { transform: translateY(0) scale(1); opacity: 1; }
     100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+}
+
+@keyframes fadeInPage {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .effect-menu {
@@ -208,14 +215,52 @@ nav.pc-nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-
 nav.pc-nav ul li a { color: #ffffff; text-decoration: none; font-weight: 700; text-transform: uppercase; padding: 10px 20px; font-size: 0.9rem; border-radius: 30px; transition: 0.3s; cursor: pointer; }
 nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgba(255,255,255,0.2); color: var(--accent); transform: translateY(-2px); }
 
-nav.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
-/* Cho phép cuộn ngang để chứa nhiều mục hơn mà không bị chen chúc */
-.mobile-nav-inner { display: flex; justify-content: flex-start; align-items: center; height: var(--nav-height); overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 5px; }
-.mobile-nav-inner::-webkit-scrollbar { display: none; } /* Ẩn thanh cuộn */
-.nav-item { flex: 0 0 auto; min-width: 72px; text-align: center; color: var(--text-sec); text-decoration: none; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; cursor: pointer; }
-.nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
-.nav-item.active-menu { color: var(--primary); font-weight: 800; }
-.nav-item.active-menu i { color: var(--primary); transform: translateY(-3px); }
+/* --- MOBILE MENU (HAMBURGER & SIDEBAR) --- */
+.mobile-menu-btn {
+    position: fixed; top: 15px; left: 15px; z-index: 1001;
+    width: 42px; height: 42px;
+    background: var(--card-bg); backdrop-filter: blur(5px);
+    border-radius: 50%;
+    display: none; /* Hidden by default (PC) */
+    align-items: center; justify-content: center;
+    box-shadow: 0 4px 15px var(--shadow); border: 1px solid var(--border);
+    cursor: pointer; color: var(--text); font-size: 1.2rem;
+    transition: transform 0.2s;
+}
+.mobile-menu-btn:active { transform: scale(0.9); }
+
+.mobile-sidebar-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 10000;
+    display: none; opacity: 0; transition: opacity 0.3s;
+    backdrop-filter: blur(3px);
+}
+.mobile-sidebar-overlay.active { display: block; opacity: 1; }
+
+.mobile-sidebar {
+    position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+    background: var(--card-bg); z-index: 10001;
+    transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 5px 0 25px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column; border-right: 1px solid var(--border);
+}
+.mobile-sidebar.active { transform: translateX(0); }
+
+.sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); }
+.sidebar-header h3 { margin: 0; color: var(--primary); font-size: 1.2rem; font-weight: 800; }
+.sidebar-close { background: none; border: none; font-size: 1.4rem; color: var(--text-sec); cursor: pointer; }
+/* Sidebar Profile Header */
+.sidebar-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; }
+#sb-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+.sb-info { display: flex; flex-direction: column; line-height: 1.3; }
+#sb-name { font-weight: 800; color: var(--text); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+#sb-id { font-size: 0.8rem; color: var(--text-sec); }
+
+.sidebar-content { flex: 1; overflow-y: auto; padding: 10px 0; }
+.sidebar-item { display: flex; align-items: center; gap: 15px; padding: 15px 25px; color: var(--text); text-decoration: none; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent; }
+.sidebar-item:hover { background: var(--input-bg); }
+.sidebar-item.active-menu { background: rgba(46, 125, 50, 0.1); color: var(--primary); border-left-color: var(--primary); font-weight: 700; }
+.sidebar-item i { width: 25px; text-align: center; font-size: 1.1rem; }
 
 /* --- LAYOUT --- */
 .container { max-width: 1200px; width: 95%; margin: 25px auto; background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px var(--shadow); min-height: 80vh; border: 1px solid var(--border); }
@@ -557,10 +602,10 @@ input:checked + .slider-round:before { transform: translateX(24px); }
     .lb-drag-handle { display: none; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .container { margin: 0; border-radius: 0; padding: 15px 10px 110px 10px; box-shadow: none; width: 100%; border: none; }
     nav.pc-nav { display: none; }
-    nav.mobile-nav { display: block; }
+    .mobile-menu-btn { display: flex; }
     
     /* Grid ảnh khít hơn để hiển thị nhiều hơn */
     .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }

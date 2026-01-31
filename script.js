@@ -216,6 +216,14 @@ window.addEventListener('load', () => {
     handleRoute();
     updateGreeting(); // Gọi hàm chào khi web tải xong
     initSeasonalEffect(); // Khởi chạy hiệu ứng mùa
+
+    // Kiểm tra hiển thị Popup hướng dẫn lần đầu
+    if (!localStorage.getItem('seen_guide_v1')) {
+        setTimeout(() => {
+            const guide = document.getElementById('guide-popup');
+            if(guide) guide.style.display = 'flex';
+        }, 1500);
+    }
 });
 
 // --- PULL TO REFRESH LOGIC ---
@@ -578,13 +586,29 @@ onAuthStateChanged(auth, async(u)=>{
             document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; 
             const cs = document.getElementById('edit-class');
             if(cs) { cs.disabled = true; if(![...cs.options].some(o=>o.value==='Admin')){const o=document.createElement('option');o.value='Admin';o.text='Admin';cs.add(o);} cs.value='Admin'; }
+            // Show Admin in Sidebar
+            const sbAdmin = document.getElementById('sidebar-admin');
+            if(sbAdmin) sbAdmin.style.display = 'flex';
         } else { const cs = document.getElementById('edit-class'); if(cs) cs.disabled = false; }
+        
+        // Update Sidebar Profile
+        document.getElementById('sidebar-profile-box').style.display = 'flex';
+        document.getElementById('sb-default-title').style.display = 'none';
+        document.getElementById('sb-avatar').src = currentUser.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
+        document.getElementById('sb-name').innerText = currentUser.displayName;
+        document.getElementById('sb-id').innerText = currentUser.customID || "@...";
+        
         updateGreeting(); // Cập nhật lại lời chào khi đã có tên user
     }else{ 
         currentUser=null; 
         if(notifUnsub) notifUnsub(); 
         refreshChatContext(); // Reset ngữ cảnh AI về khách
-        document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; document.getElementById('mob-admin').style.display='none'; 
+        document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; 
+        const sbAdmin = document.getElementById('sidebar-admin'); if(sbAdmin) sbAdmin.style.display = 'none';
+        
+        // Reset Sidebar Profile
+        document.getElementById('sidebar-profile-box').style.display = 'none';
+        document.getElementById('sb-default-title').style.display = 'block';
     }
 });
 
@@ -1280,6 +1304,10 @@ window.updateProfile = async (e) => {
     // CẬP NHẬT NGAY LẬP TỨC BIẾN currentUser ĐỂ MỞ KHÓA
     currentUser.displayName = f; currentUser.customID = cid; currentUser.class = finalClass; currentUser.dob = d; currentUser.bio = b;
     
+    // Update Sidebar immediately
+    document.getElementById('sb-name').innerText = f;
+    document.getElementById('sb-id').innerText = cid;
+    
     alert("Đã lưu hồ sơ thành công! Bạn có thể sử dụng web bình thường."); 
     if(currentUser.class && currentUser.customID && currentUser.dob) { showPage('home'); window.location.hash = 'home'; }
 }
@@ -1310,12 +1338,12 @@ window.showPage = (id) => {
     }
     document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
     const section = document.getElementById(targetId); if(section) section.classList.add('active');
-    document.querySelectorAll('nav.pc-nav a, nav.mobile-nav a').forEach(a => a.classList.remove('active-menu'));
+    document.querySelectorAll('nav.pc-nav a, .sidebar-item').forEach(a => a.classList.remove('active-menu'));
     if(document.getElementById('menu-pc-'+targetId)) document.getElementById('menu-pc-'+targetId).classList.add('active-menu');
-    if(document.getElementById('mob-'+targetId)) {
-        const el = document.getElementById('mob-'+targetId);
+    if(document.getElementById('sidebar-'+targetId)) {
+        const el = document.getElementById('sidebar-'+targetId);
         el.classList.add('active-menu');
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        // el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); // Không cần scroll trong sidebar
     }
     if(targetId === 'archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); }
     const titles = { 'home': 'Trang Chủ', 'greenclass': 'Góc Xanh', 'contest': 'Thi Đua', 'archive': 'Lưu Trữ', 'activities': 'Hoạt Động', 'guide': 'Tra Cứu', 'profile': 'Hồ Sơ', 'admin': '🛠 Quản Trị Hệ Thống' };
@@ -1553,11 +1581,25 @@ window.addEventListener('load', loadTrashStats); // Tải thống kê khi vào w
 document.getElementById('daily-tip').innerText = ["Tắt đèn khi ra khỏi lớp.", "Trồng thêm cây xanh.", "Phân loại rác."][Math.floor(Math.random()*3)];
 const mainLoginBtn = document.getElementById('main-login-btn'); if(mainLoginBtn) { mainLoginBtn.addEventListener('click', () => { console.log("Login clicked"); signInWithPopup(auth, provider); }); }
 
-let deferredPrompt; const pcMenu = document.querySelector('nav.pc-nav ul'); const installLi = document.createElement('li'); installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>'; pcMenu.appendChild(installLi); const mobNav = document.querySelector('.mobile-nav-inner'); const installMob = document.createElement('a'); installMob.className = 'nav-item'; installMob.id = 'btn-install-mob'; installMob.style.display = 'none'; installMob.innerHTML = '<i class="fas fa-download"></i><span>TảiApp</span>'; mobNav.insertBefore(installMob, mobNav.firstChild);
+let deferredPrompt; const pcMenu = document.querySelector('nav.pc-nav ul'); const installLi = document.createElement('li'); installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>'; pcMenu.appendChild(installLi); 
+
+// PWA Install Button for Sidebar
+const sidebarInstallArea = document.getElementById('sidebar-install-area');
+const installMob = document.createElement('a'); installMob.className = 'sidebar-item'; installMob.id = 'btn-install-mob'; installMob.style.display = 'none'; installMob.innerHTML = '<i class="fas fa-download"></i> Tải App Về Máy'; installMob.style.color = '#ffca28'; installMob.style.cursor = 'pointer';
+if(sidebarInstallArea) sidebarInstallArea.appendChild(installMob);
+
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('btn-install-pc').style.display = 'inline-block'; document.getElementById('btn-install-mob').style.display = 'flex'; });
 async function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; document.getElementById('btn-install-pc').style.display = 'none'; document.getElementById('btn-install-mob').style.display = 'none'; }
 document.getElementById('btn-install-pc').addEventListener('click', installPWA); document.getElementById('btn-install-mob').addEventListener('click', installPWA);
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered!', reg)).catch(err => console.log('SW Error:', err)); }); }
+
+window.toggleMobileMenu = () => {
+    const sb = document.getElementById('mobile-sidebar');
+    const ov = document.querySelector('.mobile-sidebar-overlay');
+    if(sb) sb.classList.toggle('active');
+    if(ov) ov.classList.toggle('active');
+    document.body.classList.toggle('no-scroll');
+}
 
 // --- SEASONAL EFFECT LOGIC ---
 // Hiệu ứng theo mùa (Tuyết rơi, Lá rơi...)
@@ -2009,3 +2051,40 @@ window.addEventListener('load', () => {
     location.reload();
 } 
 */
+
+// Đóng popup hướng dẫn
+window.closeGuidePopup = () => {
+    document.getElementById('guide-popup').style.display = 'none';
+    localStorage.setItem('seen_guide_v1', 'true');
+}
+
+// --- SWIPE SIDEBAR LOGIC ---
+let sideTouchStartX = 0;
+let sideTouchStartY = 0;
+
+document.addEventListener('touchstart', (e) => {
+    sideTouchStartX = e.changedTouches[0].clientX;
+    sideTouchStartY = e.changedTouches[0].clientY;
+}, {passive: true});
+
+document.addEventListener('touchend', (e) => {
+    const sideTouchEndX = e.changedTouches[0].clientX;
+    const sideTouchEndY = e.changedTouches[0].clientY;
+    handleSidebarSwipe(sideTouchStartX, sideTouchStartY, sideTouchEndX, sideTouchEndY);
+}, {passive: true});
+
+function handleSidebarSwipe(startX, startY, endX, endY) {
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+    const sb = document.getElementById('mobile-sidebar');
+    
+    // 1. Vuốt từ cạnh trái sang phải để MỞ (Start < 40px từ mép trái)
+    if (startX < 40 && diffX > 70 && Math.abs(diffY) < 60) {
+        if (sb && !sb.classList.contains('active')) toggleMobileMenu();
+    }
+    
+    // 2. Vuốt từ phải sang trái để ĐÓNG (Khi menu đang mở)
+    if (sb && sb.classList.contains('active')) {
+        if (diffX < -70 && Math.abs(diffY) < 60) toggleMobileMenu();
+    }
+}

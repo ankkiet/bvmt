@@ -72,6 +72,38 @@
         <div class="bell-dot" id="nav-bell-dot"></div>
     </div>
 
+    <!-- Nút Menu Mobile (Hamburger) -->
+    <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Sidebar Mobile -->
+    <div class="mobile-sidebar-overlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-sidebar" id="mobile-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-profile" id="sidebar-profile-box" style="display:none" onclick="showPage('profile'); toggleMobileMenu()">
+                <img id="sb-avatar" src="" onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'">
+                <div class="sb-info">
+                    <div id="sb-name">Name</div>
+                    <div id="sb-id">@id</div>
+                </div>
+            </div>
+            <h3 id="sb-default-title">Menu</h3>
+            <button class="sidebar-close" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="sidebar-content">
+            <a href="#home" id="sidebar-home" class="sidebar-item" onclick="showPage('home'); toggleMobileMenu()"><i class="fas fa-home"></i> Trang Chủ</a>
+            <a href="#greenclass" id="sidebar-greenclass" class="sidebar-item" onclick="showPage('greenclass'); toggleMobileMenu()"><i class="fas fa-leaf"></i> Góc Xanh</a>
+            <a href="#contest" id="sidebar-contest" class="sidebar-item" onclick="showPage('contest'); toggleMobileMenu()"><i class="fas fa-trophy"></i> Thi Đua</a>
+            <a href="#activities" id="sidebar-activities" class="sidebar-item" onclick="showPage('activities'); toggleMobileMenu()"><i class="fas fa-calendar-alt"></i> Hoạt Động</a>
+            <a href="#guide" id="sidebar-guide" class="sidebar-item" onclick="showPage('guide'); toggleMobileMenu()"><i class="fas fa-search"></i> Tra Cứu</a>
+            <a href="#archive" id="sidebar-archive" class="sidebar-item" onclick="showPage('archive'); toggleMobileMenu()"><i class="fas fa-box"></i> Lưu Trữ</a>
+            <a href="#profile" id="sidebar-profile" class="sidebar-item" onclick="showPage('profile'); toggleMobileMenu()"><i class="fas fa-user"></i> Tài Khoản</a>
+            <a href="#admin" id="sidebar-admin" class="sidebar-item" style="display:none; color:var(--danger)"><i class="fas fa-cogs"></i> Admin</a>
+            <div id="sidebar-install-area"></div>
+        </div>
+    </div>
+
     <!-- Danh sách thông báo cá nhân -->
     <div class="notif-dropdown" id="notif-dropdown">
         <div class="notif-header">
@@ -577,20 +609,6 @@
         </div>
     </div>
 
-    <!-- Menu điều hướng trên Mobile -->
-    <nav class="mobile-nav">
-        <div class="mobile-nav-inner">
-            <a href="#home" id="mob-home" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a>
-            <a href="#greenclass" id="mob-greenclass" class="nav-item"><i class="fas fa-leaf"></i><span>Xanh</span></a>
-            <a href="#contest" id="mob-contest" class="nav-item"><i class="fas fa-trophy"></i><span>ThiĐua</span></a>
-            <a href="#activities" id="mob-activities" class="nav-item"><i class="fas fa-calendar-alt"></i><span>H.Động</span></a>
-            <a href="#guide" id="mob-guide" class="nav-item"><i class="fas fa-search"></i><span>TraCứu</span></a>
-            <a href="#archive" id="mob-archive" class="nav-item"><i class="fas fa-box"></i><span>Lưu</span></a>
-            <a href="#profile" id="mob-profile" class="nav-item"><i class="fas fa-user"></i><span>Tôi</span></a>
-            <a href="#admin" id="mob-admin" class="nav-item" style="display:none; color:red"><i class="fas fa-cogs"></i><span>Admin</span></a>
-        </div>
-    </nav>
-
     <!-- Lightbox (Xem ảnh chi tiết) -->
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">
         <div class="lb-container">
@@ -701,6 +719,23 @@
             <p style="color:#666; font-size:0.9rem;">Dán mã này lên thùng rác để mọi người quét và tra cứu cách xử lý.</p>
             <button class="btn" onclick="downloadQRLabel()"><i class="fas fa-download"></i> Tải ảnh về in</button>
             <button class="btn btn-ghost-danger" onclick="document.getElementById('qr-gen-modal').style.display='none'" style="margin-top:10px;">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Popup Hướng dẫn sử dụng nhanh (First Time Guide) -->
+    <div id="guide-popup" class="modal" style="background: rgba(0,0,0,0.8); align-items:center; justify-content:center; display:none; z-index: 11000;">
+        <div class="card" style="max-width: 500px; width: 90%; padding: 30px; text-align: center; position: relative; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <div style="font-size: 3rem; margin-bottom: 15px;">👋</div>
+            <h2 style="color: var(--primary); margin-bottom: 10px; border: none; padding: 0;">Chào mừng bạn mới!</h2>
+            <p style="color: var(--text-sec); margin-bottom: 25px; line-height: 1.6;">
+                Đây là <b>Hệ sinh thái Green School</b>. Dưới đây là vài mẹo nhỏ để bạn bắt đầu:
+            </p>
+            <div style="text-align: left; background: var(--input-bg); padding: 15px; border-radius: 10px; margin-bottom: 25px; font-size: 0.95rem; border: 1px solid var(--border);">
+                <div style="margin-bottom: 10px;"><i class="fas fa-camera" style="color: var(--primary); width: 25px; text-align: center;"></i> <b>Đăng ảnh:</b> Vào "Góc Xanh" để chia sẻ khoảnh khắc.</div>
+                <div style="margin-bottom: 10px;"><i class="fas fa-robot" style="color: #6200ea; width: 25px; text-align: center;"></i> <b>Chat AI:</b> Bấm vào icon Robot góc phải để hỏi bài tập.</div>
+                <div><i class="fas fa-search" style="color: #ff9800; width: 25px; text-align: center;"></i> <b>Tra cứu:</b> Dùng "AI Soi Rác" để phân loại rác.</div>
+            </div>
+            <button class="btn" onclick="closeGuidePopup()" style="width: 100%;">Đã hiểu, bắt đầu thôi! 🚀</button>
         </div>
     </div>
 
