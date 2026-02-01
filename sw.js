@@ -1,3 +1,28 @@
+// --- FIREBASE CLOUD MESSAGING (BACKGROUND) ---
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+
+const firebaseConfig = { apiKey: "AIzaSyCJ_XI_fq-yJC909jb9KLIKg3AfGdm6hNs", authDomain: "a2k41nvc-36b0b.firebaseapp.com", projectId: "a2k41nvc-36b0b", storageBucket: "a2k41nvc-36b0b.firebasestorage.app", messagingSenderId: "279516631226", appId: "1:279516631226:web:99012883ed7923ab5c3283" };
+
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+// Xử lý tin nhắn khi web đang tắt hoặc chạy nền
+messaging.onBackgroundMessage((payload) => {
+    console.log('[firebase-messaging-sw.js] Received background message ', payload);
+    
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: payload.notification.icon || 'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green',
+        data: { url: payload.data?.click_action || '/' } // Link để mở khi click
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// --- CACHING LOGIC ---
+
 const CACHE_NAME = 'nvc-green-v57-rename-structure'; 
 // Danh sách các file tĩnh cần cache để chạy offline
 const STATIC_ASSETS = [
@@ -19,6 +44,16 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(STATIC_ASSETS);
         })
+    );
+});
+
+// Sự kiện khi người dùng click vào thông báo
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    // Mở URL được đính kèm trong data của thông báo
+    const urlToOpen = event.notification.data?.url || '/';
+    event.waitUntil(
+        clients.openWindow(urlToOpen)
     );
 });
 

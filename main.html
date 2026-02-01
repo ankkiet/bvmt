@@ -460,6 +460,21 @@
                 </div>
             </div>
             
+            <div class="card" style="border-left: 5px solid #ff4081;">
+                <h3>🚀 Gửi Push Notification (FCM)</h3>
+                <p>Gửi thông báo đến thiết bị ngay cả khi người dùng tắt web.</p>
+                <input type="password" id="push-server-key" placeholder="Nhập FCM Server Key (Lấy trong Firebase Console -> Cloud Messaging API Legacy)" style="margin-bottom:10px; width:100%">
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="push-title" placeholder="Tiêu đề (Vd: Thông báo khẩn)" style="flex:1">
+                    <input type="text" id="push-url" placeholder="Link mở khi click (Vd: #contest)" style="flex:1">
+                </div>
+                <textarea id="push-body" placeholder="Nội dung thông báo..." rows="2" style="margin-bottom:10px"></textarea>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn btn-sm btn-danger" onclick="sendPushToAll()">🚀 Gửi Push (Legacy)</button>
+                    <a href="https://console.firebase.google.com/project/a2k41nvc-36b0b/notification/compose" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none; font-size:0.8rem;">📢 Gửi bằng Firebase Console (v1)</a>
+                </div>
+            </div>
+
             <div class="card" style="border-left: 5px solid #6200ea;">
                 <h3>🤖 Quản Lý API Key (AI Fail-over)</h3>
                 <p>Nhập nhiều Key để hệ thống tự động chuyển đổi khi lỗi.</p>

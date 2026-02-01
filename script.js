@@ -1,5 +1,5 @@
 // IMPORT TỪ CÁC MODULES
-import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit, writeBatch } from './modules/firebase.js';
+import { auth, db, provider, messaging, getToken, onMessage, signInWithPopup, signOut, onAuthStateChanged, collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, where, increment, limit, writeBatch } from './modules/firebase.js';
 import { CLOUD_NAME, UPLOAD_PRESET, ADMIN_EMAILS, BOT_IMAGES, AI_MODELS, PERSONAS } from './modules/constants.js';
 import { Utils, fileToBase64, optimizeUrl, getYoutubeID, speakText, listenOnce } from './modules/utils.js';
 import { callGeminiAPI, typeWriterEffect, connectToGemini, startRecording, stopRecording } from './modules/ai.js';
@@ -318,6 +318,86 @@ window.sendAdminNotification = async () => {
     document.getElementById('admin-notif-msg').value = "";
 }
 
+// --- ADMIN SEND PUSH NOTIFICATION (FCM) ---
+window.sendPushToAll = async () => {
+    if(!currentUser || !isAdmin(currentUser.email)) return alert("Bạn không có quyền Admin!");
+    
+    const key = document.getElementById('push-server-key').value.trim();
+    const title = document.getElementById('push-title').value.trim();
+    const body = document.getElementById('push-body').value.trim();
+    const url = document.getElementById('push-url').value.trim();
+
+    // Tự động lưu Server Key vào LocalStorage để lần sau không phải nhập lại
+    if(key) {
+        localStorage.setItem('fcm_server_key', key);
+        setDoc(doc(db, "settings", "config"), { fcmServerKey: key }, { merge: true }).catch(e => console.log("Lỗi lưu key:", e));
+    }
+
+    if(!key) return alert("Thiếu Server Key! Hãy lấy trong Firebase Console -> Project Settings -> Cloud Messaging -> Cloud Messaging API (Legacy). Nếu chưa bật hãy bấm 3 chấm -> Manage API để bật.");
+    if(!title || !body) return alert("Vui lòng nhập tiêu đề và nội dung!");
+
+    if(!confirm("Bạn có chắc muốn gửi thông báo này đến TẤT CẢ người dùng không?")) return;
+
+    Utils.loader(true, "Đang lấy danh sách thiết bị...");
+    
+    try {
+        // 1. Lấy tất cả user có fcmToken
+        const q = query(collection(db, "users"));
+        const snap = await getDocs(q);
+        const tokens = [];
+        snap.forEach(d => {
+            const data = d.data();
+            if(data.fcmToken) tokens.push(data.fcmToken);
+        });
+
+        if(tokens.length === 0) {
+            Utils.loader(false);
+            return alert("Chưa có người dùng nào đăng ký nhận thông báo!");
+        }
+
+        Utils.loader(true, `Đang gửi đến ${tokens.length} thiết bị...`);
+
+        // 2. Gửi theo lô (Batch), mỗi lô tối đa 1000 token (Giới hạn của FCM Legacy)
+        const chunkSize = 1000;
+        for (let i = 0; i < tokens.length; i += chunkSize) {
+            const chunk = tokens.slice(i, i + chunkSize);
+            
+            const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'key=' + key
+                },
+                body: JSON.stringify({
+                    registration_ids: chunk,
+                    notification: {
+                        title: title,
+                        body: body,
+                        icon: 'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green'
+                    },
+                    data: {
+                        click_action: url ? (window.location.origin + "/" + url) : window.location.origin
+                    }
+                })
+            });
+
+            // Kiểm tra xem Google có chấp nhận Key không
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(`Gửi thất bại (Lỗi ${response.status}): ${JSON.stringify(errData)}. Hãy kiểm tra lại Server Key!`);
+            }
+        }
+
+        Utils.loader(false);
+        alert(`✅ Đã gửi thành công cho ${tokens.length} thiết bị!`);
+        document.getElementById('push-body').value = "";
+    } catch (e) {
+        console.error(e);
+        Utils.loader(false);
+        alert("Lỗi khi gửi: " + e.message);
+    }
+}
+
 // --- PERSONAL NOTIFICATIONS ---
 // Hệ thống thông báo cá nhân (Like, Comment, Reply)
 let notifUnsub = null;
@@ -404,6 +484,40 @@ window.markAllRead = async () => {
     });
     await batch.commit();
     document.getElementById('nav-bell-dot').style.display='none';
+}
+
+// --- PUSH NOTIFICATIONS (FCM) ---
+async function setupPushNotifications(user) {
+    try {
+        // 1. Xin quyền thông báo
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            // 2. Lấy Token thiết bị (Thay VAPID Key của bạn vào đây)
+            // Lấy Key tại: Firebase Console -> Project Settings -> Cloud Messaging -> Web Push certificates
+            const VAPID_KEY = "BMWUXySgKnXX-HhnIqtt2p3oMCaOAgw6nMhizr0tEgrg3m_F0pGtUo1X9kdFRfNHlu9EbkBEer8BBMWsGx7b9ik"; 
+            
+            const currentToken = await getToken(messaging, { 
+                vapidKey: VAPID_KEY,
+                serviceWorkerRegistration: await navigator.serviceWorker.ready 
+            });
+
+            if (currentToken) {
+                console.log("FCM Token:", currentToken);
+                // 3. Lưu Token vào Firestore của user để Admin gửi thông báo sau này
+                await updateDoc(doc(db, "users", user.uid), {
+                    fcmToken: currentToken
+                });
+            }
+        }
+    } catch (error) {
+        console.log("Lỗi Push Notification:", error);
+    }
+
+    // 4. Lắng nghe tin nhắn khi web đang mở (Foreground)
+    onMessage(messaging, (payload) => {
+        console.log('Message received. ', payload);
+        showNotification(`🔔 ${payload.notification.title}: ${payload.notification.body}`);
+    });
 }
 
 // --- GREETING LOGIC ---
@@ -582,6 +696,7 @@ onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if(document.getElementById('model-advanced')) document.getElementById('model-advanced').value = AI_MODELS.advanced;
         }
         if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
+        if(cfg.fcmServerKey && document.getElementById('push-server-key')) { document.getElementById('push-server-key').value = cfg.fcmServerKey; }
         if(cfg.musicId && cfg.musicId !== musicId) { musicId = cfg.musicId; try{if(player) player.loadVideoById(musicId);}catch(e){} }
         const plDiv = document.getElementById('music-playlist-container'); if(plDiv && cfg.playlist) { plDiv.innerHTML = ""; cfg.playlist.forEach(s => { const style = s.id === cfg.musicId ? 'background:rgba(46, 125, 50, 0.1); border-left:4px solid green;' : ''; plDiv.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border); ${style}"><span>${s.name}</span> <div><button class="btn btn-sm" onclick="playSong('${s.id}')">▶</button> <button class="btn btn-sm btn-danger" onclick="deleteSong('${s.name}','${s.id}')">🗑</button></div></div>`; }); }
         const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
@@ -631,6 +746,7 @@ onAuthStateChanged(auth, async(u)=>{
         listenToMyNotifications(u.uid);
         handleRoute(); // Redirect to Admin if needed
         refreshChatContext(); // Cập nhật ngữ cảnh AI với thông tin user mới
+        setupPushNotifications(u); // Kích hoạt Push Notification
 
         // KIỂM TRA THÔNG TIN CÁ NHÂN (BẮT BUỘC)
         if(!currentUser.class || !currentUser.customID || !currentUser.dob) {
@@ -652,6 +768,10 @@ onAuthStateChanged(auth, async(u)=>{
             // Show Admin in Sidebar
             const sbAdmin = document.getElementById('sidebar-admin');
             if(sbAdmin) sbAdmin.style.display = 'flex';
+
+            // Tự động điền Server Key nếu đã lưu trước đó (Tiện ích Admin)
+            const savedKey = localStorage.getItem('fcm_server_key');
+            if(savedKey && document.getElementById('push-server-key')) document.getElementById('push-server-key').value = savedKey;
         } else { const cs = document.getElementById('edit-class'); if(cs) cs.disabled = false; }
         
         // Update Sidebar Profile
