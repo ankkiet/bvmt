@@ -8,7 +8,8 @@
     
     <meta name="theme-color" content="#2e7d32">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green">
+    <link rel="icon" href="./photo/logox2.png">
+    <link rel="apple-touch-icon" href="./photo/logox2.png">
     
     <meta name="description" content="Web lớp A2K41 - Green School.">
     <meta property="og:title" content="A2K41 - Green School">
@@ -31,6 +32,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Màn hình chờ (Splash Screen) -->
+    <div id="splash-screen">
+        <img src="./photo/logox2.png" class="splash-logo" alt="Logo">
+        <div class="splash-loader"></div>
+    </div>
 
     <!-- Cảnh báo khi mở bằng trình duyệt trong app (Zalo/FB) -->
     <div id="webview-warning">
@@ -451,15 +458,6 @@
         <div id="admin" class="page-section">
             <h1>🛠 Quản Trị Hệ Thống</h1>
 
-            <div class="card" style="border-left: 5px solid #2e7d32;">
-                <h3>🔔 Gửi Thông Báo (Global)</h3>
-                <p>Gửi tin nhắn nổi bật cho tất cả người dùng đang online.</p>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="admin-notif-msg" placeholder="Nhập nội dung thông báo..." style="flex:1">
-                    <button class="btn btn-sm" onclick="sendAdminNotification()">Gửi ngay</button>
-                </div>
-            </div>
-            
             <div class="card" style="border-left: 5px solid #ff4081;">
                 <h3>🚀 Gửi Push Notification (FCM)</h3>
                 <p>Gửi thông báo đến thiết bị ngay cả khi người dùng tắt web.</p>
@@ -469,9 +467,25 @@
                     <input type="text" id="push-url" placeholder="Link mở khi click (Vd: #contest)" style="flex:1">
                 </div>
                 <textarea id="push-body" placeholder="Nội dung thông báo..." rows="2" style="margin-bottom:10px"></textarea>
+                
+                <!-- Phần Hẹn giờ -->
+                <div style="margin-bottom:10px; padding:10px; background:rgba(0,0,0,0.05); border-radius:5px;">
+                    <label style="font-size:0.85rem; font-weight:bold;"><i class="fas fa-clock"></i> Hẹn giờ gửi (Bỏ trống để gửi ngay):</label>
+                    <input type="datetime-local" id="push-schedule-time" style="width:100%; margin-top:5px;">
+                </div>
+
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <button class="btn btn-sm btn-danger" onclick="sendPushToAll()">🚀 Gửi Push (Legacy)</button>
+                    <button class="btn btn-sm btn-danger" onclick="sendPushToAll()">🚀 Gửi / Lên Lịch</button>
                     <a href="https://console.firebase.google.com/project/a2k41nvc-36b0b/notification/compose" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none; font-size:0.8rem;">📢 Gửi bằng Firebase Console (v1)</a>
+                </div>
+
+                <!-- Phần Lịch sử & Danh sách chờ -->
+                <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <h4 style="margin:0">⏳ Đang chờ & 📜 Lịch sử</h4>
+                        <button class="btn btn-sm btn-outline" onclick="loadPushHistory()">Làm mới</button>
+                    </div>
+                    <div id="push-history-list" style="max-height:200px; overflow-y:auto; font-size:0.85rem;"></div>
                 </div>
             </div>
 
@@ -581,19 +595,6 @@
                 </select>
                 <canvas id="classChart" style="width:100%; max-height:400px;"></canvas>
                 <button class="btn btn-sm" onclick="drawClassChart()" style="margin-top:10px">Cập nhật biểu đồ</button>
-            </div>
-
-            <div class="card" style="border-left: 5px solid #673ab7;">
-                <h3>🤖 Thống Kê Hoạt Động AI</h3>
-                <p>Tỉ lệ phản hồi thành công/thất bại của Chatbot.</p>
-                <p style="font-size:0.8rem; color:#d32f2f; margin-top:-10px;">* Tự động gửi Email báo cáo nếu lỗi > 20%</p>
-                <div style="max-width: 300px; margin: 0 auto;">
-                    <canvas id="aiChart"></canvas>
-                </div>
-                <div style="text-align:center; margin-top:10px; display:flex; gap:10px; justify-content:center;">
-                    <button class="btn btn-sm" onclick="drawAIChart()">Cập nhật số liệu</button>
-                    <button class="btn btn-sm btn-outline" onclick="testEmailReport()">📧 Test Email</button>
-                </div>
             </div>
 
             <div class="card">

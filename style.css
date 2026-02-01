@@ -98,6 +98,33 @@ body.no-scroll { overflow: hidden; }
     min-width: 200px;
 }
 .effect-menu.active { display: block; }
+
+/* --- SPLASH SCREEN --- */
+#splash-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: var(--bg); /* Trùng màu nền web */
+    z-index: 9999999; /* Cao nhất đè lên tất cả */
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 0.6s ease-out, visibility 0.6s;
+}
+#splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.splash-logo {
+    /* Tự động chỉnh kích thước: 35% chiều rộng/cao màn hình (tùy cái nào nhỏ hơn) */
+    width: 35vmin; height: 35vmin; 
+    /* Giới hạn: Không nhỏ quá 120px (điện thoại bé) và không to quá 300px (PC) */
+    min-width: 120px; max-width: 300px;
+    object-fit: contain;
+    animation: pulseLogo 2s infinite ease-in-out;
+    margin-bottom: 30px;
+    /* Hiệu ứng đổ bóng phát sáng nhẹ giúp logo nổi bật */
+    filter: drop-shadow(0 0 15px rgba(46, 125, 50, 0.4));
+}
+.splash-loader {
+    width: 40px; height: 40px; border: 4px solid var(--border);
+    border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes pulseLogo { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
 .effect-menu div { padding: 10px 15px; cursor: pointer; font-size: 0.9rem; color: var(--text); border-bottom: 1px solid var(--border); transition: 0.2s; }
 .effect-menu div:last-child { border-bottom: none; }
 .effect-menu div:hover { background: var(--input-bg); color: var(--primary); }

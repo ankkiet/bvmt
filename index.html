@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Green School - Digital Ecosystem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="./photo/logox2.png">
+    <link rel="apple-touch-icon" href="./photo/logox2.png">
     <style>
         :root {
             --tech-green: #00ff88;
@@ -148,9 +150,24 @@
         /* Hiệu ứng Fade Out khi chuyển trang */
         body { transition: opacity 0.5s ease-in-out; opacity: 1; }
         body.fade-out { opacity: 0; }
+
+        /* Splash Screen riêng cho Index (nền tối) */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--deep-forest); z-index: 99999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        #splash-screen.hidden { opacity: 0; visibility: hidden; }
+        .splash-logo { width: 120px; animation: pulse 2s infinite; }
     </style>
 </head>
 <body>
+    <div id="splash-screen">
+        <img src="./photo/logox2.png" class="splash-logo">
+        <div style="margin-top:15px; color:var(--tech-green); font-size:0.9rem; letter-spacing:2px;">LOADING...</div>
+    </div>
+
     <div id="scroll-progress"></div>
     <div id="particles-js"></div>
 
@@ -228,6 +245,13 @@
                 "size": { "value": 3 },
                 "line_linked": { "enable": true, "distance": 150, "color": "#00ff88", "opacity": 0.2, "width": 1 }
             }
+        });
+
+        // Tắt Splash Screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash-screen').classList.add('hidden');
+            }, 1000);
         });
 
         function openExplore() {

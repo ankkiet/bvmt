@@ -235,6 +235,16 @@ window.addEventListener('load', () => {
     updateGreeting(); // Gọi hàm chào khi web tải xong
     initSeasonalEffect(); // Khởi chạy hiệu ứng mùa
 
+    // Tắt Splash Screen sau khi tải xong
+    const splash = document.getElementById('splash-screen');
+    if(splash) {
+        // Đợi ít nhất 1.5 giây để người dùng kịp nhìn thấy logo thương hiệu
+        setTimeout(() => {
+            splash.classList.add('hidden');
+            setTimeout(() => splash.remove(), 600); // Xóa khỏi DOM sau khi hiệu ứng mờ kết thúc
+        }, 1500);
+    }
+
     // Kiểm tra hiển thị Popup hướng dẫn lần đầu
     if (!localStorage.getItem('seen_guide_v1')) {
         setTimeout(() => {
@@ -322,21 +332,42 @@ window.sendAdminNotification = async () => {
 window.sendPushToAll = async () => {
     if(!currentUser || !isAdmin(currentUser.email)) return alert("Bạn không có quyền Admin!");
     
-    const key = document.getElementById('push-server-key').value.trim();
+    // Với v1, ta dùng URL của Google Apps Script thay vì Server Key
+    // Bạn hãy dán link Web App (Apps Script) vào ô Server Key trên giao diện Admin nhé!
+    const gasUrl = document.getElementById('push-server-key').value.trim(); 
     const title = document.getElementById('push-title').value.trim();
     const body = document.getElementById('push-body').value.trim();
     const url = document.getElementById('push-url').value.trim();
+    const scheduleTime = document.getElementById('push-schedule-time').value;
 
     // Tự động lưu Server Key vào LocalStorage để lần sau không phải nhập lại
-    if(key) {
-        localStorage.setItem('fcm_server_key', key);
-        setDoc(doc(db, "settings", "config"), { fcmServerKey: key }, { merge: true }).catch(e => console.log("Lỗi lưu key:", e));
+    if(gasUrl) {
+        localStorage.setItem('fcm_server_key', gasUrl);
+        setDoc(doc(db, "settings", "config"), { fcmServerKey: gasUrl }, { merge: true }).catch(e => console.log("Lỗi lưu URL:", e));
     }
 
-    if(!key) return alert("Thiếu Server Key! Hãy lấy trong Firebase Console -> Project Settings -> Cloud Messaging -> Cloud Messaging API (Legacy). Nếu chưa bật hãy bấm 3 chấm -> Manage API để bật.");
+    if(!gasUrl) return alert("Thiếu URL Server! Hãy nhập Link Google Apps Script Web App vào ô Server Key.");
     if(!title || !body) return alert("Vui lòng nhập tiêu đề và nội dung!");
 
-    if(!confirm("Bạn có chắc muốn gửi thông báo này đến TẤT CẢ người dùng không?")) return;
+    // LOGIC HẸN GIỜ
+    if (scheduleTime) {
+        const sendTime = new Date(scheduleTime).getTime();
+        if (sendTime <= Date.now()) return alert("Thời gian hẹn phải lớn hơn hiện tại!");
+        
+        await addDoc(collection(db, "scheduled_notifications"), {
+            title, body, url, gasUrl,
+            scheduledAt: sendTime,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            createdBy: currentUser.email
+        });
+        alert(`✅ Đã lên lịch gửi vào lúc ${new Date(scheduleTime).toLocaleString('vi-VN')}`);
+        document.getElementById('push-body').value = "";
+        loadPushHistory();
+        return;
+    }
+
+    if(!confirm("Gửi NGAY LẬP TỨC đến tất cả người dùng?")) return;
 
     Utils.loader(true, "Đang lấy danh sách thiết bị...");
     
@@ -357,40 +388,37 @@ window.sendPushToAll = async () => {
 
         Utils.loader(true, `Đang gửi đến ${tokens.length} thiết bị...`);
 
-        // 2. Gửi theo lô (Batch), mỗi lô tối đa 1000 token (Giới hạn của FCM Legacy)
-        const chunkSize = 1000;
-        for (let i = 0; i < tokens.length; i += chunkSize) {
-            const chunk = tokens.slice(i, i + chunkSize);
-            
-            const response = await fetch('https://fcm.googleapis.com/fcm/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'key=' + key
-                },
-                body: JSON.stringify({
-                    registration_ids: chunk,
-                    notification: {
-                        title: title,
-                        body: body,
-                        icon: 'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green'
-                    },
-                    data: {
-                        click_action: url ? (window.location.origin + "/" + url) : window.location.origin
-                    }
-                })
-            });
+        // 2. Gửi request đến Google Apps Script (Server trung gian)
+        // Server này sẽ lo việc xác thực OAuth2 và gọi FCM v1
+        const response = await fetch(gasUrl, {
+            method: 'POST',
+            mode: 'no-cors', // Quan trọng: Apps Script yêu cầu no-cors hoặc redirect handling
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tokens: tokens,
+                title: title,
+                body: body,
+                url: url ? (window.location.origin + "/" + url) : window.location.origin,
+                image: 'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green'
+            })
+        });
+        
+        // Lưu ý: mode 'no-cors' sẽ không trả về nội dung response chi tiết, 
+        // nhưng nó cần thiết để tránh lỗi CORS khi gọi Apps Script từ trình duyệt.
 
-            // Kiểm tra xem Google có chấp nhận Key không
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(`Gửi thất bại (Lỗi ${response.status}): ${JSON.stringify(errData)}. Hãy kiểm tra lại Server Key!`);
-            }
-        }
+        // 3. Lưu vào Lịch sử (Notification History)
+        await addDoc(collection(db, "notification_history"), {
+            title, body, url,
+            sentAt: serverTimestamp(),
+            createdAt: serverTimestamp(), // Dùng field này để sort
+            sentBy: currentUser.email,
+            deviceCount: tokens.length
+        });
 
         Utils.loader(false);
         alert(`✅ Đã gửi thành công cho ${tokens.length} thiết bị!`);
         document.getElementById('push-body').value = "";
+        loadPushHistory(); // Refresh list
     } catch (e) {
         console.error(e);
         Utils.loader(false);
@@ -398,56 +426,226 @@ window.sendPushToAll = async () => {
     }
 }
 
+// --- ADMIN: PUSH HISTORY & SCHEDULER ---
+window.loadPushHistory = async () => {
+    const list = document.getElementById('push-history-list');
+    if(!list) return;
+    list.innerHTML = "Loading...";
+
+    // Lấy danh sách đang chờ
+    const qPending = query(collection(db, "scheduled_notifications"), where("status", "==", "pending"), orderBy("scheduledAt", "asc"));
+    const snapPending = await getDocs(qPending);
+
+    // Lấy lịch sử đã gửi
+    const qHistory = query(collection(db, "notification_history"), orderBy("createdAt", "desc"), limit(10));
+    const snapHistory = await getDocs(qHistory);
+
+    let html = "";
+
+    // Render Pending
+    if(!snapPending.empty) {
+        html += `<div style="font-weight:bold; color:#ff9800; margin-bottom:5px;">⏳ Đang chờ gửi:</div>`;
+        snapPending.forEach(d => {
+            const data = d.data();
+            const time = new Date(data.scheduledAt).toLocaleString('vi-VN');
+            html += `<div style="padding:5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                <div><b>${time}</b>: ${data.title}</div>
+                <button class="btn btn-sm btn-danger" onclick="deleteDoc(doc(db,'scheduled_notifications','${d.id}')).then(loadPushHistory)">Hủy</button>
+            </div>`;
+        });
+    }
+
+    // Render History
+    html += `<div style="font-weight:bold; color:#2e7d32; margin:10px 0 5px 0;">📜 Đã gửi gần đây:</div>`;
+    snapHistory.forEach(d => {
+        const data = d.data();
+        const time = data.createdAt ? new Date(data.createdAt.seconds*1000).toLocaleString('vi-VN') : 'N/A';
+        html += `<div style="padding:5px; border-bottom:1px solid #eee;">
+            <div style="font-weight:bold">${data.title} <span style="font-weight:normal; font-size:0.8em; color:#666">(${time})</span></div>
+            <div style="font-size:0.9em">${data.body}</div>
+            <button class="btn btn-sm btn-outline" style="margin-top:2px; padding:2px 5px; font-size:0.7rem;" onclick="resendPush('${data.title}', '${data.body}', '${data.url}')">🔄 Điền lại để gửi</button>
+        </div>`;
+    });
+
+    list.innerHTML = html || "Chưa có dữ liệu.";
+}
+
+window.resendPush = (t, b, u) => {
+    document.getElementById('push-title').value = t;
+    document.getElementById('push-body').value = b;
+    document.getElementById('push-url').value = u;
+    document.getElementById('push-schedule-time').value = ""; // Reset giờ
+}
+
+// --- AUTO SCHEDULER CHECKER (CLIENT-SIDE CRON) ---
+// Hàm này sẽ chạy mỗi 60s nếu người dùng là Admin
+setInterval(async () => {
+    if (!currentUser || !isAdmin(currentUser.email)) return;
+    
+    // Kiểm tra các task đến hạn
+    const now = Date.now();
+    const q = query(collection(db, "scheduled_notifications"), where("status", "==", "pending"), where("scheduledAt", "<=", now));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+        console.log(`Found ${snap.size} scheduled tasks to run...`);
+        snap.forEach(async (d) => {
+            const data = d.data();
+            // Đánh dấu là đang xử lý để tránh Admin khác chạy trùng (Optimistic locking đơn giản)
+            await updateDoc(doc(db, "scheduled_notifications", d.id), { status: 'processing' });
+
+            try {
+                // Tái sử dụng logic gửi (Copy logic từ sendPushToAll nhưng không alert)
+                // 1. Lấy tokens
+                const qUsers = query(collection(db, "users"));
+                const snapUsers = await getDocs(qUsers);
+                const tokens = [];
+                snapUsers.forEach(u => { if(u.data().fcmToken) tokens.push(u.data().fcmToken); });
+
+                if(tokens.length > 0) {
+                    // 2. Gửi qua GAS
+                    await fetch(data.gasUrl, {
+                        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            tokens: tokens, title: data.title, body: data.body,
+                            url: data.url ? (window.location.origin + "/" + data.url) : window.location.origin,
+                            image: 'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+Green'
+                        })
+                    });
+
+                    // 3. Lưu lịch sử
+                    await addDoc(collection(db, "notification_history"), {
+                        title: data.title, body: data.body, url: data.url,
+                        sentAt: serverTimestamp(), createdAt: serverTimestamp(),
+                        sentBy: 'Scheduler', deviceCount: tokens.length
+                    });
+                }
+
+                // 4. Xóa hoặc đánh dấu hoàn thành task
+                await updateDoc(doc(db, "scheduled_notifications", d.id), { status: 'completed', completedAt: serverTimestamp() });
+                console.log(`Task ${d.id} completed.`);
+                
+                // Refresh UI nếu đang mở Admin
+                if(document.getElementById('push-history-list')) loadPushHistory();
+
+            } catch (e) {
+                console.error("Scheduler Error:", e);
+                await updateDoc(doc(db, "scheduled_notifications", d.id), { status: 'failed', error: e.message });
+            }
+        });
+    }
+}, 60000); // Check mỗi 1 phút
+
 // --- PERSONAL NOTIFICATIONS ---
 // Hệ thống thông báo cá nhân (Like, Comment, Reply)
 let notifUnsub = null;
+let globalNotifUnsub = null;
+
 function listenToMyNotifications(uid) {
     if (notifUnsub) notifUnsub(); 
-    const q = query(collection(db, "notifications"), where("recipientUid", "==", uid), limit(50));
-    
-    let isFirstLoad = true; // Cờ để tránh hiện popup khi vừa vào trang
+    if (globalNotifUnsub) globalNotifUnsub();
 
-    notifUnsub = onSnapshot(q, (snap) => {
+    // 1. Lắng nghe thông báo cá nhân
+    const qPersonal = query(collection(db, "notifications"), where("recipientUid", "==", uid), limit(30));
+    // 2. Lắng nghe thông báo chung (Global Push) từ lịch sử
+    const qGlobal = query(collection(db, "notification_history"), orderBy("createdAt", "desc"), limit(20));
+    
+    let personalNotifs = [];
+    let globalNotifs = [];
+
+    const mergeAndRender = () => {
         const list = document.getElementById('notif-list-ui');
         const dot = document.getElementById('nav-bell-dot');
-        let unreadCount = 0; let html = ""; let notifs = [];
+        let html = ""; 
         
-        // Xử lý thông báo Real-time (Toast)
-        if (!isFirstLoad) {
-            snap.docChanges().forEach(change => {
-                if (change.type === "added") {
-                    const d = change.doc.data();
-                    // Chỉ hiện nếu thông báo mới tạo trong vòng 1 phút (tránh cache cũ)
-                    if (Date.now() - (d.createdAt?.seconds * 1000 || 0) < 60000) {
-                        showNotification(d.message);
-                        if(navigator.vibrate) navigator.vibrate([50, 30, 50]); // Rung nhẹ
-                    }
-                }
-            });
-        }
-        isFirstLoad = false;
+        // Lấy danh sách ID thông báo chung đã bị người dùng xóa (Lưu ở LocalStorage)
+        const deletedGlobals = JSON.parse(localStorage.getItem('deleted_global_notifs') || '[]');
 
-        if (snap.empty) {
+        // Lọc thông báo chung: Bỏ những cái đã xóa
+        const activeGlobals = globalNotifs.filter(n => !deletedGlobals.includes(n.id));
+
+        // Gộp 2 danh sách lại
+        let allNotifs = [...personalNotifs, ...activeGlobals];
+        
+        // Sắp xếp theo thời gian mới nhất
+        allNotifs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        let unreadCount = 0;
+        
+        if (allNotifs.length === 0) {
             list.innerHTML = '<div class="empty-notif">Chưa có thông báo nào</div>';
             dot.style.display = 'none'; return;
         }
-        snap.forEach(d => { notifs.push({ id: d.id, ...d.data() }); });
-        notifs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-        notifs.forEach(data => {
+
+        allNotifs.forEach(data => {
+            // Kiểm tra đã đọc chưa (Với Global thì check localStorage, với Personal thì check field isRead)
+            let isRead = data.isRead;
+            if (data.type === 'global_push') {
+                const readGlobals = JSON.parse(localStorage.getItem('read_global_notifs') || '[]');
+                isRead = readGlobals.includes(data.id);
+            }
+
             if (!data.isRead) unreadCount++;
-            html += `<div class="notif-item ${data.isRead ? '' : 'unread'}">
-                        <div class="notif-content-wrapper" onclick="clickNotification('${data.id}', '${data.collectionRef}', '${data.link}')">
+            
+            // Phân biệt icon xóa
+            // isGlobal: true nếu là thông báo chung
+            const isGlobal = data.type === 'global_push';
+
+            html += `<div class="notif-item ${isRead ? '' : 'unread'}">
+                        <div class="notif-content-wrapper" onclick="clickNotification('${data.id}', '${data.collectionRef}', '${data.link}', ${isGlobal})">
                             <img src="${data.senderAvatar || 'https://via.placeholder.com/30'}" class="notif-avatar">
                             <div class="notif-body">
                                 <p>${data.message}</p>
                                 <span class="notif-time">${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN') : 'Vừa xong'}</span>
                             </div>
                         </div>
-                        <button class="notif-delete-btn" onclick="deleteNotification('${data.id}')" title="Xóa">✕</button>
+                        <button class="notif-delete-btn" onclick="deleteNotification('${data.id}', ${isGlobal})" title="Xóa">✕</button>
                     </div>`;
         });
         list.innerHTML = html;
-        dot.style.display = unreadCount > 0 ? 'block' : 'none';
+        // Logic chấm đỏ: Chỉ tính personal chưa đọc (Global coi như đọc rồi để đỡ phiền, hoặc tùy chỉnh)
+        const personalUnread = personalNotifs.filter(n => !n.isRead).length;
+        dot.style.display = personalUnread > 0 ? 'block' : 'none';
+    };
+
+    // Listener 1: Personal
+    notifUnsub = onSnapshot(qPersonal, (snap) => {
+        personalNotifs = [];
+        snap.forEach(d => personalNotifs.push({ id: d.id, ...d.data() }));
+        
+        // Toast cho tin nhắn mới
+        snap.docChanges().forEach(change => {
+            if (change.type === "added") {
+                const d = change.doc.data();
+                if (Date.now() - (d.createdAt?.seconds * 1000 || 0) < 60000) {
+                    showNotification(d.message);
+                    if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
+                }
+            }
+        });
+        mergeAndRender();
+    });
+
+    // Listener 2: Global History (Push)
+    globalNotifUnsub = onSnapshot(qGlobal, (snap) => {
+        globalNotifs = [];
+        snap.forEach(d => {
+            const data = d.data();
+            // Giả lập cấu trúc giống notification cá nhân
+            globalNotifs.push({
+                id: d.id,
+                recipientUid: 'ALL',
+                senderName: 'Hệ thống',
+                senderAvatar: 'https://cdn-icons-png.flaticon.com/512/3239/3239952.png',
+                type: 'global_push',
+                message: `<b>${data.title}</b>: ${data.body}`,
+                link: data.url,
+                collectionRef: null, // Link thường là URL ngoài hoặc hash
+                createdAt: data.createdAt,
+                isRead: false // Trạng thái đọc xử lý ở client
+            });
+        });
+        mergeAndRender();
     });
 }
 
@@ -458,18 +656,38 @@ async function pushNotification(recipientId, type, message, linkId, colRef) {
     } catch (e) { console.error("Lỗi gửi thông báo:", e); }
 }
 
-window.clickNotification = async (notifId, col, postId) => {
-    await updateDoc(doc(db, "notifications", notifId), { isRead: true });
-    if(col && postId && col !== 'undefined') window.openLightbox(col, postId);
+window.clickNotification = async (notifId, col, postId, isGlobal) => {
+    if (isGlobal) {
+        // Lưu trạng thái đã đọc vào LocalStorage
+        const readGlobals = JSON.parse(localStorage.getItem('read_global_notifs') || '[]');
+        if (!readGlobals.includes(notifId)) {
+            readGlobals.push(notifId);
+            localStorage.setItem('read_global_notifs', JSON.stringify(readGlobals));
+        }
+        // Mở link (nếu có)
+        if (postId && postId.startsWith('http')) window.open(postId, '_blank');
+        else if (postId && postId.startsWith('#')) window.location.hash = postId;
+    } else {
+        // Update Firestore
+        await updateDoc(doc(db, "notifications", notifId), { isRead: true });
+        if(col && postId && col !== 'undefined') window.openLightbox(col, postId);
+    }
     document.getElementById('notif-dropdown').classList.remove('active');
 }
 
 window.toggleNotifDropdown = () => { document.getElementById('notif-dropdown').classList.toggle('active'); }
 
 // Hàm xóa thông báo
-window.deleteNotification = async (id) => {
-    if(confirm("Xóa thông báo này?")) {
+window.deleteNotification = async (id, isGlobal) => {
+    if(!isGlobal) {
         await deleteDoc(doc(db, "notifications", id));
+    } else {
+        const deleted = JSON.parse(localStorage.getItem('deleted_global_notifs') || '[]');
+        deleted.push(id);
+        localStorage.setItem('deleted_global_notifs', JSON.stringify(deleted));
+        // Refresh UI
+        const u = currentUser ? currentUser.uid : null;
+        if(u) listenToMyNotifications(u);
     }
 }
 
@@ -768,6 +986,7 @@ onAuthStateChanged(auth, async(u)=>{
             // Show Admin in Sidebar
             const sbAdmin = document.getElementById('sidebar-admin');
             if(sbAdmin) sbAdmin.style.display = 'flex';
+        loadPushHistory(); // Tải lịch sử push
 
             // Tự động điền Server Key nếu đã lưu trước đó (Tiện ích Admin)
             const savedKey = localStorage.getItem('fcm_server_key');

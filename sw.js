@@ -23,14 +23,14 @@ messaging.onBackgroundMessage((payload) => {
 
 // --- CACHING LOGIC ---
 
-const CACHE_NAME = 'nvc-green-v57-rename-structure'; 
+const CACHE_NAME = 'nvc-green-v58-new-logo'; 
 // Danh sách các file tĩnh cần cache để chạy offline
 const STATIC_ASSETS = [
     './',
     './index.html',
     './main.html',
     './manifest.json',
-    'https://placehold.co/192x192/2e7d32/ffffff.png?text=NVC+192',
+    './photo/logox2.png',
     'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@500;700&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js',
