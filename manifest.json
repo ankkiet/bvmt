@@ -26,24 +26,24 @@
       "src": "./photo/logox2.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     },
     {
       "src": "./photo/logox2.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "screenshots": [
     {
-      "src": "https://placehold.co/1280x720/2e7d32/ffffff.png?text=Man+Hinh+Chinh",
+      "src": "./photo/screen-desktop.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide"
     },
     {
-      "src": "https://placehold.co/720x1280/2e7d32/ffffff.png?text=Giao+Dien+Mobile",
+      "src": "./photo/screen-mobile.png",
       "sizes": "720x1280",
       "type": "image/png",
       "form_factor": "narrow"
