@@ -5,6 +5,14 @@
     <!-- Cấu hình Viewport cho Mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Green School - A2K41 Official</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', { 'send_page_view': false });
+    </script>
     <meta name="google-site-verification" content="PId0HwDS2jNtPaR2zzbSdUDsGYy6mqB6uDOuJDJZouE" />
     <meta name="theme-color" content="#2e7d32">
     <meta name="robots" content="index, follow">
@@ -605,6 +613,55 @@
             </div>
         </div>
     </div>
+
+    <!-- FOOTER (CHÂN TRANG) -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <!-- Cột 1: Thông tin chung -->
+            <div class="footer-section about">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                    <img src="./photo/logox2.png" alt="Logo" class="footer-logo">
+                    <h3 style="margin:0; border:none; padding:0; color:white;">Green School</h3>
+                </div>
+                <p style="color:rgba(255,255,255,0.8); line-height:1.6;">Hệ sinh thái công nghệ xanh 4.0.<br>Nơi kết nối, chia sẻ và lan tỏa ý thức bảo vệ môi trường của thế hệ trẻ.</p>
+                <div class="contact-info">
+                    <div class="contact-row"><i class="fas fa-map-marker-alt"></i> <span>Xã Xuân Phú, TP. Đà Nẵng</span></div>
+                    <div class="contact-row"><i class="fas fa-envelope"></i> <span>a2k41.nvc@gmail.com</span></div>
+                    <div class="contact-row"><i class="fas fa-phone"></i> <span>0123.456.789</span></div>
+                </div>
+            </div>
+
+            <!-- Cột 2: Liên kết nhanh -->
+            <div class="footer-section links">
+                <h3>Liên Kết</h3>
+                <ul>
+                    <li><a href="#home" onclick="showPage('home')">Trang Chủ</a></li>
+                    <li><a href="#greenclass" onclick="showPage('greenclass')">Góc Xanh</a></li>
+                    <li><a href="#contest" onclick="showPage('contest')">Thi Đua</a></li>
+                    <li><a href="#guide" onclick="showPage('guide')">Tra Cứu Rác</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Mạng xã hội -->
+            <div class="footer-section social">
+                <h3>Kết Nối</h3>
+                <p style="color:rgba(255,255,255,0.8);">Theo dõi hoạt động mới nhất tại:</p>
+                <div class="social-icons">
+                    <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+                <button class="btn btn-sm btn-outline" style="margin-top:15px; color:white; border-color:rgba(255,255,255,0.5); width:100%;" onclick="installPWA()">
+                    <i class="fas fa-download"></i> Tải App Về Máy
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            &copy; 2024 <b>A2K41 Green School</b> | Designed with <i class="fas fa-heart" style="color:#ff4081"></i> by NVC Dev Team
+        </div>
+    </footer>
 
     <!-- Lightbox (Xem ảnh chi tiết) -->
     <div id="lightbox" class="modal" onclick="if(event.target==this) closeLightbox()">

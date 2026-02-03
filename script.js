@@ -1903,6 +1903,15 @@ window.showPage = (id) => {
     }
     canonicalLink.setAttribute("href", window.location.href.split('#')[0] + (targetId !== 'home' ? '#' + targetId : ''));
 
+    // --- GOOGLE ANALYTICS TRACKING (SPA) ---
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', 'page_view', {
+            page_title: fullTitle,
+            page_location: window.location.href,
+            page_path: '/' + targetId
+        });
+    }
+
     // Haptic Feedback khi chuyển trang (Rung nhẹ)
     if(navigator.vibrate) navigator.vibrate(15);
 }
