@@ -980,7 +980,7 @@ onAuthStateChanged(auth, async(u)=>{
         document.getElementById('p-name').innerHTML=(currentUser.role==='admin'||isAdmin(currentUser.email))?`<span style="color:#d32f2f;font-weight:bold">Admin_xinhxinh <i class="fas fa-check-circle" style="color:#2e7d32"></i></span>`:currentUser.displayName;
         document.getElementById('p-custom-id').innerText = currentUser.customID || "@chua_co_id"; document.getElementById('p-email').innerText=currentUser.email; document.getElementById('edit-name').value=currentUser.displayName; document.getElementById('edit-custom-id').value=currentUser.customID || ""; document.getElementById('edit-class').value=currentUser.class||""; document.getElementById('edit-dob').value=currentUser.dob||""; document.getElementById('edit-bio').value=currentUser.bio||"";
         if(isAdmin(currentUser.email)){ 
-            document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('mob-admin').style.display='flex'; document.getElementById('maintenance-overlay').style.display='none'; 
+            document.getElementById('menu-pc-admin').style.display='block'; document.getElementById('maintenance-overlay').style.display='none'; 
             const cs = document.getElementById('edit-class');
             if(cs) { cs.disabled = true; if(![...cs.options].some(o=>o.value==='Admin')){const o=document.createElement('option');o.value='Admin';o.text='Admin';cs.add(o);} cs.value='Admin'; }
             // Show Admin in Sidebar
