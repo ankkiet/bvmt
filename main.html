@@ -87,28 +87,7 @@
     <!-- Sidebar Mobile -->
     <div class="mobile-sidebar-overlay" onclick="toggleMobileMenu()"></div>
     <div class="mobile-sidebar" id="mobile-sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-profile" id="sidebar-profile-box" style="display:none" onclick="showPage('profile'); toggleMobileMenu()">
-                <img id="sb-avatar" src="" onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'">
-                <div class="sb-info">
-                    <div id="sb-name">Name</div>
-                    <div id="sb-id">@id</div>
-                </div>
-            </div>
-            <h3 id="sb-default-title">Menu</h3>
-            <button class="sidebar-close" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="sidebar-content">
-            <a href="#home" id="sidebar-home" class="sidebar-item" onclick="showPage('home'); toggleMobileMenu()"><i class="fas fa-home"></i> Trang Chủ</a>
-            <a href="#greenclass" id="sidebar-greenclass" class="sidebar-item" onclick="showPage('greenclass'); toggleMobileMenu()"><i class="fas fa-leaf"></i> Góc Xanh</a>
-            <a href="#contest" id="sidebar-contest" class="sidebar-item" onclick="showPage('contest'); toggleMobileMenu()"><i class="fas fa-trophy"></i> Thi Đua</a>
-            <a href="#activities" id="sidebar-activities" class="sidebar-item" onclick="showPage('activities'); toggleMobileMenu()"><i class="fas fa-calendar-alt"></i> Hoạt Động</a>
-            <a href="#guide" id="sidebar-guide" class="sidebar-item" onclick="showPage('guide'); toggleMobileMenu()"><i class="fas fa-search"></i> Tra Cứu</a>
-            <a href="#archive" id="sidebar-archive" class="sidebar-item" onclick="showPage('archive'); toggleMobileMenu()"><i class="fas fa-box"></i> Lưu Trữ</a>
-            <a href="#profile" id="sidebar-profile" class="sidebar-item" onclick="showPage('profile'); toggleMobileMenu()"><i class="fas fa-user"></i> Tài Khoản</a>
-            <a href="#admin" id="sidebar-admin" class="sidebar-item" style="display:none; color:var(--danger)"><i class="fas fa-cogs"></i> Admin</a>
-            <div id="sidebar-install-area"></div>
-        </div>
+        <!-- Nội dung sẽ được Lazy Load bởi script.js -->
     </div>
 
     <!-- Danh sách thông báo cá nhân -->
@@ -582,6 +561,7 @@
                     <button class="btn btn-sm btn-outline" onclick="exportExcel('gallery')">Góc Xanh</button>
                     <button class="btn btn-sm btn-outline" onclick="exportExcel('contest')">Thi Đua</button>
                     <button class="btn btn-sm btn-outline" style="border-color:#d32f2f; color:#d32f2f" onclick="exportPDF('contest')"><i class="fas fa-file-pdf"></i> PDF Thi Đua</button>
+                    <button class="btn btn-sm btn-outline" style="border-color:#4caf50; color:#4caf50" onclick="generateSitemap()"><i class="fas fa-sitemap"></i> Tạo Sitemap XML</button>
                 </div>
                 <table id="export-table" style="display:none"></table>
             </div>

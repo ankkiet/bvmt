@@ -18,6 +18,7 @@ let adminSortOrder = 'asc';
 const PAGE_SIZE = 12;
 const gridLimits = { gallery: PAGE_SIZE, contest: PAGE_SIZE };
 const gridParams = {};
+let isSidebarLoaded = false; // Cờ kiểm tra sidebar đã load chưa
 
 // --- CẤU HÌNH AI & CHATBOT (GEMINI) ---
 let aiKeys = [{name: "Mặc định", val: "AIzaSyAnOwbqmpQcOu_ERINF4nSfEL4ZW95fiGc"}]; 
@@ -984,8 +985,6 @@ onAuthStateChanged(auth, async(u)=>{
             const cs = document.getElementById('edit-class');
             if(cs) { cs.disabled = true; if(![...cs.options].some(o=>o.value==='Admin')){const o=document.createElement('option');o.value='Admin';o.text='Admin';cs.add(o);} cs.value='Admin'; }
             // Show Admin in Sidebar
-            const sbAdmin = document.getElementById('sidebar-admin');
-            if(sbAdmin) sbAdmin.style.display = 'flex';
         loadPushHistory(); // Tải lịch sử push
 
             // Tự động điền Server Key nếu đã lưu trước đó (Tiện ích Admin)
@@ -994,11 +993,7 @@ onAuthStateChanged(auth, async(u)=>{
         } else { const cs = document.getElementById('edit-class'); if(cs) cs.disabled = false; }
         
         // Update Sidebar Profile
-        document.getElementById('sidebar-profile-box').style.display = 'flex';
-        document.getElementById('sb-default-title').style.display = 'none';
-        document.getElementById('sb-avatar').src = currentUser.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
-        document.getElementById('sb-name').innerText = currentUser.displayName;
-        document.getElementById('sb-id').innerText = currentUser.customID || "@...";
+        updateSidebarUI();
         
         updateGreeting(); // Cập nhật lại lời chào khi đã có tên user
     }else{ 
@@ -1006,11 +1001,9 @@ onAuthStateChanged(auth, async(u)=>{
         if(notifUnsub) notifUnsub(); 
         refreshChatContext(); // Reset ngữ cảnh AI về khách
         document.getElementById('profile-in').style.display='none'; document.getElementById('profile-out').style.display='block'; document.getElementById('home-login-area').style.display='block'; document.getElementById('menu-pc-admin').style.display='none'; 
-        const sbAdmin = document.getElementById('sidebar-admin'); if(sbAdmin) sbAdmin.style.display = 'none';
         
         // Reset Sidebar Profile
-        document.getElementById('sidebar-profile-box').style.display = 'none';
-        document.getElementById('sb-default-title').style.display = 'block';
+        updateSidebarUI();
     }
 });
 
@@ -1581,6 +1574,54 @@ window.exportPDF = async (type) => {
     Utils.loader(false);
 }
 
+// --- SITEMAP GENERATOR (SEO) ---
+window.generateSitemap = async () => {
+    if(!currentUser || !isAdmin(currentUser.email)) return;
+    Utils.loader(true, "Đang tạo Sitemap XML...");
+
+    const baseUrl = window.location.href.split('#')[0].split('?')[0]; // Lấy URL gốc (bỏ hash/query)
+    const today = new Date().toISOString().split('T')[0];
+
+    // Header chuẩn của Sitemap XML (bao gồm namespace cho Image)
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
+
+    // 1. Thêm Trang chủ
+    xml += `  <url>\n    <loc>${baseUrl}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+
+    // 2. Thêm Sitemap Hình ảnh (Quét từ Gallery & Contest)
+    const cols = ['gallery', 'contest'];
+    for (const col of cols) {
+        const snap = await getDocs(collection(db, col));
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.url) {
+                // Escape các ký tự đặc biệt trong XML
+                const cleanDesc = (data.desc || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+                const cleanAuthor = (data.authorName || 'Thành viên').replace(/&/g, '&amp;');
+
+                xml += `  <url>\n`;
+                xml += `    <loc>${baseUrl}#${col}</loc>\n`; // URL ngữ cảnh (Hash)
+                xml += `    <image:image>\n`;
+                xml += `      <image:loc>${data.url}</image:loc>\n`; // Link ảnh gốc
+                if (cleanDesc) xml += `      <image:caption>${cleanDesc}</image:caption>\n`;
+                xml += `      <image:title>Ảnh đăng bởi ${cleanAuthor}</image:title>\n`;
+                xml += `    </image:image>\n`;
+                xml += `  </url>\n`;
+            }
+        });
+    }
+
+    xml += '</urlset>';
+
+    // Tạo Blob và tải về
+    const blob = new Blob([xml], { type: "application/xml" });
+    saveAs(blob, "sitemap.xml");
+    
+    Utils.loader(false);
+    alert("✅ Đã tạo xong sitemap.xml!\nHãy upload file này lên thư mục gốc (public) của hosting.");
+}
+
 // --- CHART JS LOGIC ---
 // Vẽ biểu đồ thống kê (Admin)
 window.drawClassChart = async () => {
@@ -1784,8 +1825,7 @@ window.updateProfile = async (e) => {
     currentUser.displayName = f; currentUser.customID = cid; currentUser.class = finalClass; currentUser.dob = d; currentUser.bio = b;
     
     // Update Sidebar immediately
-    document.getElementById('sb-name').innerText = f;
-    document.getElementById('sb-id').innerText = cid;
+    updateSidebarUI();
     
     // Đồng bộ Tên, ID, Lớp sang tất cả bài viết cũ
     await syncUserToPosts(currentUser.uid, { authorName: f, authorID: cid, className: finalClass });
@@ -1828,9 +1868,32 @@ window.showPage = (id) => {
         // el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); // Không cần scroll trong sidebar
     }
     if(targetId === 'archive') { loadArchiveSeasons(); switchArchiveTab('gallery'); }
-    const titles = { 'home': 'Trang Chủ', 'greenclass': 'Góc Xanh', 'contest': 'Thi Đua', 'archive': 'Lưu Trữ', 'activities': 'Hoạt Động', 'guide': 'Tra Cứu', 'profile': 'Hồ Sơ', 'admin': '🛠 Quản Trị Hệ Thống' };
-    document.title = `Green School - ${titles[targetId] || 'A2K41'}`;
     
+    // --- DYNAMIC SEO UPDATE ---
+    const seoConfig = {
+        'home': { title: 'Trang Chủ', desc: 'Trang chủ chính thức của lớp A2K41 - Green School. Cập nhật tin tức, thông báo và hoạt động mới nhất.' },
+        'greenclass': { title: 'Góc Xanh', desc: 'Thư viện ảnh Góc Xanh, chia sẻ khoảnh khắc thiên nhiên, cây trồng và hoạt động bảo vệ môi trường của A2K41.' },
+        'contest': { title: 'Thi Đua', desc: 'Bảng xếp hạng thi đua, nộp báo cáo hoạt động và theo dõi thành tích của các thành viên.' },
+        'archive': { title: 'Lưu Trữ', desc: 'Kho lưu trữ hình ảnh và hoạt động của các mùa trước.' },
+        'activities': { title: 'Hoạt Động', desc: 'Lịch trình các hoạt động ngoại khóa, tin tức và sự kiện sắp tới.' },
+        'guide': { title: 'Tra Cứu', desc: 'Công cụ AI Soi Rác, hướng dẫn phân loại rác và tra cứu thông tin môi trường.' },
+        'profile': { title: 'Hồ Sơ', desc: 'Quản lý thông tin cá nhân, cài đặt giao diện và tiện ích.' },
+        'admin': { title: '🛠 Quản Trị Hệ Thống', desc: 'Trang quản trị dành cho Ban Cán Sự lớp.' }
+    };
+
+    const currentSEO = seoConfig[targetId] || seoConfig['home'];
+    const fullTitle = `Green School - ${currentSEO.title}`;
+
+    // 1. Cập nhật Title
+    document.title = fullTitle;
+
+    // 2. Cập nhật Meta Description & OG Tags
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if(metaDesc) metaDesc.setAttribute("content", currentSEO.desc);
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if(ogTitle) ogTitle.setAttribute("content", fullTitle);
+
     // Haptic Feedback khi chuyển trang (Rung nhẹ)
     if(navigator.vibrate) navigator.vibrate(15);
 }
@@ -2066,21 +2129,105 @@ const mainLoginBtn = document.getElementById('main-login-btn'); if(mainLoginBtn)
 let deferredPrompt; const pcMenu = document.querySelector('nav.pc-nav ul'); const installLi = document.createElement('li'); installLi.innerHTML = '<a id="btn-install-pc" style="display:none; color:yellow; cursor:pointer"><i class="fas fa-download"></i> Tải App</a>'; pcMenu.appendChild(installLi); 
 
 // PWA Install Button for Sidebar
-const sidebarInstallArea = document.getElementById('sidebar-install-area');
-const installMob = document.createElement('a'); installMob.className = 'sidebar-item'; installMob.id = 'btn-install-mob'; installMob.style.display = 'none'; installMob.innerHTML = '<i class="fas fa-download"></i> Tải App Về Máy'; installMob.style.color = '#ffca28'; installMob.style.cursor = 'pointer';
-if(sidebarInstallArea) sidebarInstallArea.appendChild(installMob);
-
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('btn-install-pc').style.display = 'inline-block'; document.getElementById('btn-install-mob').style.display = 'flex'; });
-async function installPWA() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; document.getElementById('btn-install-pc').style.display = 'none'; document.getElementById('btn-install-mob').style.display = 'none'; }
-document.getElementById('btn-install-pc').addEventListener('click', installPWA); document.getElementById('btn-install-mob').addEventListener('click', installPWA);
+window.addEventListener('beforeinstallprompt', (e) => { 
+    e.preventDefault(); 
+    deferredPrompt = e; 
+    const btnPc = document.getElementById('btn-install-pc');
+    if (btnPc) btnPc.style.display = 'inline-block';
+    // Safely update mobile button if it exists
+    const btnMob = document.getElementById('btn-install-mob');
+    if (btnMob) btnMob.style.display = 'flex';
+});
+async function installPWA() { 
+    if (!deferredPrompt) return; 
+    deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; deferredPrompt = null; 
+    if (document.getElementById('btn-install-pc')) document.getElementById('btn-install-pc').style.display = 'none'; 
+    if (document.getElementById('btn-install-mob')) document.getElementById('btn-install-mob').style.display = 'none'; 
+}
+document.getElementById('btn-install-pc').addEventListener('click', installPWA);
+// The listener for btn-install-mob is added dynamically in loadMobileSidebar, so we remove the global one.
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered!', reg)).catch(err => console.log('SW Error:', err)); }); }
 
 window.toggleMobileMenu = () => {
+    if (!isSidebarLoaded) loadMobileSidebar(); // Lazy load nếu chưa có
     const sb = document.getElementById('mobile-sidebar');
     const ov = document.querySelector('.mobile-sidebar-overlay');
     if(sb) sb.classList.toggle('active');
     if(ov) ov.classList.toggle('active');
     document.body.classList.toggle('no-scroll');
+}
+
+// --- LAZY LOAD SIDEBAR FUNCTIONS ---
+function loadMobileSidebar() {
+    const sb = document.getElementById('mobile-sidebar');
+    if (!sb) return;
+    
+    sb.innerHTML = `
+        <div class="sidebar-header">
+            <div class="sidebar-profile" id="sidebar-profile-box" style="display:none" onclick="showPage('profile'); toggleMobileMenu()">
+                <img id="sb-avatar" src="" onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'">
+                <div class="sb-info">
+                    <div id="sb-name">Name</div>
+                    <div id="sb-id">@id</div>
+                </div>
+            </div>
+            <h3 id="sb-default-title">Menu</h3>
+            <button class="sidebar-close" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="sidebar-content">
+            <a href="#home" id="sidebar-home" class="sidebar-item" onclick="showPage('home'); toggleMobileMenu()"><i class="fas fa-home"></i> Trang Chủ</a>
+            <a href="#greenclass" id="sidebar-greenclass" class="sidebar-item" onclick="showPage('greenclass'); toggleMobileMenu()"><i class="fas fa-leaf"></i> Góc Xanh</a>
+            <a href="#contest" id="sidebar-contest" class="sidebar-item" onclick="showPage('contest'); toggleMobileMenu()"><i class="fas fa-trophy"></i> Thi Đua</a>
+            <a href="#activities" id="sidebar-activities" class="sidebar-item" onclick="showPage('activities'); toggleMobileMenu()"><i class="fas fa-calendar-alt"></i> Hoạt Động</a>
+            <a href="#guide" id="sidebar-guide" class="sidebar-item" onclick="showPage('guide'); toggleMobileMenu()"><i class="fas fa-search"></i> Tra Cứu</a>
+            <a href="#archive" id="sidebar-archive" class="sidebar-item" onclick="showPage('archive'); toggleMobileMenu()"><i class="fas fa-box"></i> Lưu Trữ</a>
+            <a href="#profile" id="sidebar-profile" class="sidebar-item" onclick="showPage('profile'); toggleMobileMenu()"><i class="fas fa-user"></i> Tài Khoản</a>
+            <a href="#admin" id="sidebar-admin" class="sidebar-item" style="display:none; color:var(--danger)"><i class="fas fa-cogs"></i> Admin</a>
+            <div id="sidebar-install-area"></div>
+        </div>`;
+
+    isSidebarLoaded = true;
+    updateSidebarUI(); // Cập nhật thông tin user ngay sau khi render
+
+    // Highlight menu hiện tại
+    const hash = window.location.hash.slice(1) || 'home';
+    const activeItem = document.getElementById('sidebar-'+hash);
+    if(activeItem) activeItem.classList.add('active-menu');
+
+    // Xử lý nút cài đặt PWA (Dynamic)
+    const sidebarInstallArea = document.getElementById('sidebar-install-area');
+    if(sidebarInstallArea) {
+        const installMob = document.createElement('a'); 
+        installMob.className = 'sidebar-item'; 
+        installMob.id = 'btn-install-mob'; 
+        installMob.style.display = deferredPrompt ? 'flex' : 'none'; 
+        installMob.innerHTML = '<i class="fas fa-download"></i> Tải App Về Máy'; 
+        installMob.style.color = '#ffca28'; 
+        installMob.style.cursor = 'pointer';
+        installMob.addEventListener('click', installPWA);
+        sidebarInstallArea.appendChild(installMob);
+    }
+}
+
+function updateSidebarUI() {
+    const sbProfile = document.getElementById('sidebar-profile-box');
+    if (!sbProfile) return; // Sidebar chưa load thì bỏ qua
+
+    if (currentUser) {
+        sbProfile.style.display = 'flex';
+        document.getElementById('sb-default-title').style.display = 'none';
+        document.getElementById('sb-avatar').src = currentUser.photoURL || 'https://lh3.googleusercontent.com/a/default-user=s96-c';
+        document.getElementById('sb-name').innerText = currentUser.displayName;
+        document.getElementById('sb-id').innerText = currentUser.customID || "@...";
+        
+        const sbAdmin = document.getElementById('sidebar-admin');
+        if(sbAdmin) sbAdmin.style.display = isAdmin(currentUser.email) ? 'flex' : 'none';
+    } else {
+        sbProfile.style.display = 'none';
+        document.getElementById('sb-default-title').style.display = 'block';
+        const sbAdmin = document.getElementById('sidebar-admin');
+        if(sbAdmin) sbAdmin.style.display = 'none';
+    }
 }
 
 // --- SEASONAL EFFECT LOGIC ---
