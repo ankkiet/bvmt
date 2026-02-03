@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Đường dẫn đến Sitemap XML (Thay đổi domain nếu cần)
+Sitemap: https://a2k41nvc.pages.dev/sitemap.xml

@@ -1894,6 +1894,15 @@ window.showPage = (id) => {
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if(ogTitle) ogTitle.setAttribute("content", fullTitle);
 
+    // 3. Cập nhật Canonical URL (Giúp GSC hiểu link chính thức)
+    let canonicalLink = document.querySelector("link[rel='canonical']");
+    if (!canonicalLink) {
+        canonicalLink = document.createElement("link");
+        canonicalLink.setAttribute("rel", "canonical");
+        document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute("href", window.location.href.split('#')[0] + (targetId !== 'home' ? '#' + targetId : ''));
+
     // Haptic Feedback khi chuyển trang (Rung nhẹ)
     if(navigator.vibrate) navigator.vibrate(15);
 }
