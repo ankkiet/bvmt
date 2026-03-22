@@ -64,11 +64,27 @@ const getCurrentPageContext = () => {
 // Hàm tạo câu lệnh nhắc (System Prompt) cho AI dựa trên ngữ cảnh người dùng
 const getSystemPrompt = () => {
     let p = PERSONAS[currentPersona].prompt;
+    const now = new Date();
+    const timeString = now.toLocaleString('vi-VN');
 
-    // Nâng cấp: Thêm quy tắc giao tiếp và khả năng đặc biệt
-    p += `\n\n--- NGUYÊN TẮC GIAO TIẾP & KHẢ NĂNG ĐẶC BIỆT ---\n
-    1.  **Giao tiếp chân thật**: Hãy trả lời một cách tự nhiên, gần gũi, tránh dùng từ ngữ quá trang trọng hoặc máy móc. Sử dụng các biểu tượng cảm xúc (emoji) một cách hợp lý để câu trả lời sinh động hơn. Khi không biết, hãy thẳng thắn thừa nhận.
-    2.  **Tạo bảng (Table Generation)**: Nếu người dùng yêu cầu tạo bảng, lịch trình (lịch học, lịch trực nhật), hoặc danh sách có cấu trúc, hãy trả lời bằng cách sử dụng thẻ HTML <table>. Hãy thiết kế bảng gọn gàng, dễ đọc với các thẻ <thead>, <th>, <tr>, <td>. Ví dụ: "Lập cho tớ lịch học tuần này" -> Trả về một bảng HTML.`;
+    // Nâng cấp: Thêm thời gian, quy tắc giao tiếp và khả năng đặc biệt điều khiển web
+    p += `\n\n--- THÔNG TIN HỆ THỐNG & MÔI TRƯỜNG ---\n- Thời gian hiện tại: ${timeString}\n`;
+    
+    p += `\n--- NGUYÊN TẮC GIAO TIẾP & KHẢ NĂNG ĐẶC BIỆT ---\n
+    1.  **Giao tiếp chân thật**: Hãy trả lời tự nhiên, gần gũi, tránh dùng từ ngữ quá máy móc. Sử dụng biểu tượng cảm xúc (emoji) hợp lý. Nếu không biết, hãy thẳng thắn thừa nhận.
+    2.  **Tạo bảng (Table Generation)**: Nếu được yêu cầu lập lịch trình, danh sách, hãy trả lời bằng thẻ HTML <table> gọn gàng (có <thead>, <th>, <tr>, <td>).
+    3.  **Điều khiển Website (Hành động)**: Bạn CÓ THỂ trực tiếp thực hiện một số thao tác trên web giúp người dùng bằng cách CHÈN một thẻ đặc biệt vào CUỐI câu trả lời của mình. Các thẻ hợp lệ:
+        - "[ACTION:music]": Bật hoặc Tắt nhạc nền.
+        - "[ACTION:dark_mode]": Bật hoặc Tắt giao diện tối (Dark Mode).
+        - "[ACTION:navigate_home]": Mở Trang Chủ.
+        - "[ACTION:navigate_greenclass]": Mở trang Góc Xanh.
+        - "[ACTION:navigate_contest]": Mở trang Thi Đua.
+        - "[ACTION:navigate_activities]": Mở trang Hoạt Động.
+        - "[ACTION:navigate_guide]": Mở trang Tra Cứu (Soi Rác).
+        - "[ACTION:navigate_archive]": Mở trang Lưu Trữ.
+        - "[ACTION:navigate_profile]": Mở trang Hồ Sơ.
+        *(Ví dụ 1: Nếu nhờ bật nhạc: "Okie, tớ bật nhạc nhé! 🎶 [ACTION:music]")*
+        *(Ví dụ 2: Nếu nhờ mở Góc Xanh: "Tớ đưa cậu qua trang Góc Xanh nhé! 🌱 [ACTION:navigate_greenclass]")*`;
 
     if(currentUser) {
         const role = (typeof isAdmin === 'function' && isAdmin(currentUser.email)) ? "Quản trị viên (Admin)" : "Thành viên";
@@ -766,6 +782,26 @@ window.addAIKey = async () => {
 }
 
 window.removeAIKey = async (name, val) => { if(confirm(`Xóa Key "${name}"?`)) { await updateDoc(doc(db, "settings", "config"), { aiKeys: arrayRemove({name, val}) }); } }
+
+// Hàm ghi nhận đánh giá của người dùng để cải thiện AI
+window.rateAIResponse = async (elementId, rating, promptText, responseText) => {
+    const el = document.getElementById(elementId);
+    if(el) {
+        const btns = el.querySelector('.ai-feedback-btns');
+        if(btns) btns.innerHTML = rating === 'up' ? '<span style="color:#2e7d32;font-size:0.85rem;font-weight:bold;">Cảm ơn bạn đã góp ý! ❤️</span>' : '<span style="color:#d32f2f;font-size:0.85rem;font-weight:bold;">Green Bot sẽ cố gắng hơn! 🛠️</span>';
+    }
+    try {
+        await addDoc(collection(db, "ai_feedback"), {
+            uid: currentUser ? currentUser.uid : 'guest',
+            userName: currentUser ? currentUser.displayName : 'Khách',
+            prompt: promptText,
+            response: responseText,
+            rating: rating,
+            timestamp: serverTimestamp()
+        });
+    } catch(e) { console.error("Lỗi gửi feedback:", e); }
+}
+
 window.toggleAIChat = () => { 
     document.getElementById('ai-window').classList.toggle('active'); 
 }
@@ -838,8 +874,31 @@ window.sendMessageToAI = async (e, isVoice = false) => {
         const rawResponse = await callGeminiAPI(null, null, true, modelType, aiKeys, chatHistory); // Gọi API ở chế độ chat (dùng history)
         // Tách phần trả lời và phần gợi ý
         const parts = rawResponse.split('---SUGGESTIONS---');
-        const mainAnswer = parts[0].trim();
+        let mainAnswer = parts[0].trim();
         const suggestions = parts[1] ? parts[1].split('|') : [];
+
+        // AI NÂNG CẤP: Xử lý thẻ điều khiển Website [ACTION:...]
+        const actionRegex = /\[ACTION:([a-zA-Z0-9_]+)\]/g;
+        let match;
+        while ((match = actionRegex.exec(mainAnswer)) !== null) {
+            const action = match[1];
+            mainAnswer = mainAnswer.replace(match[0], '').trim(); // Xóa thẻ khỏi câu trả lời hiển thị
+            
+            // Trì hoãn thực thi một chút để AI kịp gõ chữ ra
+            setTimeout(() => {
+                if (action === 'music' && window.toggleMusic) window.toggleMusic();
+                else if (action === 'dark_mode' && window.toggleDarkMode) window.toggleDarkMode();
+                else if (action.startsWith('navigate_')) {
+                    const page = action.replace('navigate_', '');
+                    if (window.showPage) { 
+                        window.showPage(page); 
+                        window.location.hash = page; 
+                        // Tự động đóng khung chat để dễ nhìn trang mới
+                        document.getElementById('ai-window').classList.remove('active'); 
+                    }
+                }
+            }, 1000);
+        }
 
         // Xử lý format tin nhắn (Giữ nguyên thẻ Table, Escape các thẻ khác)
         const escapeHTML = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -859,6 +918,19 @@ window.sendMessageToAI = async (e, isVoice = false) => {
         }).join('');
 
         await typeWriterEffect(document.getElementById(loadingId), formatted, 15); // Tăng tốc độ cơ bản lên một chút
+
+        // THU THẬP TRẢI NGHIỆM: Thêm nút đánh giá phản hồi AI
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'ai-feedback-btns';
+        const btnUp = document.createElement('button');
+        btnUp.innerHTML = '<i class="fas fa-thumbs-up"></i>';
+        btnUp.onclick = () => window.rateAIResponse(loadingId, 'up', finalPrompt, mainAnswer);
+        const btnDown = document.createElement('button');
+        btnDown.innerHTML = '<i class="fas fa-thumbs-down"></i>';
+        btnDown.onclick = () => window.rateAIResponse(loadingId, 'down', finalPrompt, mainAnswer);
+        feedbackDiv.appendChild(btnUp);
+        feedbackDiv.appendChild(btnDown);
+        document.getElementById(loadingId).appendChild(feedbackDiv);
 
         // Hiển thị gợi ý nếu có
         if (suggestions.length > 0) {

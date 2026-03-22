@@ -180,7 +180,7 @@ class GreenBotLive {
         }
 
         CÁC LỆNH:
-        1. 'navigate': Chuyển trang. Các page hợp lệ: 'home', 'greenclass', 'contest', 'archive', 'profile', 'guide'.
+        1. 'navigate': Chuyển trang. Các page hợp lệ: 'home', 'greenclass', 'contest', 'archive', 'profile', 'guide', 'activities'.
         2. 'scroll': Cuộn trang. Các hướng hợp lệ: 'up', 'down', 'top', 'bottom'.
         3. 'action': Hành động đặc biệt. Các type hợp lệ: 'music' (bật/tắt nhạc), 'dark_mode' (bật/tắt nền tối), 'upload' (mở cửa sổ tải file).
         4. 'read_page': Đọc to nội dung chính trên màn hình hiện tại.
@@ -224,7 +224,14 @@ class GreenBotLive {
                 }
 
                 // Thực thi lệnh
-                if (cmd.command === 'navigate' && cmd.data?.page) { if (window.showPage) { window.showPage(cmd.data.page); window.location.hash = cmd.data.page; } } 
+                if (cmd.command === 'navigate' && cmd.data?.page) { 
+                    if (window.showPage) { 
+                        window.showPage(cmd.data.page); 
+                        window.location.hash = cmd.data.page; 
+                        const aiWindow = document.getElementById('ai-window');
+                        if (aiWindow) aiWindow.classList.remove('active');
+                    } 
+                } 
                 else if (cmd.command === 'scroll') { if (cmd.data.dir === 'down') window.scrollBy({ top: 500, behavior: 'smooth' }); if (cmd.data.dir === 'up') window.scrollBy({ top: -500, behavior: 'smooth' }); if (cmd.data.dir === 'top') window.scrollTo({ top: 0, behavior: 'smooth' }); if (cmd.data.dir === 'bottom') window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); } 
                 else if (cmd.command === 'action') { if (cmd.data.type === 'music' && window.toggleMusic) window.toggleMusic(); if (cmd.data.type === 'dark_mode' && window.toggleDarkMode) window.toggleDarkMode(); if (cmd.data.type === 'upload') document.getElementById('file-input')?.click(); }
                 

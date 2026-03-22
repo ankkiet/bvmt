@@ -22,16 +22,16 @@
 
 /* Giao diện Tối (Dark Mode) */
 body.dark-mode {
-    --primary: #81c784; /* Xanh lá dịu nhẹ */
-    --primary-dark: #66bb6a;
-    --bg: #121212; /* Nền tối sâu */
-    --text: #e0e0e0; /* Chữ trắng xám dịu */
-    --text-sec: #b0b0b0;
+    --primary: #66bb6a; /* Xanh lá sáng hơn, sắc nét trên nền tối */
+    --primary-dark: #4caf50;
+    --bg: #0f1115; /* Nền tối sâu có chút ánh xanh đen (slate dark) sang trọng */
+    --text: #f3f4f6; /* Trắng sáng hơn để tăng độ tương phản, dễ đọc */
+    --text-sec: #9ca3af;
     --white: #1e1e1e;
-    --card-bg: #1e1e1e; /* Card màu xám đen (Material Design) */
-    --border: #333333;
-    --input-bg: #2d2d2d;
-    --shadow: rgba(0,0,0,0.6);
+    --card-bg: #191c20; /* Card màu xám đen nổi bật trên nền */
+    --border: #2e3238; /* Viền sáng hơn để tách biệt rõ các khối */
+    --input-bg: #23272d;
+    --shadow: rgba(0,0,0,0.4);
 }
 /* Fix màu gradient khi ở Dark Mode để không bị chói */
 body.dark-mode .featured-section { background: linear-gradient(135deg, #1b5e20, #2e7d32); border-color: #43a047; }
@@ -39,14 +39,48 @@ body.dark-mode #pinned-post { background: linear-gradient(135deg, #e65100, #ef6c
 body.dark-mode .featured-content h3 { color: #fff; }
 body.dark-mode .featured-badge { color: #fff; }
 
+/* --- TINH CHỈNH CHI TIẾT DARK MODE --- */
+/* Thanh điều hướng PC */
+body.dark-mode nav.pc-nav { background: var(--card-bg); border-bottom: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+body.dark-mode nav.pc-nav ul li a { color: var(--text-sec); }
+body.dark-mode nav.pc-nav ul li a:hover, body.dark-mode nav.pc-nav ul li a.active-menu { background-color: rgba(102, 187, 106, 0.1); color: var(--primary); }
+
+/* Thẻ Tra cứu rác (Ghi đè inline style) */
+body.dark-mode .trash-card:nth-child(1) { background: rgba(33, 150, 243, 0.1) !important; color: #90caf9 !important; border-color: rgba(33, 150, 243, 0.3) !important; }
+body.dark-mode .trash-card:nth-child(2) { background: rgba(76, 175, 80, 0.1) !important; color: #a5d6a7 !important; border-color: rgba(76, 175, 80, 0.3) !important; }
+body.dark-mode .trash-card:nth-child(3) { background: rgba(255, 152, 0, 0.1) !important; color: #ffcc80 !important; border-color: rgba(255, 152, 0, 0.3) !important; }
+
+/* Bảng xếp hạng và Sidebar */
+body.dark-mode .rank-top-1 { background: rgba(255, 213, 79, 0.15); color: #ffe082; }
+body.dark-mode .rank-top-1 .rank-num { background: #ffca28; color: #121212; }
+body.dark-mode .locked-overlay { background: rgba(255, 255, 255, 0.03); border-color: var(--border); color: var(--text-sec); }
+body.dark-mode .locked-overlay h2 { color: var(--text); }
+body.dark-mode .sidebar-header { background: var(--card-bg); }
+body.dark-mode .sidebar-item.active-menu { background: rgba(102, 187, 106, 0.15); color: var(--primary); border-left-color: var(--primary); }
+
+/* Các nút tương tác nhúng (Chips) */
+body.dark-mode .suggestion-chip { background: transparent; border-color: var(--primary); color: var(--primary); }
+body.dark-mode .suggestion-chip:hover { background: var(--primary); color: var(--bg); }
+body.dark-mode .quick-chip { background: rgba(102, 187, 106, 0.15); color: var(--primary); border-color: rgba(102, 187, 106, 0.3); }
+body.dark-mode .quick-chip:hover { background: var(--primary); color: var(--bg); }
+
+/* Tinh chỉnh thanh cuộn (Scrollbar) cho màn hình tối */
+body.dark-mode ::-webkit-scrollbar { width: 8px; height: 8px; }
+body.dark-mode ::-webkit-scrollbar-track { background: var(--bg); }
+body.dark-mode ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+body.dark-mode ::-webkit-scrollbar-thumb:hover { background: #555; }
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body { 
     font-family: 'Inter', sans-serif; margin: 0; padding: 0; 
-    background-color: var(--bg); color: var(--text); padding-bottom: 90px;
+    background-color: var(--bg); color: var(--text);
     overscroll-behavior-y: contain; 
     transition: background-color 0.4s ease, color 0.4s ease; /* Hiệu ứng chuyển màu mượt hơn */
     animation: fadeInPage 0.8s ease-out;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 body.no-scroll { overflow: hidden; }
 
@@ -301,7 +335,7 @@ nav.pc-nav ul li a:hover, nav.pc-nav ul li a.active-menu { background-color: rgb
 .sidebar-item i { width: 25px; text-align: center; font-size: 1.1rem; }
 
 /* --- LAYOUT --- */
-.container { max-width: 1200px; width: 95%; margin: 25px auto; background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px var(--shadow); min-height: 80vh; border: 1px solid var(--border); }
+.container { max-width: 1200px; width: 95%; margin: 25px auto; background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px var(--shadow); min-height: 80vh; border: 1px solid var(--border); flex: 1; }
 .page-section { display: none; animation: fadeIn 0.4s ease-out; }
 .page-section.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -407,6 +441,18 @@ body.dark-mode .chat-bubble.user { background: #444746; color: #a8c7fa; }
 .chat-bubble.bot strong { font-weight: 700; color: var(--text); }
 .chat-bubble.bot ul { margin: 5px 0 10px 20px; padding: 0; }
 .chat-bubble.bot li { margin-bottom: 4px; }
+
+/* AI Feedback Buttons Styles */
+.ai-feedback-btns {
+    display: flex; gap: 12px; margin-top: 10px; padding-top: 8px;
+    border-top: 1px dashed var(--border); justify-content: flex-end;
+}
+.ai-feedback-btns button {
+    background: transparent; border: none; color: var(--text-sec);
+    cursor: pointer; font-size: 0.95rem; transition: transform 0.2s, color 0.2s;
+    padding: 0;
+}
+.ai-feedback-btns button:hover { color: var(--primary); transform: scale(1.1); }
 
 /* AI Table Styles */
 .chat-bubble.bot table {
