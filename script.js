@@ -71,7 +71,7 @@ const getSystemPrompt = () => {
     p += `\n\n--- THÔNG TIN HỆ THỐNG & MÔI TRƯỜNG ---\n- Thời gian hiện tại: ${timeString}\n`;
     
     p += `\n--- NGUYÊN TẮC GIAO TIẾP & KHẢ NĂNG ĐẶC BIỆT ---\n
-    1.  **Giao tiếp chân thật**: Hãy trả lời tự nhiên, gần gũi, tránh dùng từ ngữ quá máy móc. Sử dụng biểu tượng cảm xúc (emoji) hợp lý. Nếu không biết, hãy thẳng thắn thừa nhận.
+    1.  **Giao tiếp 100% con người (QUAN TRỌNG NHẤT)**: Hãy chat ĐÚNG CHUẨN một người bạn đang nhắn tin qua Messenger. Câu văn phải ngắn, mang ngữ khí đời thường, không được trình bày giống văn bản AI dài dòng. Hãy xả vai, cứ lầy lội, châm chọc vui vẻ hoặc hùa theo cảm xúc của user nha!
     2.  **Tạo bảng (Table Generation)**: Nếu được yêu cầu lập lịch trình, danh sách, hãy trả lời bằng thẻ HTML <table> gọn gàng (có <thead>, <th>, <tr>, <td>).
     3.  **Điều khiển Website (Hành động)**: Bạn CÓ THỂ trực tiếp thực hiện một số thao tác trên web giúp người dùng bằng cách CHÈN một thẻ đặc biệt vào CUỐI câu trả lời của mình. Các thẻ hợp lệ:
         - "[ACTION:music]": Bật hoặc Tắt nhạc nền.
@@ -910,6 +910,14 @@ window.sendMessageToAI = async (e, isVoice = false) => {
                 .replace(/\*\*([\s\S]*?)\*\*/g, '<b>$1</b>')
                 .replace(/\*([^\s][\s\S]*?)\*/g, '<i>$1</i>')
                 .replace(/(?:^|\n)[-*] (.*?)(?=\n|$)/g, '<div style="display:flex; align-items:flex-start; gap:6px; margin:4px 0;"><span style="color:var(--primary); font-weight:bold; flex-shrink:0; margin-top:2px;">•</span><span>$1</span></div>')
+                .replace(/(!?)\[([^\]]*)\]\(\s*(https?:\/\/[^\)]+)\s*\)/g, (match, isImg, alt, url) => {
+                    if (!isImg && !url.includes('pollinations.ai')) return match; // Nếu không có dấu ! và không phải link vẽ ảnh AI thì bỏ qua
+                    let cleanUrl = url.replace(/&amp;/g, '&').replace(/\s+/g, '%20');
+                    // Mã hóa URL để sửa lỗi AI đưa tiếng Việt có dấu vào link
+                    try { cleanUrl = encodeURI(decodeURI(cleanUrl)); } catch(e) { cleanUrl = encodeURI(cleanUrl); }
+                    // Nếu tải ảnh thất bại, tự động ẩn bức ảnh đi một cách tinh tế thay vì hiện hình lỗi
+                    return `<img src="${cleanUrl}" alt="${alt}" style="width:100%; max-width:400px; border-radius:12px; margin:10px 0; display:block; box-shadow:0 4px 15px var(--shadow); object-fit:cover; background:#eee; min-height:100px;" onerror="this.onerror=null; this.style.display='none';">`;
+                })
                 .replace(/{{IMAGE:(.*?)}}/g, (match, key) => {
                     const url = BOT_IMAGES[key.trim()];
                     return url ? `<img src="${url}" style="max-width:150px; border-radius:10px; margin:10px 0; border:1px solid #eee; display:block;">` : "";
@@ -1111,9 +1119,10 @@ window.executeUpload = async (i) => {
         const lowerInput = userInput.trim().toLowerCase();
         if (lowerInput === '' || lowerInput === 'vui' || lowerInput === 'ý nghĩa' || lowerInput === 'hài hước' || lowerInput === 'sâu sắc') {
             aiShouldWrite = true;
-            if (lowerInput === 'vui') captionStyle = 'vui vẻ, năng động';
-            else if (lowerInput === 'ý nghĩa' || lowerInput === 'sâu sắc') captionStyle = 'sâu sắc và ý nghĩa';
-            else if (lowerInput === 'hài hước') captionStyle = 'hài hước, dí dỏm';
+            if (lowerInput === 'vui') captionStyle = 'vui vẻ, nhí nhố, bắt trend Gen Z';
+            else if (lowerInput === 'ý nghĩa' || lowerInput === 'sâu sắc') captionStyle = 'sâu sắc, trưởng thành, viết kiểu "deep" một chút';
+            else if (lowerInput === 'hài hước') captionStyle = 'hài hước, lầy lội, mặn mòi';
+            else captionStyle = 'tự nhiên, gần gũi, như đang tâm sự với bạn bè';
         } else {
             description = userInput; // Người dùng tự viết mô tả
         }
@@ -1145,7 +1154,12 @@ window.executeUpload = async (i) => {
     else if (isPlant) aiPrompt = "Bạn là một chuyên gia nông nghiệp (Bác sĩ cây trồng). Hãy nhìn ảnh này và cho biết: 1. Đây là cây gì? 2. Cây có dấu hiệu bị bệnh, héo hay sâu hại không? 3. Nếu có, hãy đưa ra phác đồ điều trị cụ thể. Nếu cây khỏe mạnh, hãy khen và hướng dẫn cách chăm sóc cơ bản. Trả lời ngắn gọn, súc tích.";
     else if (isBio) aiPrompt = "Bạn là một nhà sinh học vui tính dành cho học sinh. Hãy nhìn bức ảnh này và cho biết: 1. Tên cây (Tiếng Việt & Tên khoa học). 2. Đặc điểm nhận dạng nổi bật. 3. Công dụng hoặc ý nghĩa của cây (Vd: làm thuốc, bóng mát, trang trí...). Trả lời ngắn gọn, dễ hiểu, dùng emoji sinh động.";
     else if (aiShouldWrite) {
-        aiPrompt = `Đóng vai một học sinh, hãy viết MỘT caption ngắn gọn, chân thật về bức ảnh này theo phong cách ${captionStyle}. Xưng hô là 'mình', 'tớ' hoặc 'lớp tớ'.`;
+        aiPrompt = `Bạn CHÍNH LÀ học sinh tên "${currentUser.displayName}" (học lớp ${currentUser.class}). Hãy xem bức ảnh này và viết đúng MỘT dòng caption để đăng lên mạng xã hội. 
+YÊU CẦU BẮT BUỘC:
+- Phong cách: ${captionStyle}. Phải cực kỳ TỰ NHIÊN, ĐỜI THƯỜNG, giống 100% người thật viết.
+- Tuyệt đối KHÔNG viết kiểu máy móc, KHÔNG liệt kê, KHÔNG dùng các từ như "Bức ảnh này...", "Trong ảnh có...".
+- CHỈ TRẢ VỀ nội dung caption, KHÔNG CÓ câu mở đầu kiểu "Đây là caption cho bạn:" hay "Tuyệt vời!".
+- Xưng hô "mình", "tớ", hoặc "lớp mình", dùng 1-2 emoji hợp lý. Phải làm cho không ai nhận ra đây là AI viết.`;
     }
     
     let loadingText = "AI đang viết caption...";

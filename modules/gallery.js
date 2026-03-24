@@ -1,4 +1,4 @@
-import { db, collection, query, where, orderBy, limit, onSnapshot, doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp, getDocs } from './firebase.js';
+import { db, collection, query, where, orderBy, limit, onSnapshot, doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp, getDocs, setDoc } from './firebase.js';
 import { optimizeUrl } from './utils.js';
 import { isAdmin } from './auth.js';
 
@@ -19,6 +19,19 @@ export function setGalleryUser(user) {
 export function setPinnedSettings(settings) {
     pinnedSettings = settings;
     updateFeaturedUI();
+    
+    // Cập nhật huy hiệu ghim trên lưới ảnh mà không cần render lại toàn bộ
+    document.querySelectorAll('.pin-badge-indicator').forEach(el => el.remove());
+    if (settings && settings.id) {
+        const items = document.querySelectorAll(`.gallery-item[onclick*="'${settings.id}'"]`);
+        items.forEach(item => {
+            const badge = document.createElement('span');
+            badge.className = 'pin-badge-indicator';
+            badge.style.cssText = 'position:absolute; top:10px; right:10px; background:#d32f2f; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5; box-shadow: 0 2px 5px rgba(0,0,0,0.2);';
+            badge.innerHTML = '<i class="fas fa-thumbtack"></i> Đã ghim';
+            item.appendChild(badge);
+        });
+    }
 }
 
 // --- NOTIFICATION HELPER (Internal) ---
@@ -65,6 +78,10 @@ export function renderGrid(col, elId, uR, cR) {
             else if(d.type === 'plant') badge = `<span style="position:absolute; top:10px; left:10px; background:#4caf50; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Bác sĩ cây</span>`;
             else if(d.type === 'bio') badge = `<span style="position:absolute; top:10px; left:10px; background:#8bc34a; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5;">Sinh Học</span>`;
             
+            if (pinnedSettings && pinnedSettings.id === d.id && pinnedSettings.col === col) {
+                badge += `<span class="pin-badge-indicator" style="position:absolute; top:10px; right:10px; background:#d32f2f; color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; z-index:5; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"><i class="fas fa-thumbtack"></i> Đã ghim</span>`;
+            }
+
             const tinyUrl = optimizeUrl(d.url, 50);
             const realUrl = optimizeUrl(d.url, 400);
             const isAdm = d.className === 'Admin' || d.authorName === 'Admin_xinhxinh';
@@ -134,6 +151,8 @@ export async function updateFeaturedUI() {
             document.getElementById('pin-img').src = optimizeUrl(pinnedPost.url, 400);
             document.getElementById('pin-desc').innerText = pinnedPost.desc;
             document.getElementById('pin-author').innerText = "— " + pinnedPost.authorName;
+            pinSection.onclick = () => openLightbox(pinnedSettings.col, pinnedSettings.id);
+            pinSection.style.cursor = 'pointer';
         } else {
             pinSection.style.display = 'none';
         }
@@ -148,6 +167,8 @@ export async function updateFeaturedUI() {
             document.getElementById('feat-title').innerText = "TOP 1 ĐƯỢC YÊU THÍCH";
             document.getElementById('feat-desc').innerText = topPost.desc;
             document.getElementById('feat-author').innerText = "— " + topPost.authorName;
+            featSection.onclick = () => openLightbox('gallery', topPost.id);
+            featSection.style.cursor = 'pointer';
             if (currentUser && topPost.uid === currentUser.uid) {
                 if (topPost.id !== lastTopPostId && window.triggerFireworks) window.triggerFireworks();
             }
@@ -248,6 +269,7 @@ export async function deleteComment(index) {
 }
 
 export async function pinPost() { 
+    if (!currentUser || !isAdmin(currentUser.email)) return alert("Chỉ Admin mới có quyền ghim bài viết!");
     await setDoc(doc(db, "settings", "featured"), { col: currentImgCollection, id: currentImgId }); 
     await setDoc(doc(db, "settings", "notifications"), { text: "📌 Một bài viết mới vừa được ghim lên Trang Chủ! Xem ngay!", id: Date.now().toString(), createdAt: serverTimestamp() });
     alert("Đã ghim và gửi thông báo!"); 
@@ -256,6 +278,7 @@ export async function pinPost() {
 }
 
 export async function unpinPost() {
+    if (!currentUser || !isAdmin(currentUser.email)) return alert("Chỉ Admin mới có quyền bỏ ghim bài viết!");
     if(confirm("Bỏ ghim bài viết này?")) {
         await deleteDoc(doc(db, "settings", "featured"));
         alert("Đã bỏ ghim!");

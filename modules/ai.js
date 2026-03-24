@@ -54,9 +54,14 @@ export async function callGeminiAPI(prompt, imageBase64, useHistory, modelType, 
         
         for (const model of modelsToTry) {
             try {
-                const url = `/api/gemini`;
-                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: requestContents, model: model }) });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                // SỬ DỤNG TRỰC TIẾP API GOOGLE VÀ TRUYỀN KEY ĐỂ CÓ THỂ ĐỔI KEY LIÊN TỤC
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyObj.val}`;
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: requestContents }) });
+                
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(`HTTP ${response.status} - ${errData.error?.message || 'Lỗi API không xác định'}`);
+                }
                 const data = await response.json();
                 const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "AI không phản hồi.";
                 
