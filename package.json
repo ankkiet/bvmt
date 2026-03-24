@@ -1,0 +1,27 @@
+{
+  "name": "bvmt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ankkiet/bvmt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ankkiet/bvmt/issues"
+  },
+  "homepage": "https://github.com/ankkiet/bvmt#readme",
+  "devDependencies": {
+    "vite": "^8.0.2"
+  }
+}
