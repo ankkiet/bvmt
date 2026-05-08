@@ -1,2 +1,5 @@
-node_modules/
-dist/
+# Bỏ qua thư mục môi trường ảo Python
+.venv/
+venv/
+env/
+__pycache__/
