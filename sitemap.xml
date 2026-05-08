@@ -1,56 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://a2k41nvc.pages.dev/main</loc>
+    <loc>https://a2k41nvc.pages.dev/</loc>
     <lastmod>2026-02-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://a2k41nvc.pages.dev/main#gallery</loc>
+    <loc>https://a2k41nvc.pages.dev/main</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
     <image:image>
       <image:loc>https://res.cloudinary.com/dekxvneap/image/upload/v1768287532/hek1hp7f2nodrp8ituj6.jpg</image:loc>
-      <image:caption>Tuyệt vời! Đây là 3 dòng trạng thái mà một học sinh lớp A2K41 có thể đăng lên mạng xã hội của lớp mình:&lt;br&gt;&lt;br&gt;*   &lt;b&gt;Vui vẻ:&lt;/b&gt; Hành trình nào cũng vui khi có A2K41 mình đồng hành. Năng lượng tràn trề để khám phá! ✨&lt;br&gt;*   &lt;b&gt;Ý nghĩa:&lt;/b&gt; Những chuyến đi như thế này không chỉ là đi chơi, mà là để A2K41 mình cùng nhau tạo thêm thật nhiều kỷ niệm đáng nhớ của thanh xuân. ❤️&lt;br&gt;*   &lt;b&gt;Hài hước:&lt;/b&gt; Ai đó đang &quot;diễn sâu&quot; nhìn đời hay đang nghĩ trưa nay ăn gì vậy nhỉ? =))) Tag nhẹ đồng chí này cái nào! 😂</image:caption>
+      <image:caption>Hành trình nào cũng vui khi có A2K41 mình đồng hành. Năng lượng tràn trề để khám phá!</image:caption>
       <image:title>Ảnh đăng bởi Trịnh Thị Thuý Nga</image:title>
     </image:image>
-  </url>
-  <url>
-    <loc>https://a2k41nvc.pages.dev/main#gallery</loc>
     <image:image>
       <image:loc>https://res.cloudinary.com/dekxvneap/image/upload/v1767369548/dqazelfldfkxaaklltr8.jpg</image:loc>
       <image:caption>Bức ảnh chụp cận cảnh nhiều chậu cây cảnh xanh tươi được đặt trên bệ cửa sổ. Khung cửa sổ và các song sắt có màu xanh dương nổi bật, tạo điểm nhấn tươi sáng. Qua ô cửa, có thể thấy một phần cảnh quan bên ngoài với những tòa nhà màu xanh nhạt bị làm mờ.</image:caption>
       <image:title>Ảnh đăng bởi em bé NQuyeen</image:title>
     </image:image>
-  </url>
-  <url>
-    <loc>https://a2k41nvc.pages.dev/main#gallery</loc>
     <image:image>
       <image:loc>https://res.cloudinary.com/dekxvneap/image/upload/v1766463404/zeqov6jhffvnplptos9n.jpg</image:loc>
       <image:caption>Chào bạn! 😊 Bức ảnh này chụp một cây cảnh nhỏ xinh với lá xanh sọc trong chậu màu be, đặt cạnh khung cửa sổ màu xanh. Phía sau là không gian ngoài trời hơi mờ đó! 🪴</image:caption>
       <image:title>Ảnh đăng bởi Admin_xinhxinh</image:title>
     </image:image>
-  </url>
-  <url>
-    <loc>https://a2k41nvc.pages.dev/main#gallery</loc>
     <image:image>
       <image:loc>https://res.cloudinary.com/dekxvneap/image/upload/v1767365960/vgsekvhje3vouu0wv2p2.jpg</image:loc>
       <image:caption>🌈 Bức ảnh chụp bầu trời hồng cam dịu mát lúc hoàng hôn, với một vệt cầu vồng mờ ảo ẩn hiện và tán cây xanh tươi rực rỡ ở phía dưới. Thật là một khung cảnh thiên nhiên tuyệt đẹp!</image:caption>
       <image:title>Ảnh đăng bởi Ankkiet</image:title>
     </image:image>
-  </url>
-  <url>
-    <loc>https://a2k41nvc.pages.dev/main#gallery</loc>
     <image:image>
       <image:loc>https://res.cloudinary.com/dekxvneap/image/upload/v1768216939/cujooahwdswczbhj24ln.jpg</image:loc>
-      <image:caption>Tuyệt vời! Mình đóng vai học sinh A2K41 đây, đăng ảnh lên mạng xã hội của lớp nè:&lt;br&gt;&lt;br&gt;*   &lt;b&gt;Vui vẻ:&lt;/b&gt; Mấy đứa thấy cái cây &quot;độc lạ Bình Dương&quot; không? Lớp tớ phá đảo khu di tích này vui ơi là vui!&lt;br&gt;*   &lt;b&gt;Ý nghĩa:&lt;/b&gt; Giữa không gian cổ kính của My Son, mình thấy được những giá trị lịch sử thật sự ý nghĩa. Một trải nghiệm đáng nhớ cùng lớp tớ!&lt;br&gt;*   &lt;b&gt;Hài hước:&lt;/b&gt; Tưởng cây cảnh xịn xò, ai dè là &apos;cây hết data&apos; của lớp tớ! 😂 Thời tiết hơi âm u mà ảnh vẫn nghệ ghê!</image:caption>
+      <image:caption>Mấy đứa thấy cái cây độc lạ Bình Dương không? Lớp tớ phá đảo khu di tích này vui ơi là vui!</image:caption>
       <image:title>Ảnh đăng bởi Hoàng Lan</image:title>
     </image:image>
-  </url>
-  <url>
-    <loc>https://a2k41nvc.pages.dev/main#gallery</loc>
     <image:image>
       <image:loc>https://res.cloudinary.com/dekxvneap/image/upload/v1768287437/nkvgkw9x83qcsbyzv3vb.jpg</image:loc>
-      <image:caption>Tuyệt vời! Đóng vai một học sinh A2K41 đây:&lt;br&gt;&lt;br&gt;*   &lt;b&gt;Vui vẻ:&lt;/b&gt; Cả lớp mình lại quây quần học bài, năng lượng tràn đầy lun nè! Vui vẻ đúng điệu A2K41!&lt;br&gt;*   &lt;b&gt;Ý nghĩa:&lt;/b&gt; Từng buổi học thế này tuy bình dị mà thật ý nghĩa, sau này chắc chắn mình sẽ nhớ lắm những khoảnh khắc cả lớp cùng nhau cố gắng!&lt;br&gt;*   &lt;b&gt;Hài hước:&lt;/b&gt; Nhìn thì chăm chú vậy thôi chứ không biết trong đầu mỗi người đang chạy deadline gì nữa đây! 😂 #A2K41</image:caption>
+      <image:caption>Cả lớp mình lại quây quần học bài, năng lượng tràn đầy lun nè! Vui vẻ đúng điệu A2K41!</image:caption>
       <image:title>Ảnh đăng bởi Trịnh Thị Thuý Nga</image:title>
     </image:image>
   </url>

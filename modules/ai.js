@@ -219,9 +219,8 @@ export async function startRecording(wsInstance) {
     return { audioContext, source, mediaStream };
 }
 
-// Dừng ghi âm và giải phóng tài nguyên
 export function stopRecording() {
     if (processor) { processor.disconnect(); processor = null; }
-    if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
     if (audioContext) { audioContext.close(); audioContext = null; }
+    if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
 }

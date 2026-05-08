@@ -1297,6 +1297,20 @@ window.generateSitemap = async () => {
     if(!currentUser || !isAdmin(currentUser.email)) return;
     await generateSitemap();
 }
+window.pingGoogleSitemap = async () => {
+    if(!currentUser || !isAdmin(currentUser.email)) return;
+    const sitemapUrl = "https://a2k41nvc.pages.dev/sitemap.xml";
+    const pingUrl = `https://www.google.com/ping?sitemap=${sitemapUrl}`;
+    try {
+        Utils.loader(true, "Đang gọi Google Bot...");
+        await fetch(pingUrl, { mode: 'no-cors' });
+        Utils.loader(false);
+        alert("📡 Đã đánh tiếng (Ping) thành công!\nGoogle Bot đã nhận được tín hiệu và sẽ sớm quay lại đọc Sitemap của bạn.");
+    } catch(e) {
+        Utils.loader(false);
+        alert("Lỗi khi Ping: " + e.message);
+    }
+}
 window.handleLogout = handleLogout;
 window.checkAdminLogin = checkAdminLogin;
 window.requestDeleteAccount = () => requestDeleteAccount(currentUser.uid);
@@ -1427,7 +1441,7 @@ window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),
 window.archiveSeason = async (c) => { if(!confirm("Lưu trữ?"))return; const n=prompt("Tên đợt:"); if(!n)return; const q=query(collection(db,c),where("archived","!=",true)); const s=await getDocs(q); const u=[]; s.forEach(d=>u.push(updateDoc(doc(db,c,d.id),{archived:true,archiveLabel:n}))); await Promise.all(u); await addDoc(collection(db,"archives_meta"),{collection:c,label:n,archivedAt:serverTimestamp()}); alert("Xong!"); }
 // Tải danh sách các đợt lưu trữ cũ
 window.loadArchiveSeasons = async () => { const s=document.getElementById('archive-season-select'); s.innerHTML='<option value="ALL">📂 Tất cả ảnh lưu trữ</option>'; const q=query(collection(db,"archives_meta"),where("collection","==",activeArchiveTab)); const sn=await getDocs(q); const docs = []; sn.forEach(d => docs.push(d.data())); docs.sort((a,b) => (b.archivedAt?.seconds || 0) - (a.archivedAt?.seconds || 0)); docs.forEach(d=>s.innerHTML+=`<option value="${d.label}">${d.label}</option>`); }
-window.loadArchiveGrid = Utils.debounce(async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }, 300);
+window.loadArchiveGrid = Utils.debounce(async () => { const l=document.getElementById('archive-season-select').value; const k=document.getElementById('archive-search').value.toLowerCase(); const g=document.getElementById('archive-grid'); g.innerHTML="Loading..."; let q; if(l === 'ALL') q = query(collection(db,activeArchiveTab),where("archived","==",true)); else q = query(collection(db,activeArchiveTab),where("archived","==",true),where("archiveLabel","==",l)); const s=await getDocs(q); g.innerHTML=""; if(s.empty) { g.innerHTML = "<p>Không có dữ liệu.</p>"; return; } s.forEach(d=>{ const da=d.data(); if(k && !da.authorName.toLowerCase().includes(k) && !da.desc.toLowerCase().includes(k) && !(da.authorID||"").toLowerCase().includes(k)) return; g.innerHTML+=`<div class="gallery-item" onclick="openLightbox('${activeArchiveTab}','${d.id}')"><div class="gallery-img-container"><img src="${da.url}" class="gallery-img" alt="${da.desc ? da.desc.replace(/<[^>]*>?/gm, '') : 'Ảnh Góc Xanh'}"></div><div class="gallery-info"><div class="gallery-title">${da.desc}</div><div class="gallery-meta"><span>${da.authorID||da.authorName}</span></div></div></div>`; }); }, 300);
 window.switchArchiveTab = (t) => { activeArchiveTab=t; document.querySelectorAll('.archive-tab').forEach(e=>e.classList.remove('active')); document.getElementById(`tab-ar-${t}`).classList.add('active'); loadArchiveSeasons(); loadArchiveGrid(); }
 
 // Tải dữ liệu người dùng cho trang quản trị Admin
@@ -1561,12 +1575,12 @@ window.showPage = (id) => {
     
     // --- DYNAMIC SEO UPDATE ---
     const seoConfig = {
-        'home': { title: 'Trang Chủ', desc: 'Trang chủ chính thức của lớp A2K41 - Green School. Cập nhật tin tức, thông báo và hoạt động mới nhất.' },
-        'greenclass': { title: 'Góc Xanh', desc: 'Thư viện ảnh Góc Xanh, chia sẻ khoảnh khắc thiên nhiên, cây trồng và hoạt động bảo vệ môi trường của A2K41.' },
-        'contest': { title: 'Thi Đua', desc: 'Bảng xếp hạng thi đua, nộp báo cáo hoạt động và theo dõi thành tích của các thành viên.' },
-        'archive': { title: 'Lưu Trữ', desc: 'Kho lưu trữ hình ảnh và hoạt động của các mùa trước.' },
-        'activities': { title: 'Hoạt Động', desc: 'Lịch trình các hoạt động ngoại khóa, tin tức và sự kiện sắp tới.' },
-        'guide': { title: 'Tra Cứu', desc: 'Công cụ AI Soi Rác, hướng dẫn phân loại rác và tra cứu thông tin môi trường.' },
+        'home': { title: 'Trang Chủ', desc: 'Trang chủ chính thức của lớp A2K41 - Green School. Nơi lan tỏa thông điệp bảo vệ môi trường (bvmt), xây dựng trường học xanh và quy mô xanh.' },
+        'greenclass': { title: 'Góc Xanh', desc: 'Thư viện ảnh Góc Xanh, chia sẻ khoảnh khắc thiên nhiên, cây trồng và hoạt động bảo vệ môi trường, xây dựng trường học xanh của A2K41.' },
+        'contest': { title: 'Thi Đua', desc: 'Bảng xếp hạng thi đua phong trào trường học xanh, nộp báo cáo hoạt động bảo vệ môi trường (bvmt) của các thành viên.' },
+        'archive': { title: 'Lưu Trữ', desc: 'Kho lưu trữ hình ảnh và hoạt động bảo vệ môi trường của các mùa trước.' },
+        'activities': { title: 'Hoạt Động', desc: 'Lịch trình các hoạt động ngoại khóa về môi trường, tin tức và sự kiện quy mô xanh sắp tới.' },
+        'guide': { title: 'Tra Cứu', desc: 'Công cụ AI Soi Rác, hướng dẫn phân loại rác và tra cứu thông tin bảo vệ môi trường (bvmt).' },
         'profile': { title: 'Hồ Sơ', desc: 'Quản lý thông tin cá nhân, cài đặt giao diện và tiện ích.' },
         'admin': { title: '🛠 Quản Trị Hệ Thống', desc: 'Trang quản trị dành cho Ban Cán Sự lớp.' }
     };
@@ -1823,7 +1837,7 @@ window.filterTrashView = (category) => {
     const items = trashItemsCache.filter(i => i.trashCategory === category || (category === 'Rác còn lại' && !i.trashCategory));
     
     items.forEach(d => {
-        grid.innerHTML += `<div class="gallery-item" onclick="openLightbox('gallery','${d.id}', 'reference')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img lazy-blur" data-src="${optimizeUrl(d.url, 400)}"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div></div></div>`;
+        grid.innerHTML += `<div class="gallery-item" onclick="openLightbox('gallery','${d.id}', 'reference')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img lazy-blur" alt="${d.desc ? d.desc.replace(/<[^>]*>?/gm, '') : 'Phân loại rác'}" data-src="${optimizeUrl(d.url, 400)}"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div></div></div>`;
     });
     if(items.length === 0) grid.innerHTML = "<p style='text-align:center; width:100%'>Chưa có ảnh nào trong mục này.</p>";
     lazyLoadImages(); // Kích hoạt lazy load cho ảnh mới
@@ -2280,148 +2294,7 @@ async function runLiveLoop() {
     );
 }
 
-function updateLiveStatus(text) {
+function updateLiveStatus(statusText) {
     const el = document.getElementById('live-status');
-    if(el) el.innerText = text;
-    const input = document.getElementById('ai-input');
-    if(input) input.placeholder = text;
-    
-    // Điều khiển hiển thị giữa Canvas (chờ) và Visualizer (nói)
-    const canvas = document.getElementById('live-canvas');
-    const visualizer = document.getElementById('live-visualizer-css');
-    const interruptBtn = document.getElementById('btn-live-interrupt');
-
-    if (text === "Green Bot đang nói...") {
-        if (canvas) canvas.style.display = 'none';
-        if (visualizer) visualizer.classList.add('speaking');
-        if (interruptBtn) interruptBtn.style.display = 'flex';
-    } else {
-        if (visualizer) visualizer.classList.remove('speaking');
-        if (interruptBtn) interruptBtn.style.display = 'none';
-        if (canvas) {
-            canvas.style.display = 'block';
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "20px Arial";
-            ctx.fillStyle = "#2e7d32";
-            ctx.textAlign = "center";
-            ctx.fillText("🎙️ Hybrid Live Mode", canvas.width/2, canvas.height/2);
-        }
-    }
-}
-
-// Tự động thêm nút Live vào giao diện Chatbot
-window.addEventListener('load', () => {
-    // Tạm ẩn tính năng Live Chat để phát triển sau
-    /*
-    setTimeout(() => {
-        const area = document.querySelector('.ai-input-area');
-        const mic = document.getElementById('btn-mic');
-        if (area && mic && !document.getElementById('btn-live-mode')) {
-            const btn = document.createElement('button');
-            btn.id = 'btn-live-mode';
-            btn.className = 'btn-ai-send';
-            btn.innerHTML = '<i class="fas fa-broadcast-tower"></i>';
-            btn.onclick = window.toggleGeminiLive;
-            btn.style.marginRight = '5px';
-            btn.title = "Chế độ Live (Realtime)";
-            area.insertBefore(btn, mic);
-        }
-    }, 1500);
-    */
-
-    // --- LOGIC KÉO GIÃN KHUNG CHAT (RESIZABLE) ---
-    const chatWindow = document.getElementById('ai-window');
-    if (chatWindow) {
-        const handles = chatWindow.querySelectorAll('.resize-handle');
-        let startX, startY, startWidth, startHeight;
-
-        handles.forEach(handle => {
-            handle.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(document.defaultView.getComputedStyle(chatWindow).width, 10);
-                startHeight = parseInt(document.defaultView.getComputedStyle(chatWindow).height, 10);
-
-                const onMouseMove = (e) => {
-                    if (handle.classList.contains('resize-left') || handle.classList.contains('resize-corner')) {
-                        chatWindow.style.width = (startWidth + startX - e.clientX) + 'px';
-                    }
-                    if (handle.classList.contains('resize-top') || handle.classList.contains('resize-corner')) {
-                        chatWindow.style.height = (startHeight + startY - e.clientY) + 'px';
-                    }
-                };
-
-                const onMouseUp = () => {
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
-                };
-
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            });
-        });
-    }
-});
-/*
-    for (const colName of cols) {
-        // Lấy tất cả ảnh (không dùng bộ lọc để tìm được ảnh cũ)
-        const q = query(collection(db, colName)); 
-        const snap = await getDocs(q);
-        const updates = [];
-        
-        snap.forEach(d => {
-            const data = d.data();
-            // Nếu ảnh chưa có trường archived, thêm vào
-            if (data.archived === undefined) {
-                updates.push(updateDoc(doc(db, colName, d.id), { archived: false }));
-            }
-        });
-        
-        await Promise.all(updates);
-        count += updates.length;
-    }
-    
-    Utils.loader(false);
-    alert(`✅ Đã khôi phục thành công ${count} ảnh cũ!\nHãy tải lại trang để kiểm tra.`);
-    location.reload();
-} 
-*/
-
-// Đóng popup hướng dẫn
-window.closeGuidePopup = () => {
-    document.getElementById('guide-popup').style.display = 'none';
-    localStorage.setItem('seen_guide_v1', 'true');
-}
-
-// --- SWIPE SIDEBAR LOGIC ---
-let sideTouchStartX = 0;
-let sideTouchStartY = 0;
-
-document.addEventListener('touchstart', (e) => {
-    sideTouchStartX = e.changedTouches[0].clientX;
-    sideTouchStartY = e.changedTouches[0].clientY;
-}, {passive: true});
-
-document.addEventListener('touchend', (e) => {
-    const sideTouchEndX = e.changedTouches[0].clientX;
-    const sideTouchEndY = e.changedTouches[0].clientY;
-    handleSidebarSwipe(sideTouchStartX, sideTouchStartY, sideTouchEndX, sideTouchEndY);
-}, {passive: true});
-
-function handleSidebarSwipe(startX, startY, endX, endY) {
-    const diffX = endX - startX;
-    const diffY = endY - startY;
-    const sb = document.getElementById('mobile-sidebar');
-    
-    // 1. Vuốt từ cạnh trái sang phải để MỞ (Start < 40px từ mép trái)
-    if (startX < 40 && diffX > 70 && Math.abs(diffY) < 60) {
-        if (sb && !sb.classList.contains('active')) toggleMobileMenu();
-    }
-    
-    // 2. Vuốt từ phải sang trái để ĐÓNG (Khi menu đang mở)
-    if (sb && sb.classList.contains('active')) {
-        if (diffX < -70 && Math.abs(diffY) < 60) toggleMobileMenu();
-    }
+    if (el) el.innerText = statusText;
 }

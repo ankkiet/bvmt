@@ -310,37 +310,18 @@ export async function showUserPosts(uid, name) {
                 const q = query(collection(db, col), where('uid', '==', uid), orderBy('createdAt', 'desc'), limit(20));
                 return await getDocs(q);
             } catch (err) {
-                console.warn(`Query ${col} failed (likely missing index), falling back...`, err);
-                const qSimple = query(collection(db, col), where('uid', '==', uid));
-                return await getDocs(qSimple);
-            }
-        };
-        
-        const [snap1, snap2] = await Promise.all([getSafeDocs('gallery'), getSafeDocs('contest')]);
-        
-        let posts = [];
-        snap1.forEach(d => posts.push({id: d.id, col: 'gallery', ...d.data()}));
-        snap2.forEach(d => posts.push({id: d.id, col: 'contest', ...d.data()}));
-        
-        posts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-        if (posts.length === 0) {
-            grid.innerHTML = '<div style="width:100%; text-align:center; color:var(--text-sec);">Thành viên này chưa có bài đăng nào.</div>';
-            return;
+                        console.warn(err);
+                        return { forEach: () => {} };
+                    }
+                };
+                const [gSnap, cSnap] = await Promise.all([getSafeDocs('gallery'), getSafeDocs('contest')]);
+                let docs = [];
+                gSnap.forEach(d => docs.push({id: d.id, col: 'gallery', ...d.data()}));
+                cSnap.forEach(d => docs.push({id: d.id, col: 'contest', ...d.data()}));
+                docs.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+                grid.innerHTML = "";
+                if(docs.length === 0) grid.innerHTML = "<p style='text-align:center; width:100%'>Không có bài viết nào.</p>";
+                docs.forEach(d => { grid.innerHTML += `<div class="gallery-item" onclick="openLightbox('${d.col}','${d.id}')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img" data-src="${optimizeUrl(d.url, 400)}"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div></div></div>`; });
+            } catch (err) { console.error(err); grid.innerHTML = "Lỗi tải dữ liệu."; }
         }
-
-        let html = "";
-        posts.forEach(d => {
-            html += `<div class="gallery-item" onclick="openLightbox('${d.col}','${d.id}')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img lazy-blur" data-src="${optimizeUrl(d.url, 400)}"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div><div class="gallery-meta"><span>${new Date(d.createdAt?.seconds*1000).toLocaleDateString('vi-VN')}</span><span><i class="fas fa-heart"></i> ${d.likes?.length||0}</span></div></div></div>`;
-        });
-        grid.innerHTML = html;
-        lazyLoadImages();
-    } catch (e) {
-        console.error(e);
-        grid.innerHTML = `<div style="width:100%; text-align:center; color:red;">Lỗi tải dữ liệu: ${e.message}</div>`;
-    }
-}
-
-export function closeUserPosts() {
-    document.getElementById('user-posts-modal').style.display = 'none';
-}
+export function closeUserPosts() { const m = document.getElementById('user-posts-modal'); if(m) m.style.display = 'none'; }

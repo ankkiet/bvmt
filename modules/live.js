@@ -405,12 +405,7 @@ export function toggleLiveChat(btnId, aiKeys) {
                 }
             });
     } else {
-        // Tắt Live
         bot.disconnect();
-        if (btn) {
-            btn.innerHTML = '<i class="fas fa-microphone-lines"></i>'; // Icon mặc định
-            btn.classList.remove('active-live');
-            btn.title = "Chat Live (Realtime)";
-        }
+        if (btn) { btn.innerHTML = '<i class="fas fa-microphone-lines"></i>'; btn.classList.remove('active-live'); btn.title = "Chat Live (Realtime)"; }
     }
 }
