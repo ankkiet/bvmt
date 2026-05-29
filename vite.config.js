@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite';
 import { createHtmlPlugin } from 'vite-plugin-html';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [createHtmlPlugin()],
   build: {
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'main.html')
+      },
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {

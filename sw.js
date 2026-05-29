@@ -27,7 +27,6 @@ const CACHE_NAME = 'nvc-green-v58-new-logo';
 // Danh sách các file tĩnh cần cache để chạy offline
 const STATIC_ASSETS = [
     './',
-    './index.html',
     './main.html',
     './manifest.json',
     './photo/logox2.png',
@@ -97,8 +96,8 @@ self.addEventListener('fetch', (event) => {
                     });
                 })
                 .catch(() => {
-                    // Mất mạng thì trả về trang offline
-                    return caches.match('./index.html');
+                    // Mất mạng thì trả về trang offline (main.html)
+                    return caches.match('./main.html');
                 })
         );
         return;

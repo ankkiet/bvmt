@@ -72,7 +72,7 @@ const getSystemPrompt = () => {
     
     p += `\n--- NGUYÊN TẮC GIAO TIẾP & KHẢ NĂNG ĐẶC BIỆT ---\n
     1.  **Giao tiếp 100% con người (QUAN TRỌNG NHẤT)**: Hãy chat ĐÚNG CHUẨN một người bạn đang nhắn tin qua Messenger. Câu văn phải ngắn, mang ngữ khí đời thường, không được trình bày giống văn bản AI dài dòng. Hãy xả vai, cứ lầy lội, châm chọc vui vẻ hoặc hùa theo cảm xúc của user nha!
-    2.  **Tạo bảng (Table Generation)**: Nếu được yêu cầu lập lịch trình, danh sách, hãy trả lời bằng thẻ HTML <table> gọn gàng (có <thead>, <th>, <tr>, <td>).
+    2.  **Tạo bảng (Table Generation)**: Nếu được yêu cầu lập thời khóa biểu, lịch trình, so sánh... hãy trả lời bằng thẻ HTML <table> (có <tr>, <th>, <td>).
     3.  **Điều khiển Website (Hành động)**: Bạn CÓ THỂ trực tiếp thực hiện một số thao tác trên web giúp người dùng bằng cách CHÈN một thẻ đặc biệt vào CUỐI câu trả lời của mình. Các thẻ hợp lệ:
         - "[ACTION:music]": Bật hoặc Tắt nhạc nền.
         - "[ACTION:dark_mode]": Bật hoặc Tắt giao diện tối (Dark Mode).
@@ -230,6 +230,63 @@ window.toggleDarkMode = () => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
 
+// --- RESIZE AI CHAT WINDOW ---
+function initAIChatResize() {
+    const aiWindow = document.getElementById('ai-window');
+    if (!aiWindow) return;
+
+    const handles = {
+        left: aiWindow.querySelector('.resize-left'),
+        top: aiWindow.querySelector('.resize-top'),
+        corner: aiWindow.querySelector('.resize-corner')
+    };
+
+    let isResizing = false;
+    let currentHandle = null;
+    let startX, startY, startWidth, startHeight;
+
+    function onPointerDown(e, handleType) {
+        isResizing = true;
+        currentHandle = handleType;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        // Tạm thời tắt hiệu ứng chuyển động để kéo mượt hơn
+        aiWindow.style.transition = 'none';
+        
+        const rect = aiWindow.getBoundingClientRect();
+        startWidth = rect.width;
+        startHeight = rect.height;
+
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+        e.preventDefault();
+    }
+
+    function onPointerMove(e) {
+        if (!isResizing) return;
+        if (currentHandle === 'left' || currentHandle === 'corner') {
+            aiWindow.style.width = `${startWidth + (startX - e.clientX)}px`;
+        }
+        if (currentHandle === 'top' || currentHandle === 'corner') {
+            aiWindow.style.height = `${startHeight + (startY - e.clientY)}px`;
+        }
+    }
+
+    function onPointerUp() {
+        if (!isResizing) return;
+        isResizing = false;
+        currentHandle = null;
+        aiWindow.style.transition = ''; // Bật lại transition cho các hiệu ứng ẩn/hiện
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+    }
+
+    if (handles.left) handles.left.addEventListener('pointerdown', (e) => onPointerDown(e, 'left'));
+    if (handles.top) handles.top.addEventListener('pointerdown', (e) => onPointerDown(e, 'top'));
+    if (handles.corner) handles.corner.addEventListener('pointerdown', (e) => onPointerDown(e, 'corner'));
+}
+
 // Khởi chạy các chức năng khi trang web tải xong
 window.addEventListener('load', () => {
     // Check Theme
@@ -247,6 +304,7 @@ window.addEventListener('load', () => {
     handleRoute();
     updateGreeting(); // Gọi hàm chào khi web tải xong
     initSeasonalEffect(); // Khởi chạy hiệu ứng mùa
+    initAIChatResize(); // Khởi chạy tính năng kéo giãn khung chat
 
     // Tắt Splash Screen sau khi tải xong
     const splash = document.getElementById('splash-screen');
@@ -266,6 +324,12 @@ window.addEventListener('load', () => {
         }, 1500);
     }
 });
+
+window.closeGuidePopup = () => {
+    const guide = document.getElementById('guide-popup');
+    if (guide) guide.style.display = 'none';
+    localStorage.setItem('seen_guide_v1', 'true');
+};
 
 // --- PULL TO REFRESH LOGIC ---
 // Tính năng kéo trang xuống để làm mới (trên Mobile)
@@ -463,7 +527,7 @@ window.loadPushHistory = async () => {
             const time = new Date(data.scheduledAt).toLocaleString('vi-VN');
             html += `<div style="padding:5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
                 <div><b>${time}</b>: ${data.title}</div>
-                <button class="btn btn-sm btn-danger" onclick="deleteDoc(doc(db,'scheduled_notifications','${d.id}')).then(loadPushHistory)">Hủy</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteScheduledPush('${d.id}')">Hủy</button>
             </div>`;
         });
     }
@@ -481,6 +545,13 @@ window.loadPushHistory = async () => {
     });
 
     list.innerHTML = html || "Chưa có dữ liệu.";
+}
+
+window.deleteScheduledPush = async (id) => {
+    if(confirm('Hủy gửi thông báo này?')) {
+        await deleteDoc(doc(db, 'scheduled_notifications', id));
+        loadPushHistory();
+    }
 }
 
 window.resendPush = (t, b, u) => {
@@ -900,6 +971,20 @@ window.sendMessageToAI = async (e, isVoice = false) => {
             }, 1000);
         }
 
+        // Chuyển đổi bảng Markdown (nếu AI lỡ dùng định dạng này) sang thẻ HTML <table>
+        mainAnswer = mainAnswer.replace(/(?:\|.*\|\n?)+/g, (match) => {
+            if (!match.includes('---')) return match; // Bỏ qua nếu không phải bảng markdown
+            const rows = match.trim().split('\n');
+            let html = '<table>';
+            rows.forEach((row, index) => {
+                if (row.indexOf('---') > -1) return; // Bỏ qua dòng gạch ngang phân cách
+                const cols = row.replace(/^\||\|$/g, '').split('|'); // Lấy các cột
+                html += '<tr>' + cols.map(c => index === 0 ? `<th>${c.trim()}</th>` : `<td>${c.trim()}</td>`).join('') + '</tr>';
+            });
+            html += '</table>';
+            return html;
+        });
+
         // Xử lý format tin nhắn (Giữ nguyên thẻ Table, Escape các thẻ khác)
         const escapeHTML = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const contentParts = mainAnswer.split(/(<table[\s\S]*?<\/table>)/gi);
@@ -985,10 +1070,10 @@ onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             // AI_MODELS là hằng số import từ constants.js, không thể gán lại trực tiếp. 
             // Nếu muốn update dynamic, cần dùng biến let localAIModels = {...AI_MODELS}
             // Ở đây tạm thời bỏ qua việc update AI_MODELS từ Firestore để code chạy ổn định
-            if(document.getElementById('model-main')) document.getElementById('model-main').value = AI_MODELS.main;
-            if(document.getElementById('model-voice')) document.getElementById('model-voice').value = AI_MODELS.voice;
-            if(document.getElementById('model-backup')) document.getElementById('model-backup').value = AI_MODELS.backup;
-            if(document.getElementById('model-advanced')) document.getElementById('model-advanced').value = AI_MODELS.advanced;
+            if(document.getElementById('model-main')) document.getElementById('model-main').value = cfg.aiModels.main || "gemini-2.5-flash";
+            if(document.getElementById('model-voice')) document.getElementById('model-voice').value = cfg.aiModels.voice || "gemini-2.5-flash-native-audio-dialog";
+            if(document.getElementById('model-backup')) document.getElementById('model-backup').value = cfg.aiModels.backup || "gemini-2.5-flash-lite";
+            if(document.getElementById('model-advanced')) document.getElementById('model-advanced').value = cfg.aiModels.advanced || "gemini-3-flash";
         }
         if(cfg.googleSheetUrl) { googleSheetUrl = cfg.googleSheetUrl; }
         if(cfg.fcmServerKey && document.getElementById('push-server-key')) { document.getElementById('push-server-key').value = cfg.fcmServerKey; }
@@ -997,16 +1082,24 @@ onSnapshot(doc(db, "settings", "config"), (docSnap) => {
         const mDiv = document.getElementById('maintenance-overlay'); if(cfg.maintenance && (!currentUser || !isAdmin(currentUser.email))) mDiv.style.display='flex'; else mDiv.style.display='none';
         applyLock('home',cfg.locks?.home); applyLock('greenclass',cfg.locks?.greenclass); applyLock('contest',cfg.locks?.contest); applyLock('activities',cfg.locks?.activities); applyLock('guide',cfg.locks?.guide); applyLock('archive',cfg.locks?.archive);
         handleTimer('timer-gallery','cd-gallery',cfg.deadlines?.gallery); handleTimer('timer-contest','cd-contest',cfg.deadlines?.contest);
-        if(currentUser && isAdmin(currentUser.email)) {
-            document.getElementById('cfg-maintenance').checked=cfg.maintenance; document.getElementById('lock-home').checked=cfg.locks?.home; document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass; document.getElementById('lock-contest').checked=cfg.locks?.contest; document.getElementById('lock-activities').checked=cfg.locks?.activities; document.getElementById('lock-guide').checked=cfg.locks?.guide; document.getElementById('lock-archive').checked=cfg.locks?.archive;
-            document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
-            if(cfg.googleSheetUrl) { document.getElementById('cfg-sheet-url').value = cfg.googleSheetUrl; }
-        }
+        
+        // Bỏ điều kiện check Admin ở đây để các ô checkbox luôn được đồng bộ trạng thái khi nhận dữ liệu từ máy chủ
+        // (Kể cả khi web chưa kịp check xong tài khoản Admin, các nút ở tab Admin ẩn này vẫn phải lưu đúng trạng thái)
+        if(document.getElementById('cfg-maintenance')) document.getElementById('cfg-maintenance').checked=cfg.maintenance||false; 
+        if(document.getElementById('lock-home')) document.getElementById('lock-home').checked=cfg.locks?.home||false; 
+        if(document.getElementById('lock-greenclass')) document.getElementById('lock-greenclass').checked=cfg.locks?.greenclass||false; 
+        if(document.getElementById('lock-contest')) document.getElementById('lock-contest').checked=cfg.locks?.contest||false; 
+        if(document.getElementById('lock-activities')) document.getElementById('lock-activities').checked=cfg.locks?.activities||false; 
+        if(document.getElementById('lock-guide')) document.getElementById('lock-guide').checked=cfg.locks?.guide||false; 
+        if(document.getElementById('lock-archive')) document.getElementById('lock-archive').checked=cfg.locks?.archive||false;
+        if(document.getElementById('time-gallery')) document.getElementById('time-gallery').value=cfg.deadlines?.gallery||""; 
+        if(document.getElementById('time-contest')) document.getElementById('time-contest').value=cfg.deadlines?.contest||"";
+        if(cfg.googleSheetUrl && document.getElementById('cfg-sheet-url')) { document.getElementById('cfg-sheet-url').value = cfg.googleSheetUrl; }
     }
 });
 
 function applyLock(s,l){const o=document.getElementById(`locked-${s}`), c=document.getElementById(`content-${s}`); if(l&&(!currentUser||!isAdmin(currentUser.email))){if(o)o.style.display='block';if(c)c.style.display='none';}else{if(o)o.style.display='none';if(c)c.style.display='block';}}
-let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const d=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${d}d ${h}h ${m}p`;}},1000);}
+let intervals={}; function handleTimer(e,b,d){if(!d){document.getElementById(b).style.display='none';return;}document.getElementById(b).style.display='block';if(intervals[e])clearInterval(intervals[e]);const end=new Date(d).getTime();intervals[e]=setInterval(()=>{const now=new Date().getTime(),dist=end-now;if(dist<0){clearInterval(intervals[e]);document.getElementById(e).innerHTML="HẾT GIỜ";}else{const days=Math.floor(dist/(1000*60*60*24)),h=Math.floor((dist%(1000*60*60*24))/(1000*60*60)),m=Math.floor((dist%(1000*60*60))/(1000*60));document.getElementById(e).innerHTML=`${days}d ${h}h ${m}p`;}},1000);}
 
 // --- AUTH ---
 
@@ -1434,7 +1527,6 @@ window.updateAIModels = async () => {
     await setDoc(doc(db, "settings", "config"), { aiModels: models }, { merge: true });
     alert("Đã cập nhật cấu hình Model AI!");
 }
-window.updateAIConfig = async () => { await setDoc(doc(db,"settings","config"),{geminiKey:document.getElementById('cfg-ai-key').value},{merge:true}); alert("Đã lưu API Key! Vui lòng tải lại trang."); location.reload(); }
 window.updateMainConfig = async () => { await setDoc(doc(db,"settings","config"),{maintenance:document.getElementById('cfg-maintenance').checked},{merge:true}); alert("Đã lưu!"); }
 window.updateLocks = async () => { await setDoc(doc(db,"settings","config"),{locks:{home:document.getElementById('lock-home').checked,greenclass:document.getElementById('lock-greenclass').checked,contest:document.getElementById('lock-contest').checked,activities:document.getElementById('lock-activities').checked,guide:document.getElementById('lock-guide').checked,archive:document.getElementById('lock-archive').checked}},{merge:true}); alert("Đã lưu!"); }
 window.updateDeadlines = async () => { await setDoc(doc(db,"settings","config"),{deadlines:{gallery:document.getElementById('time-gallery').value,contest:document.getElementById('time-contest').value}},{merge:true}); alert("Đã lưu!"); }
@@ -1723,6 +1815,153 @@ window.sendTrashChatMessage = async (e) => {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// --- AI LIVE SCANNER LOGIC ---
+let aiVideoStream = null;
+
+window.startAILiveScanner = async () => {
+    if (!currentUser) {
+        alert("Vui lòng đăng nhập để sử dụng tính năng này!");
+        showPage('profile');
+        return;
+    }
+    const modal = document.getElementById('ai-live-scanner-modal');
+    const video = document.getElementById('ai-live-video');
+    
+    // Reset giao diện trước khi mở
+    if (document.getElementById('ai-live-result')) document.getElementById('ai-live-result').style.display = 'none';
+    if (document.getElementById('btn-capture-trash')) document.getElementById('btn-capture-trash').style.display = 'flex';
+    if (document.getElementById('ai-live-instruction')) document.getElementById('ai-live-instruction').style.display = 'block';
+    
+    // Xóa khung vẽ cũ nếu có
+    const overlayCanvas = document.getElementById('ai-live-overlay-canvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
+
+    modal.style.display = 'flex';
+    try {
+        aiVideoStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" } // Ưu tiên camera sau
+        });
+        video.srcObject = aiVideoStream;
+    } catch (err) {
+        alert("Không thể truy cập camera: " + err.message);
+        modal.style.display = 'none';
+    }
+};
+
+window.resetAILiveScanner = () => {
+    const video = document.getElementById('ai-live-video');
+    if (video) video.play(); // Tiếp tục chạy camera
+    
+    if (document.getElementById('ai-live-result')) document.getElementById('ai-live-result').style.display = 'none';
+    if (document.getElementById('btn-capture-trash')) document.getElementById('btn-capture-trash').style.display = 'flex';
+    if (document.getElementById('ai-live-instruction')) document.getElementById('ai-live-instruction').style.display = 'block';
+
+    const overlayCanvas = document.getElementById('ai-live-overlay-canvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
+};
+
+window.stopAILiveScanner = () => {
+    if (aiVideoStream) {
+        aiVideoStream.getTracks().forEach(track => track.stop());
+        aiVideoStream = null;
+    }
+    // Xóa khung vẽ
+    const overlayCanvas = document.getElementById('ai-live-overlay-canvas');
+    if (overlayCanvas) {
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
+    const modal = document.getElementById('ai-live-scanner-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.captureAndAnalyzeTrash = async () => {
+    const video = document.getElementById('ai-live-video');
+    const canvas = document.getElementById('ai-live-canvas');
+    if (!video.videoWidth) return alert("Camera chưa sẵn sàng!");
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height); // Chụp khung hình hiện tại
+
+    const base64ImgFull = canvas.toDataURL('image/jpeg', 0.8);
+    const base64Img = base64ImgFull.split(',')[1];
+
+    const aiPrompt = "Bạn là chuyên gia phân loại rác. Hãy tìm rác chính trong ảnh, phân loại và KHOANH VÙNG nó. BẮT BUỘC trả lời theo định dạng: CATEGORY|NAME|INSTRUCTION|[ymin, xmin, ymax, xmax]. Trong đó CATEGORY là 'Hữu cơ', 'Tái chế', hoặc 'Rác còn lại'. NAME là tên rác. INSTRUCTION là hướng dẫn. [ymin, xmin, ymax, xmax] là tọa độ bounding box (từ 0-1000). Vd: Tái chế|Vỏ lon|Rửa sạch|[200, 300, 800, 700]";
+
+    const btn = document.getElementById('btn-capture-trash');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang phân tích...';
+    btn.disabled = true;
+
+    try {
+        const aiResult = await callGeminiAPI(aiPrompt, base64Img, false, 'main', aiKeys, []);
+        const cleanResult = aiResult.replace(/\*/g, '');
+        const parts = cleanResult.split('|');
+        let cat = "Rác còn lại"; let name = "Rác không xác định"; let instr = cleanResult;
+        if (parts.length >= 3) {
+            cat = parts[0].trim(); name = parts[1].trim(); instr = parts[2].trim();
+            if(cat.toLowerCase().includes('hữu cơ')) cat = 'Hữu cơ'; else if(cat.toLowerCase().includes('tái chế')) cat = 'Tái chế'; else cat = 'Rác còn lại';
+        }
+
+        // Vẽ Bounding Box khoanh vùng rác lên màn hình
+        const overlayCanvas = document.getElementById('ai-live-overlay-canvas');
+        if (parts.length >= 4 && overlayCanvas) {
+            const coordsMatch = parts[3].match(/\[(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\]/);
+            if (coordsMatch) {
+                overlayCanvas.width = video.clientWidth;
+                overlayCanvas.height = video.clientHeight;
+                const ctx = overlayCanvas.getContext('2d');
+                const ymin = (parseInt(coordsMatch[1]) / 1000) * overlayCanvas.height;
+                const xmin = (parseInt(coordsMatch[2]) / 1000) * overlayCanvas.width;
+                const ymax = (parseInt(coordsMatch[3]) / 1000) * overlayCanvas.height;
+                const xmax = (parseInt(coordsMatch[4]) / 1000) * overlayCanvas.width;
+                
+                if (xmax > xmin && ymax > ymin) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                    ctx.fillRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                    ctx.clearRect(xmin, ymin, xmax - xmin, ymax - ymin); // Đục lỗ sáng
+                    ctx.strokeStyle = '#4caf50';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(xmin, ymin, xmax - xmin, ymax - ymin);
+                    ctx.fillStyle = '#4caf50';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillText(name, xmin, ymin - 10 > 15 ? ymin - 10 : ymax + 20);
+                }
+            }
+        }
+        video.pause(); // Tạm dừng khung hình để user xem Box
+
+        // Đợi 1.5 giây để xem ảnh khoanh vùng rồi mới hiện UI kết quả
+        setTimeout(() => {
+            const resultBox = document.getElementById('ai-live-result');
+            if (resultBox) {
+                let catColor = cat === 'Hữu cơ' ? '#4caf50' : (cat === 'Tái chế' ? '#2196f3' : '#ff9800');
+                document.getElementById('ai-live-result-cat').innerHTML = `<span style="color:${catColor}; font-weight:bold; padding:4px 10px; background:${catColor}20; border-radius:12px; margin-left:5px;">${cat}</span>`;
+                document.getElementById('ai-live-result-name').innerText = name;
+                document.getElementById('ai-live-result-instr').innerText = instr;
+                
+                document.getElementById('ai-live-instruction').style.display = 'none';
+                btn.style.display = 'none';
+                resultBox.style.display = 'block';
+            }
+        }, 1500);
+    } catch (e) {
+        console.error(e);
+        alert("Lỗi khi phân tích: " + e.message);
+    }
+
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+}
+
 // --- QR SCANNER LOGIC ---
 let qrScanner = null;
 window.startQRScanner = () => {
@@ -1828,6 +2067,25 @@ window.loadTrashStats = () => {
     });
 }
 
+window.lazyLoadImages = () => {
+    const imgObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if(img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.onload = () => {
+                        img.classList.remove('lazy-blur');
+                        img.classList.add('loaded');
+                    };
+                    observer.unobserve(img);
+                }
+            }
+        });
+    });
+    document.querySelectorAll('img.lazy-blur').forEach(img => imgObserver.observe(img));
+}
+
 window.filterTrashView = (category) => {
     document.getElementById('trash-categories').style.display = 'none';
     document.getElementById('trash-gallery-container').style.display = 'block';
@@ -1840,7 +2098,7 @@ window.filterTrashView = (category) => {
         grid.innerHTML += `<div class="gallery-item" onclick="openLightbox('gallery','${d.id}', 'reference')"><div class="gallery-img-container"><img src="${optimizeUrl(d.url, 200)}" class="gallery-img lazy-blur" alt="${d.desc ? d.desc.replace(/<[^>]*>?/gm, '') : 'Phân loại rác'}" data-src="${optimizeUrl(d.url, 400)}"></div><div class="gallery-info"><div class="gallery-title">${d.desc}</div></div></div>`;
     });
     if(items.length === 0) grid.innerHTML = "<p style='text-align:center; width:100%'>Chưa có ảnh nào trong mục này.</p>";
-    lazyLoadImages(); // Kích hoạt lazy load cho ảnh mới
+    window.lazyLoadImages(); // Kích hoạt lazy load cho ảnh mới
 }
 window.resetTrashView = () => { document.getElementById('trash-categories').style.display = 'flex'; document.getElementById('trash-gallery-container').style.display = 'none'; }
 window.addEventListener('load', loadTrashStats); // Tải thống kê khi vào web
