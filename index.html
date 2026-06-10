@@ -62,8 +62,13 @@
 
     <!-- Màn hình bảo trì (Chỉ hiện khi Admin bật) -->
     <div id="maintenance-overlay">
-        <i class="fas fa-hammer"></i>
-        <h1>Hệ Thống Đang Bảo Trì</h1>
+        <div class="m-container">
+            <div class="gear-wrapper">
+                <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+                <i class="fas fa-cog gear g1"></i><i class="fas fa-cog gear g2"></i><i class="fas fa-cog gear g3"></i>
+            </div>
+            <div class="m-text">Hệ thống đang bảo trì</div>
+        </div>
         <p>Admin đang nâng cấp tính năng mới cho hệ thống. Vui lòng quay lại sau ít phút!</p>
         <button class="btn btn-outline" onclick="checkAdminLogin()">Admin Đăng Nhập</button>
     </div>
@@ -217,7 +222,15 @@
     <div class="container">
         <!-- TRANG CHỦ -->
         <div id="home" class="page-section">
-            <div id="locked-home" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="locked-home" class="locked-overlay" style="display:none">
+                <div class="m-container">
+                    <div class="gear-wrapper">
+                        <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+                        <i class="fas fa-cog gear g1"></i><i class="fas fa-cog gear g2"></i><i class="fas fa-cog gear g3"></i>
+                    </div>
+                    <div class="m-text">Mục này đang tạm khóa</div>
+                </div>
+            </div>
             <div id="content-home">
                 <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://ktmt.vnmediacdn.com/images/2021/07/20/13-1626735143-anh-xay-xanh-1.jpg" style="width: 100%; height: 350px; object-fit: cover; object-position: center; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
@@ -251,7 +264,15 @@
 
         <!-- TRANG GÓC XANH (GALLERY) -->
         <div id="greenclass" class="page-section">
-            <div id="locked-greenclass" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="locked-greenclass" class="locked-overlay" style="display:none">
+                <div class="m-container">
+                    <div class="gear-wrapper">
+                        <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+                        <i class="fas fa-cog gear g1"></i><i class="fas fa-cog gear g2"></i><i class="fas fa-cog gear g3"></i>
+                    </div>
+                    <div class="m-text">Mục này đang tạm khóa</div>
+                </div>
+            </div>
             <div id="content-greenclass">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0">🌿 Góc "Lớp Học Xanh"</h2>
@@ -275,7 +296,15 @@
 
         <!-- TRANG THI ĐUA -->
         <div id="contest" class="page-section">
-            <div id="locked-contest" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="locked-contest" class="locked-overlay" style="display:none">
+                <div class="m-container">
+                    <div class="gear-wrapper">
+                        <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+                        <i class="fas fa-cog gear g1"></i><i class="fas fa-cog gear g2"></i><i class="fas fa-cog gear g3"></i>
+                    </div>
+                    <div class="m-text">Mục này đang tạm khóa</div>
+                </div>
+            </div>
             <div id="content-contest">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0">🏆 Phong Trào Thi Đua</h2>
@@ -295,7 +324,15 @@
 
         <!-- TRANG LƯU TRỮ -->
         <div id="archive" class="page-section">
-            <div id="locked-archive" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Kho lưu trữ đang đóng</h2></div>
+            <div id="locked-archive" class="locked-overlay" style="display:none">
+                <div class="m-container">
+                    <div class="gear-wrapper">
+                        <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+                        <i class="fas fa-cog gear g1"></i><i class="fas fa-cog gear g2"></i><i class="fas fa-cog gear g3"></i>
+                    </div>
+                    <div class="m-text">Kho lưu trữ đang đóng</div>
+                </div>
+            </div>
             <div id="content-archive">
                 <h1>🗄️ Kho Lưu Trữ</h1>
                 <div class="card">
@@ -314,7 +351,15 @@
 
         <!-- TRANG HOẠT ĐỘNG -->
         <div id="activities" class="page-section">
-            <div id="locked-activities" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="locked-activities" class="locked-overlay" style="display:none">
+                <div class="m-container">
+                    <div class="gear-wrapper">
+                        <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+                        <i class="fas fa-cog gear g1"></i><i class="fas fa-cog gear g2"></i><i class="fas fa-cog gear g3"></i>
+                    </div>
+                    <div class="m-text">Mục này đang tạm khóa</div>
+                </div>
+            </div>
             <div id="content-activities">
                 <h1>📅 Hoạt Động & Tin Tức</h1>
                 <div class="card"><h2>♻️ Đổi giấy lấy cây</h2><p>Thứ 5 hàng tuần, 15:00 - 17:00 tại Phòng Đội.</p></div>
@@ -323,7 +368,15 @@
         </div>
         <!-- TRANG TRA CỨU (GUIDE) -->
         <div id="guide" class="page-section">
-            <div id="locked-guide" class="locked-overlay" style="display:none"><i class="fas fa-lock"></i><h2>Mục này đang tạm khóa</h2></div>
+            <div id="locked-guide" class="locked-overlay" style="display:none">
+                <div class="m-container">
+                    <div class="gear-wrapper">
+                        <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+                        <i class="fas fa-cog gear g1"></i><i class="fas fa-cog gear g2"></i><i class="fas fa-cog gear g3"></i>
+                    </div>
+                    <div class="m-text">Mục này đang tạm khóa</div>
+                </div>
+            </div>
             <div id="content-guide">
                 <h1>🔍 Tra Cứu Phân Loại Rác</h1>
                 <div style="text-align:center; margin-bottom:20px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
@@ -386,10 +439,17 @@
                         <span style="font-size:0.85rem;">Hiệu ứng</span>
                     </div>
                     <!-- Nút Giao diện -->
-                    <div class="settings-btn" onclick="toggleDarkMode()" style="text-align:center; cursor:pointer; flex:1; min-width:80px;">
-                        <div style="width:50px; height:50px; background:var(--input-bg); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 5px auto; border:1px solid var(--border);">
-                            <i class="fas fa-moon" id="dark-icon" style="font-size:1.5rem; color:var(--text);"></i>
+                    <div class="settings-btn bloom-switch" onclick="toggleDarkMode()" style="flex:1; min-width:80px;">
+                        <div class="bloom-switch__track">
+                            <div class="bloom-switch__thumb">
+                                <i class="fas fa-sun bloom-switch__sun"></i>
+                                <i class="fas fa-moon bloom-switch__moon"></i>
+                            </div>
+                            <span class="bloom-switch__star bloom-switch__star--1"></span>
+                            <span class="bloom-switch__star bloom-switch__star--2"></span>
+                            <span class="bloom-switch__star bloom-switch__star--3"></span>
                         </div>
+                        <i id="dark-icon" style="display:none"></i>
                         <span style="font-size:0.85rem;">Giao diện</span>
                     </div>
                 </div>
@@ -736,7 +796,56 @@
     <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="executeUpload(this)">
     <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="changeAvatar(this)">
     <div id="upload-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
-        <i class="fas fa-cloud-upload-alt fa-bounce" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
+        <div class="loader" id="cloud-upload-loader">
+            <svg id="cloud" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <defs>
+                    <filter id="roundness">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="1.5"></feGaussianBlur>
+                        <feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 20 -10"></feColorMatrix>
+                    </filter>
+                    <mask id="shapes">
+                        <g fill="white">
+                            <polygon points="50 37.5 80 75 20 75 50 37.5"></polygon>
+                            <circle cx="20" cy="60" r="15"></circle>
+                            <circle cx="80" cy="60" r="15"></circle>
+                            <g>
+                                <circle cx="20" cy="60" r="15"></circle>
+                                <circle cx="20" cy="60" r="15"></circle>
+                                <circle cx="20" cy="60" r="15"></circle>
+                            </g>
+                        </g>
+                    </mask>
+                    <mask id="clipping" clipPathUnits="userSpaceOnUse">
+                        <g id="lines" filter="url(#roundness)">
+                            <g mask="url(#shapes)" stroke="white">
+                                <line x1="-50" y1="-40" x2="150" y2="-40"></line>
+                                <line x1="-50" y1="-31" x2="150" y2="-31"></line>
+                                <line x1="-50" y1="-22" x2="150" y2="-22"></line>
+                                <line x1="-50" y1="-13" x2="150" y2="-13"></line>
+                                <line x1="-50" y1="-4" x2="150" y2="-4"></line>
+                                <line x1="-50" y1="5" x2="150" y2="5"></line>
+                                <line x1="-50" y1="14" x2="150" y2="14"></line>
+                                <line x1="-50" y1="23" x2="150" y2="23"></line>
+                                <line x1="-50" y1="32" x2="150" y2="32"></line>
+                                <line x1="-50" y1="41" x2="150" y2="41"></line>
+                                <line x1="-50" y1="50" x2="150" y2="50"></line>
+                                <line x1="-50" y1="59" x2="150" y2="59"></line>
+                                <line x1="-50" y1="68" x2="150" y2="68"></line>
+                                <line x1="-50" y1="77" x2="150" y2="77"></line>
+                                <line x1="-50" y1="86" x2="150" y2="86"></line>
+                                <line x1="-50" y1="95" x2="150" y2="95"></line>
+                                <line x1="-50" y1="104" x2="150" y2="104"></line>
+                                <line x1="-50" y1="113" x2="150" y2="113"></line>
+                                <line x1="-50" y1="122" x2="150" y2="122"></line>
+                                <line x1="-50" y1="131" x2="150" y2="131"></line>
+                                <line x1="-50" y1="140" x2="150" y2="140"></line>
+                            </g>
+                        </g>
+                    </mask>
+                </defs>
+                <rect x="0" y="0" width="100" height="100" rx="0" ry="0" mask="url(#clipping)"></rect>
+            </svg>
+        </div>
         <h2 style="color:var(--primary)" id="upload-loading-text">Đang tải ảnh lên...</h2>
     </div>
 
@@ -833,6 +942,21 @@
                 <div><i class="fas fa-search" style="color: #ff9800; width: 25px; text-align: center;"></i> <b>Tra cứu:</b> Dùng "AI Soi Rác" để phân loại rác.</div>
             </div>
             <button class="btn" onclick="closeGuidePopup()" style="width: 100%;">Đã hiểu, bắt đầu thôi! 🚀</button>
+        </div>
+    </div>
+
+    <!-- COOKIE CONSENT BANNER -->
+    <div id="cookie-consent-container" class="cookie-card" style="display: none;">
+        <svg id="cookieSvg" viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <path d="M510.52 255.82c-69.97-.85-126.47-57.69-126.47-127.86-70.17 0-127-56.49-127.86-126.45-27.26-4.14-55.13.3-79.72 12.82l-69.13 35.22a132.221 132.221 0 0 0-57.79 57.81l-35.1 68.88a132.645 132.645 0 0 0-12.82 80.95l12.08 76.27a132.521 132.521 0 0 0 37.16 72.96l54.77 54.76a132.28 132.28 0 0 0 72.71 37.06l76.71 12.15c27.51 4.36 55.7-.11 80.53-12.76l69.13-35.21a132.273 132.273 0 0 0 57.79-57.81l35.1-68.88c12.56-24.64 17.01-52.58 12.91-79.91zM176 368c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32zm32-160c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32zm160 128c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32z"></path>
+            </g>
+        </svg>
+        <p class="cookieHeading">Cài đặt Cookie.</p>
+        <p class="cookieDescription">Trang web sử dụng cookie để mang lại trải nghiệm tốt nhất.</p>
+        <div class="buttonContainer">
+            <button class="acceptButton" onclick="acceptCookies()">Đồng ý</button>
+            <button class="declineButton" onclick="declineCookies()">Từ chối</button>
         </div>
     </div>
 

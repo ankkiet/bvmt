@@ -331,6 +331,13 @@ window.closeGuidePopup = () => {
     localStorage.setItem('seen_guide_v1', 'true');
 };
 
+// --- COOKIE CONSENT LOGIC ---
+window.acceptCookies = () => { localStorage.setItem('cookie_consent', 'accepted'); document.getElementById('cookie-consent-container').style.display = 'none'; };
+window.declineCookies = () => { localStorage.setItem('cookie_consent', 'declined'); document.getElementById('cookie-consent-container').style.display = 'none'; };
+window.addEventListener('load', () => {
+    if (!localStorage.getItem('cookie_consent')) { setTimeout(() => { const banner = document.getElementById('cookie-consent-container'); if(banner) banner.style.display = 'flex'; }, 3000); }
+});
+
 // --- PULL TO REFRESH LOGIC ---
 // Tính năng kéo trang xuống để làm mới (trên Mobile)
 let startY = 0;

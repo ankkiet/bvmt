@@ -104,17 +104,18 @@ async function typeNode(parent, node, speed) {
         const textNode = document.createTextNode("");
         parent.appendChild(textNode);
         const text = node.textContent;
-        for (let i = 0; i < text.length; i++) {
-            textNode.nodeValue += text[i];
+        
+        // Thay vì gõ từng ký tự, ta gõ theo cụm (chunks) để giống tốc độ sinh token của Gemini
+        const chunkSize = 3; 
+        for (let i = 0; i < text.length; i += chunkSize) {
+            textNode.nodeValue += text.substring(i, i + chunkSize);
             const list = document.getElementById('ai-messages');
-            if(list) list.scrollTop = list.scrollHeight; // Auto scroll
-            const randomSpeed = speed + (Math.random() * 10 - 5);
-            if(text[i] !== ' ') await new Promise(r => setTimeout(r, Math.max(5, randomSpeed)));
+            if (list) list.scrollTop = list.scrollHeight; // Auto scroll
+            await new Promise(r => setTimeout(r, 2));
         }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node.cloneNode(false);
         parent.appendChild(el);
-        if (node.tagName === 'BR') await new Promise(r => setTimeout(r, speed));
         for (const child of Array.from(node.childNodes)) await typeNode(el, child, speed);
     }
 }
