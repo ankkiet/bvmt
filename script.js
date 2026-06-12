@@ -84,7 +84,8 @@ const getSystemPrompt = () => {
         - "[ACTION:navigate_archive]": Mở trang Lưu Trữ.
         - "[ACTION:navigate_profile]": Mở trang Hồ Sơ.
         *(Ví dụ 1: Nếu nhờ bật nhạc: "Okie, tớ bật nhạc nhé! 🎶 [ACTION:music]")*
-        *(Ví dụ 2: Nếu nhờ mở Góc Xanh: "Tớ đưa cậu qua trang Góc Xanh nhé! 🌱 [ACTION:navigate_greenclass]")*`;
+        *(Ví dụ 2: Nếu nhờ mở Góc Xanh: "Tớ đưa cậu qua trang Góc Xanh nhé! 🌱 [ACTION:navigate_greenclass]")*
+    4.  **Toán học**: Hãy dùng cú pháp chuẩn LaTeX (bọc trong $$...$$ cho công thức đứng riêng, hoặc $...$ cho công thức nằm trong dòng) để hệ thống có thể hiển thị chính xác.`;
 
     if(currentUser) {
         const role = (typeof isAdmin === 'function' && isAdmin(currentUser.email)) ? "Quản trị viên (Admin)" : "Thành viên";
@@ -336,42 +337,6 @@ window.acceptCookies = () => { localStorage.setItem('cookie_consent', 'accepted'
 window.declineCookies = () => { localStorage.setItem('cookie_consent', 'declined'); document.getElementById('cookie-consent-container').style.display = 'none'; };
 window.addEventListener('load', () => {
     if (!localStorage.getItem('cookie_consent')) { setTimeout(() => { const banner = document.getElementById('cookie-consent-container'); if(banner) banner.style.display = 'flex'; }, 3000); }
-});
-
-// --- PULL TO REFRESH LOGIC ---
-// Tính năng kéo trang xuống để làm mới (trên Mobile)
-let startY = 0;
-const ptrElement = document.getElementById('ptr-loader');
-const ptrIcon = ptrElement.querySelector('.ptr-icon');
-
-window.addEventListener('touchstart', (e) => {
-    if (window.scrollY === 0) {
-        startY = e.touches[0].clientY;
-    }
-}, {passive: true});
-
-window.addEventListener('touchmove', (e) => {
-    const y = e.touches[0].clientY;
-    const diff = y - startY;
-    if (window.scrollY === 0 && diff > 0) {
-        if (diff < 250) { 
-            // Ngăn chặn hành vi cuộn mặc định của trình duyệt (quan trọng cho PWA mượt mà)
-            if (e.cancelable) e.preventDefault();
-            ptrElement.style.top = (diff / 2.5 - 70) + 'px'; 
-            ptrIcon.style.transform = `rotate(${diff * 2}deg)`;
-        }
-    }
-}, {passive: false});
-
-window.addEventListener('touchend', (e) => {
-    const top = parseInt(ptrElement.style.top || '-70');
-    if (top > 10) { 
-        ptrElement.style.top = '10px';
-        ptrIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
-        setTimeout(() => { location.reload(); }, 800);
-    } else {
-        ptrElement.style.top = '-70px'; 
-    }
 });
 
 // --- NOTIFICATION SYSTEM ---
@@ -1019,6 +984,11 @@ window.sendMessageToAI = async (e, isVoice = false) => {
 
         await typeWriterEffect(document.getElementById(loadingId), formatted, 15); // Tăng tốc độ cơ bản lên một chút
 
+        // Render công thức toán học bằng MathJax
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([document.getElementById(loadingId)]).catch(err => console.error("MathJax Error:", err));
+        }
+
         // THU THẬP TRẢI NGHIỆM: Thêm nút đánh giá phản hồi AI
         const feedbackDiv = document.createElement('div');
         feedbackDiv.className = 'ai-feedback-btns';
@@ -1041,7 +1011,9 @@ window.sendMessageToAI = async (e, isVoice = false) => {
         }
     } 
     catch(err) { document.getElementById(loadingId).innerHTML = `<span style="color:red">Lỗi: ${err.message}</span>`; }
-    msgList.scrollTop = msgList.scrollHeight;
+    if (msgList.scrollHeight - msgList.scrollTop - msgList.clientHeight < 150) {
+        msgList.scrollTop = msgList.scrollHeight;
+    }
 }
 
 // --- YOUTUBE ID & MUSIC ---
@@ -1897,6 +1869,9 @@ window.captureAndAnalyzeTrash = async () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height); // Chụp khung hình hiện tại
+    
+    // Dừng camera ngay lập tức để người dùng biết hệ thống đã bắt đúng khung hình
+    video.pause();
 
     const base64ImgFull = canvas.toDataURL('image/jpeg', 0.8);
     const base64Img = base64ImgFull.split(',')[1];
@@ -1944,7 +1919,6 @@ window.captureAndAnalyzeTrash = async () => {
                 }
             }
         }
-        video.pause(); // Tạm dừng khung hình để user xem Box
 
         // Đợi 1.5 giây để xem ảnh khoanh vùng rồi mới hiện UI kết quả
         setTimeout(() => {

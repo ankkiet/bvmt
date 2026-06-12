@@ -23,7 +23,7 @@ messaging.onBackgroundMessage((payload) => {
 
 // --- CACHING LOGIC ---
 
-const CACHE_NAME = 'nvc-green-v58-new-logo'; 
+const CACHE_NAME = 'nvc-green-v59-native-ptr'; 
 // Danh sách các file tĩnh cần cache để chạy offline
 const STATIC_ASSETS = [
     './',

@@ -105,13 +105,23 @@ async function typeNode(parent, node, speed) {
         parent.appendChild(textNode);
         const text = node.textContent;
         
-        // Thay vì gõ từng ký tự, ta gõ theo cụm (chunks) để giống tốc độ sinh token của Gemini
-        const chunkSize = 3; 
+        // Tính toán lượng ký tự xuất hiện mỗi khung hình dựa trên tham số tốc độ
+        const chunkSize = Math.max(1, Math.floor(speed / 4)); 
+        
         for (let i = 0; i < text.length; i += chunkSize) {
             textNode.nodeValue += text.substring(i, i + chunkSize);
-            const list = document.getElementById('ai-messages');
-            if (list) list.scrollTop = list.scrollHeight; // Auto scroll
-            await new Promise(r => setTimeout(r, 2));
+            
+            // Sử dụng requestAnimationFrame thay vì setTimeout để mượt mà nhất (Khớp tần số quét màn hình)
+            await new Promise(r => requestAnimationFrame(() => {
+                const list = document.getElementById('ai-messages');
+                if (list) {
+                    // Chỉ tự động cuộn xuống nếu người dùng đang lướt ở gần cuối (cách đáy dưới 150px)
+                    if (list.scrollHeight - list.scrollTop - list.clientHeight < 150) {
+                        list.scrollTop = list.scrollHeight;
+                    }
+                }
+                r();
+            }));
         }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node.cloneNode(false);

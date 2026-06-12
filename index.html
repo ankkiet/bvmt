@@ -39,6 +39,17 @@
     <script defer src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <!-- Thư viện MathJax để hiển thị công thức toán học (Latex) -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -81,11 +92,6 @@
             <p id="notif-text">...</p>
         </div>
         <div class="notif-close" onclick="closeNotification()">✕</div>
-    </div>
-
-    <!-- Loader khi kéo trang xuống (Pull to Refresh) -->
-    <div id="ptr-loader">
-        <div class="ptr-icon"><i class="fas fa-arrow-down"></i></div>
     </div>
 
     <!-- Chuông thông báo cá nhân -->
