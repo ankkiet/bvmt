@@ -96,20 +96,32 @@ export async function typeWriterEffect(element, html, speed = 10) {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
     const nodes = Array.from(tempDiv.childNodes);
-    for (const node of nodes) await typeNode(element, node, speed);
+    
+    // Dùng object state để theo dõi tổng số ký tự đã gõ
+    const state = { charCount: 0 };
+    for (const node of nodes) await typeNode(element, node, speed, state);
 }
 
-async function typeNode(parent, node, speed) {
+async function typeNode(parent, node, speed, state) {
     if (node.nodeType === Node.TEXT_NODE) {
         const textNode = document.createTextNode("");
         parent.appendChild(textNode);
         const text = node.textContent;
         
-        // Tính toán lượng ký tự xuất hiện mỗi khung hình dựa trên tham số tốc độ
-        const chunkSize = Math.max(1, Math.floor(speed / 4)); 
-        
-        for (let i = 0; i < text.length; i += chunkSize) {
+        let i = 0;
+        while (i < text.length) {
+            // Tăng tốc độ: Nếu đã gõ khoảng 1-2 dòng (100 ký tự), phun ra toàn bộ đoạn còn lại
+            if (state.charCount > 100) {
+                textNode.nodeValue += text.substring(i);
+                state.charCount += text.length - i;
+                break;
+            }
+
+            // Tính toán lượng ký tự xuất hiện mỗi khung hình dựa trên tham số tốc độ
+            const chunkSize = Math.max(1, Math.floor(speed / 4)); 
             textNode.nodeValue += text.substring(i, i + chunkSize);
+            state.charCount += chunkSize;
+            i += chunkSize;
             
             // Sử dụng requestAnimationFrame thay vì setTimeout để mượt mà nhất (Khớp tần số quét màn hình)
             await new Promise(r => requestAnimationFrame(() => {
@@ -126,7 +138,7 @@ async function typeNode(parent, node, speed) {
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node.cloneNode(false);
         parent.appendChild(el);
-        for (const child of Array.from(node.childNodes)) await typeNode(el, child, speed);
+        for (const child of Array.from(node.childNodes)) await typeNode(el, child, speed, state);
     }
 }
 
